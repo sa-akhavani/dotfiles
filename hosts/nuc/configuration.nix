@@ -15,8 +15,9 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   networking.hostName = "nuc-nix"; # Define your hostname.
+
   # Pick only one of the below networking options.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
 
   # Set your time zone.
@@ -38,8 +39,7 @@
   services.xserver.enable = true;
 
   # Display Manager
-  # services.xserver.displayManager.greetd.tuigreet.enable = true;
-  # services.xserver.displayManager.ly.enable = true;
+  # services.xserver.displayManager.gdm.enable = true;
 
   services.greetd = {
     enable = true;
@@ -52,7 +52,7 @@
   };
 
   # Configure keymap in X11
-  # services.xserver.xkb.layout = "us";
+  services.xserver.xkb.layout = "us";
   # services.xserver.xkb.options = "eurosign:e,caps:escape";
 
   # Enable CUPS to print documents.
@@ -74,9 +74,6 @@
     ali = {
 	    isNormalUser = true;
 	    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
-	    packages = with pkgs; [
-	      tree
-	    ];
     };
   };
 
@@ -91,7 +88,7 @@
   };
 
   programs.git = {
-	enable = true;
+    enable = true;
   };
 
 
@@ -104,9 +101,7 @@
     git
     btop
     greetd.tuigreet
-    # ly
-
-    mangohud # performance monitor overlay
+    neovim
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
@@ -116,8 +111,6 @@
   #   enable = true;
   #   enableSSHSupport = true;
   # };
-
-  # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
