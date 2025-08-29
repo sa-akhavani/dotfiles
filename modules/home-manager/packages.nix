@@ -31,7 +31,7 @@
 #    pkgs.libreoffice-qt
 #    pkgs.hunspell
  
-    # Bluetooth
+    # Connectivity
     pkgs.blueberry
 
     # Social
