@@ -1,0 +1,153 @@
+@define-color bg-color #1a1b26;
+@define-color fg-color #a9b1d6;
+
+@define-color tn-green #9ece6a;
+@define-color tn-red #f7768e;
+@define-color tn-blue #7aa2f7;
+@define-color tn-yellow #e0af68;
+@define-color tn-purple #bb9af7;
+@define-color tn-grey #343b58;
+
+@define-color tn-dark-green #485e30;
+@define-color tn-dark-red #8c4351;
+@define-color tn-dark-blue #34548a;
+@define-color tn-dark-yellow #8f5e15;
+@define-color tn-dark-purple #5a4a78;
+
+/* Global Styles */
+* {
+  font-family: JetBrainsMono NFP;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* Waybar */
+#waybar {
+  background: @bg-color;
+  color: @fg-color;
+}
+
+/* Tooltips */
+tooltip {
+  color: @fg-color;
+  background: @bg-color;
+  border: 2px solid @tn-blue;
+}
+
+/* Modules */
+#mode,
+#tray,
+#clock,
+#clock.date,
+#mpris,
+#upower,
+#language,
+#workspaces,
+#network.vpn,
+#pulseaudio.speaker,
+#pulseaudio.mic,
+#temperature,
+#custom-timer,
+#custom-power,
+#custom-updates,
+#custom-weather,
+#custom-launcher,
+#custom-notification,
+#custom-scratchpad-indicator {
+  margin: 0px 1px;
+  padding: 0px 4px;
+}
+
+/* Specific Module Styling */
+#mpris {
+  margin: 0px 5px;
+}
+
+.modules-center {
+  margin: 0px 2px;
+  padding: 0 4px;
+}
+
+#mode,
+#custom-updates,
+#custom-scratchpad-indicator {
+  color: @tn-blue;
+}
+
+#network.vpn {
+  color: @tn-yellow;
+}
+
+#pulseaudio.speaker {
+  min-width: 13px;
+}
+
+#pulseaudio.mic {
+  color: @tn-green;
+  min-width: 13px;
+}
+
+#pulseaudio.speaker.muted {
+  color: @tn-red;
+}
+
+#pulseaudio.mic.source-muted {
+  background: none;
+  color: @fg-color;
+}
+
+#custom-notification.notification {
+  color: @tn-blue;
+}
+
+#custom-notification.dnd-none {
+  color: @tn-red;
+}
+
+#custom-notification.dnd-notification {
+  color: @tn-red;
+}
+
+#custom-notification,
+#custom-notification.notification,
+#custom-notification.dnd-notification {
+  margin-right: 10px;
+}
+
+#custom-power {
+  background: @tn-red;
+  color: @bg-color;
+  margin: 0px 0px 0px 10px;
+  border-radius: 0px;
+}
+
+#upower.charging {
+  color: @tn-green;
+}
+
+#temperature.critical {
+  color: @tn-red;
+}
+
+/* Workspace Buttons */
+#workspaces {
+  margin: 0px;
+  padding: 0px;
+}
+
+#workspaces button {
+  padding: 0px;
+  color: @tn-blue;
+  min-width: 20px;
+}
+
+#workspaces button.persistent {
+  color: @fg-color;
+  padding: 0px;
+}
+
+#workspaces button.focused {
+  background: @tn-blue;
+  color: @bg-color;
+  border-radius: 0px;
+}

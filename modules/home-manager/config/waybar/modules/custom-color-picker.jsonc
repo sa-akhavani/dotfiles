@@ -1,0 +1,7 @@
+{
+  "custom/color-picker": {
+    "format": "󰌁",
+    "on-click": "hyprpicker -a",
+    "tooltip": false,
+  },
+}

@@ -2,23 +2,25 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ../../modules/git.nix
+      ../../modules/nixos/audio.nix
+      ../../modules/nixos/connectivity.nix
     ];
+
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "nuc-nix"; # Define your hostname.
+  networking.hostName = "rostam"; # Define your hostname.
 
   # Pick only one of the below networking options.
-  networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
 
   # Set your time zone.
@@ -41,6 +43,7 @@
 
   # Display Manager
   # services.xserver.displayManager.gdm.enable = true;
+  # services.greetd.useTextGreeter = true;
 
   services.greetd = {
     enable = true;
@@ -61,11 +64,10 @@
 
   # Enable sound.
   # services.pulseaudio.enable = true;
-  # OR
-  services.pipewire = {
-    enable = true;
-    pulse.enable = true;
-  };
+  # services.pipewire = {
+    # enable = true;
+    # pulse.enable = true;
+  # };
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.libinput.enable = true;
@@ -77,6 +79,15 @@
 	    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
     };
   };
+
+#  home-manager = {
+#    users = {
+#     "ali" = import ./home.nix;
+#    };
+#  };
+
+  # Enable Flakes
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Allow unfree programs
   nixpkgs.config.allowUnfree = true;
@@ -91,13 +102,19 @@
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
   environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+    git
+    vim
+    neovim
     wget
     zsh
     btop
     greetd.tuigreet
-    neovim
+    wezterm
+    kitty
+    tmux
   ];
+
+  environment.variables.EDITOR = "vim";
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.

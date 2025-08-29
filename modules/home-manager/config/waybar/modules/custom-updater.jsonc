@@ -1,0 +1,11 @@
+{
+  "custom/updater": {
+    "format": "󰮯  {}",
+    // "format": "  {}",
+    // "exec": "~/.config/waybar/scripts/checkupdates.sh | wc -l",
+    // "exec-if": "[[ $(~/.config/waybar/scripts/checkupdates.sh | wc -l) ]]",
+    "exec": "checkupdates | wc -l",
+    "exec-if": "[[ $(checkupdates | wc -l) ]]",
+    "interval": 3600,
+  },
+}

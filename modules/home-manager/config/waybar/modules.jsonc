@@ -1,0 +1,278 @@
+{
+  "backlight": {
+    "interval": 2,
+    "align": 0,
+    "rotate": 0,
+    //"device": "amdgpu_bl0",
+    "format": "{icon} {percent}%",
+    "format-icons": [" 󰃞 ", " 󰃟 ", " 󰃝 ", " 󰃠 "],
+    // Commands to execute on events
+    "on-click": "",
+    "on-click-middle": "",
+    "on-click-right": "",
+    "on-update": "",
+    "on-scroll-up": "brightnessctl set 10%-",
+    "on-scroll-down": "brightnessctl set 10%+",
+    "smooth-scrolling-threshold": 1,
+  },
+
+  "battery": {
+    "interval": 60,
+    "align": 0,
+    "rotate": 0,
+    //"bat": "BAT1",
+    //"adapter": "ACAD",
+    "full-at": 100,
+    "design-capacity": false,
+    "states": {
+      "good": 95,
+      "warning": 30,
+      "critical": 15,
+    },
+    "format": "{icon} {capacity}%",
+    "format-charging": " {capacity}%",
+    "format-plugged": " {capacity}%",
+    "format-full": "{icon} Full",
+    //"format-good": "",
+    "format-alt": "{icon} {time}",
+    "format-icons": ["", "", "", "", ""],
+    "format-time": "{H}h {M}min",
+    "tooltip": true,
+  },
+
+  "clock": {
+    "interval": 60,
+    "align": 0,
+    "rotate": 0,
+    "timezone": "America/New_York",
+    "tooltip-format": "<big>{:%B %Y}</big>\n<tt><small>{calendar}</small></tt>",
+    "format": " {:%H:%M}",
+    "format-alt": " {:%a %b %d, %G}",
+    //     "format-alt": "{:%m-%d-%Y}",
+  },
+
+  "custom/menu": {
+    "format": "   ",
+    // "tooltip": false,
+    "on-click": "fuzzel --config=$HOME/.config/fuzzel/fuzzel.ini",
+    // "on-click": "$HOME/.config/waybar/scripts/menu",
+  },
+
+  "custom/power": {
+    "format": "󰐥",
+    "tooltip": false,
+    "on-click": "wlogout --protocol layer-shell",
+    // "on-click": "$HOME/.config/hypr/scripts/wlogout",
+  },
+
+  "cpu": {
+    "interval": 5,
+    "format": "  {usage}%",
+  },
+  "memory": {
+    "interval": 5,
+    // "format": "  USED: {used:0.1f}G",
+    // "format": "  FREE: {percentage:0.1f}G",
+    "format": "  {used:0.1f}G/{total:0.1f}G",
+  },
+  "disk": {
+    "interval": 60,
+    // "format": "  {free}/{total}",
+    "format": "  {specific_free:0.1f}G",
+    "unit": "GB",
+  },
+  "hyprland/window": {
+    // "format": "{}",
+    "format": "{class}",
+    // "rewrite": {
+    //   "(.*) — Mozilla Firefox": "🌎 $1",
+    //   "(.*) - fish": "> [$1]",
+    // },
+    "separate-outputs": true,
+  },
+  "keyboard-state": {
+    "numlock": false,
+    "capslock": true,
+    "format": {
+      // "numlock": "Num {icon}",
+      "capslock": "Caps {icon}",
+    },
+    "format-icons": {
+      "locked": "󰘲",
+      "unlocked": "",
+      // "locked": "",
+      // "unlocked": "",
+    },
+  },
+
+  "mpd": {
+    "interval": 2,
+    "unknown-tag": "N/A",
+
+    "format": "{stateIcon} {artist} - {title}",
+    "format-disconnected": " Disconnected",
+    "format-paused": "{stateIcon} {artist} - {title}",
+    "format-stopped": "Stopped ",
+    "state-icons": {
+      "paused": "",
+      "playing": "",
+    },
+    "tooltip-format": "MPD (connected)",
+    "tooltip-format-disconnected": "MPD (disconnected)",
+    // Commands to execute on events
+    "on-click": "mpc toggle",
+    "on-click-middle": "mpc prev",
+    "on-click-right": "mpc next",
+    "on-update": "",
+    "on-scroll-up": "mpc seek +00:00:01",
+    "on-scroll-down": "mpc seek -00:00:01",
+    "smooth-scrolling-threshold": 1,
+  },
+
+  "network": {
+    "interval": 10,
+    // "interface": "wlan*", // (Optional) To force the use of this interface, set it for netspeed to work
+    "format-wifi": " {essid}",
+    "format-ethernet": " {ipaddr}/{cidr}",
+    "format-linked": " {ifname} (No IP)",
+    "format-disconnected": "睊 Disconnected",
+    "format-disabled": "睊 Disabled",
+    "format-alt": " {bandwidthUpBits} |  {bandwidthDownBits}",
+    "tooltip-format": " {ifname} via {gwaddr}",
+  },
+
+  // "custom/weather": {
+  //   "format": "{}",
+  //   "format-alt": "{alt}: {}",
+  //   "format-alt-click": "click-right",
+  //   "interval": 1800,
+  //   "return-type": "json",
+  //   // "exec": "~/.config/waybar/scripts/weather.sh",
+  //   "exec": "~/.config/waybar/scripts/weather-2.sh",
+  //   "exec-if": "ping wttr.in -c1",
+  // },
+
+  "custom/updater": {
+    // "format": "  {} ",
+    "format": " {} ",
+    "exec": "checkupdates | wc -l",
+    "exec-if": "[[ $(checkupdates | wc -l) ]]",
+    "interval": 60,
+    "on-click": "kitty -e yay -Syu && notify-send 'The system has been updated' ",
+  },
+
+  "pulseaudio": {
+    //"format": "{volume}% {icon} {format_source}",
+    "format": "{icon} {volume}%",
+    "format-muted": " Mute",
+    "format-bluetooth": " {volume}% {format_source}",
+    "format-bluetooth-muted": " Mute",
+    "format-source": " {volume}%",
+    "format-source-muted": "",
+    "format-icons": {
+      "headphone": "",
+      "hands-free": "",
+      "headset": "",
+      "phone": "",
+      "portable": "",
+      "car": "",
+      "default": ["", "", ""],
+    },
+    "scroll-step": 5.0,
+    // Commands to execute on events
+    "on-click": "amixer set Master toggle",
+    "on-click-right": "pavucontrol",
+    "smooth-scrolling-threshold": 1,
+  },
+
+  "tray": {
+    "icon-size": 20,
+    "spacing": 10,
+  },
+
+  "custom/color-picker": {
+    "format": " 󰌁 ",
+    "on-click": "hyprpicker -a",
+  },
+
+  "privacy": {
+    "icon-spacing": 4,
+    "icon-size": 18,
+    "transition-duration": 250,
+    "modules": [
+      {
+        "type": "screenshare",
+        "tooltip": true,
+        "tooltip-icon-size": 24,
+      },
+      {
+        "type": "audio-out",
+        "tooltip": true,
+        "tooltip-icon-size": 24,
+      },
+      {
+        "type": "audio-in",
+        "tooltip": true,
+        "tooltip-icon-size": 24,
+      },
+    ],
+  },
+
+  "hyprland/language": {
+    "format": "{}",
+    "format-en": "En",
+    "format-fa": "Fa",
+    "keyboard-name": "at-translated-set-2-keyboard",
+    // Hyprland language switch wayland
+    "on-click": "hyprctl switchxkblayout at-translated-set-2-keyboard next",
+  },
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+      "activated": " ",
+      "deactivated": " ",
+    },
+  },
+  "cava": {
+   "cava_config": "$XDG_CONFIG_HOME/cava/cava.conf",
+    "framerate": 30,
+    "autosens": 1,
+    "sensitivity": 100,
+    "bars": 14,
+    "lower_cutoff_freq": 50,
+    "higher_cutoff_freq": 10000,
+    "method": "pulse",
+    "source": "auto",
+    "stereo": true,
+    "reverse": false,
+    "bar_delimiter": 0,
+    "monstercat": false,
+    "waves": false,
+    "noise_reduction": 0.77,
+    "input_delay": 2,
+    "format-icons": ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"],
+    "actions": {
+      "on-click-right": "mode",
+    },
+  },
+
+  // "hyprland/workspaces": {
+  // "format": "{icon}",
+  // "on-click": "activate",
+  // "all-outputs": true,
+  // "format-icons": {
+  // 	"1": "",
+  // 	"2": "",
+  // 	"3": "",
+  // 	"4": "",
+  // 	"5": "ﭮ",
+  //    "6": "",
+  //    "7": "",
+  //    "8": "",
+  //    "9": "",
+  //    "10": "﮼",
+  // 	"focused": "",
+  // 	"default": ""
+  // }
+  //  },
+}
