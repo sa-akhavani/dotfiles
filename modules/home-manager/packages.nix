@@ -8,6 +8,7 @@
     pkgs.gcc
 
     # Terminal Tools
+    pkgs.zsh
     pkgs.fastfetch
     pkgs.zip
     pkgs.fzf

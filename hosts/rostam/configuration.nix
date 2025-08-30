@@ -74,9 +74,12 @@
   # Enable touchpad support (enabled default in most desktopManager).
   # services.libinput.enable = true;
 
+  programs.zsh.enable = true;
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users = {
     ali = {
+	    shell = pkgs.zsh;
 	    isNormalUser = true;
 	    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
     };
@@ -99,6 +102,8 @@
   programs.hyprland = {
     enable = true;
     xwayland.enable = true;
+    # Optional, hint electron apps to use wayland:
+    environment.sessionVariables.NIXOS_OZONE_WL = "1";
   };
 
   # List packages installed in system profile.
