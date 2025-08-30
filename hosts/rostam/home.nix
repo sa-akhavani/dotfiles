@@ -43,6 +43,7 @@
 
 		shellAliases = {
 			ll = "ls -l";
+			update = "sudo nixos-rebuild switch --flake /home/ali/dotfiles";
 		};
 
 		history.size = 10000;
@@ -50,6 +51,7 @@
 		oh-my-zsh = {
 			enable = true;
 			plugins = [ "git" "sudo" ];	
+			theme = "wedisagree";
 		};
 	};
 

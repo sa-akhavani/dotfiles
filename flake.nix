@@ -29,9 +29,8 @@
 		rostam = nixpkgs.lib.nixosSystem {
 		      inherit system;
 		      specialArgs = {
-			inherit inputs;
-			inherit pkgs-unstable;
-			};
+            inherit inputs;
+          };
 		      modules = [
 			./hosts/rostam/configuration.nix
 

@@ -2,26 +2,19 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, lib, pkgs, inputs, ... }:
+{ config, lib, pkgs, pkgs-unstable, inputs, ... }:
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
+  imports = [
       ./hardware-configuration.nix
-      ../../modules/nixos/audio.nix
-      ../../modules/nixos/connectivity.nix
+      ../../modules/nixos/services/default.nix
+      ../../modules/nixos/networking/default.nix
     ];
 
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
-  networking.hostName = "rostam"; # Define your hostname.
-
-  # Pick only one of the below networking options.
-  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
 
   # Set your time zone.
   time.timeZone = "America/New_York";
@@ -32,11 +25,11 @@
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
-  # console = {
+  console = {
   #   font = "Lat2-Terminus16";
-  #   keyMap = "us";
+     keyMap = "us";
   #   useXkbConfig = true; # use xkb.options in tty.
-  # };
+  };
 
   # Flatpak
   services.flatpak.enable = true;
@@ -103,7 +96,7 @@
     enable = true;
     xwayland.enable = true;
     # Optional, hint electron apps to use wayland:
-    environment.sessionVariables.NIXOS_OZONE_WL = "1";
+    # environment.sessionVariables.NIXOS_OZONE_WL = "1";
   };
 
   # List packages installed in system profile.
@@ -131,8 +124,6 @@
     enableSSHSupport = true;
   };
 
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
