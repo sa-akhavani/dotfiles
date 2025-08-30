@@ -9,6 +9,7 @@
       ./hardware-configuration.nix
       ../../modules/nixos/services/default.nix
       ../../modules/nixos/networking/default.nix
+      ../../modules/nixos/fonts
     ];
 
 
