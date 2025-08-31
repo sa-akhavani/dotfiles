@@ -17,7 +17,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostname = "rostam";
+  networking.hostName = "rostam";
 
   time.timeZone = "America/New_York";
 
