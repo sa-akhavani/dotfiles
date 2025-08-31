@@ -7,8 +7,8 @@
 {
   imports = [
       ./hardware-configuration.nix
-      ../../modules/nixos/services/default.nix
-      ../../modules/nixos/networking/default.nix
+      ../../modules/nixos/services
+      ../../modules/nixos/networking
       ../../modules/nixos/fonts
     ];
 
@@ -17,12 +17,10 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Set your time zone.
+  networking.hostname = "rostam";
+
   time.timeZone = "America/New_York";
 
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -58,12 +56,6 @@
   # Enable CUPS to print documents.
   # services.printing.enable = true;
 
-  # Enable sound.
-  # services.pulseaudio.enable = true;
-  # services.pipewire = {
-    # enable = true;
-    # pulse.enable = true;
-  # };
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.libinput.enable = true;
@@ -125,12 +117,6 @@
     enableSSHSupport = true;
   };
 
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  networking.firewall.enable = false;
 
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you

@@ -4,5 +4,6 @@
 	imports = [
 		./networking
 		./services
+		./fonts
 	];
 }
