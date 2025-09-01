@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 WALLPAPER_DIR="$HOME/Pictures/Wallpapers/"
 CURRENT_WALL=$(hyprctl hyprpaper listloaded)
