@@ -13,6 +13,7 @@
     pkgs.zip
     pkgs.fzf
     pkgs.tree
+    pkgs.nnn # terminal file manager
 
     # Hypr Ecosystem
     pkgs.hyprlock
@@ -24,6 +25,7 @@
     pkgs.hyprpolkitagent
 
     # Clipboard
+    pkgs.wl-clipboard
     pkgs.cliphist
 
     # GUI Utilities
