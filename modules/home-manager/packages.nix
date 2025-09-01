@@ -12,6 +12,7 @@
     pkgs.fastfetch
     pkgs.zip
     pkgs.fzf
+    pkgs.tree
 
     # Hypr Ecosystem
     pkgs.hyprlock
@@ -21,21 +22,26 @@
     pkgs.hyprpicker
     pkgs.hyprshot
     pkgs.hyprpolkitagent
-    
+
     # Clipboard
     pkgs.cliphist
 
-    # GUI Tools
+    # GUI Utilities
+    ## Status Bar
     pkgs.ashell
     pkgs.waybar
+
+    ## App Launcher
     pkgs.fuzzel
+    pkgs.walker
+    # pkgs.rofi
+    # pkgs.anyun
+
     pkgs.wlogout
-    pkgs.swappy
+    # pkgs.swappy # screenshot editing tool
     pkgs.cava
-    pkgs.tree
     pkgs.wofi
     pkgs.mako
-    
     
     # Work stuff
 #    pkgs.obsidian
