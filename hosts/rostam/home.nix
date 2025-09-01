@@ -54,6 +54,7 @@
 			theme = "wedisagree";
 		};
 	};
+
 	  wayland.windowManager.hyprland = {
 	    enable = true;
 	    # set the Hyprland and XDPH packages to null to use the ones from the NixOS module
@@ -63,6 +64,9 @@
 		    # "$mod" = "SUPER";
 	    };
 	  };
+
+	  # hint electron apps to use wayland
+	  # home.sessionVariables.NIXOS_OZONE_WL = "1"; # already done in config.nix so it's commented here
 
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage

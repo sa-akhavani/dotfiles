@@ -87,7 +87,17 @@
 
   programs.hyprland = {
     enable = true;
+    withUWSM = true; # recommended for most users
     xwayland.enable = true;
+  };
+
+  # Tell electron apps to use wayland
+  environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
+  # Screen sharing
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [ xdg-desktop-portal-hyprland ];
   };
 
   # List packages installed in system profile.

@@ -13,12 +13,19 @@
     pkgs.zip
     pkgs.fzf
 
+    # Hypr Ecosystem
+    pkgs.hyprlock
+    pkgs.hyprpaper
+    pkgs.hypridle
+    pkgs.hyprsunset
+    pkgs.hyprpicker
+    pkgs.hyprshot
+    pkgs.hyprpolkitagent
+    
     # GUI Tools
     pkgs.waybar
     pkgs.fuzzel
     pkgs.wlogout
-    pkgs.hyprlock
-    # pkgs.swaylock
     pkgs.swappy
     pkgs.cava
     pkgs.tree
@@ -45,7 +52,6 @@
 
     # Utils
 #    pkgs.viewnior
-#    pkgs.hyprshot
 #    pkgs.catppuccin-cursors.macchiatoBlue
 #    pkgs.catppuccin-gtk
 #    pkgs.papirus-folders
