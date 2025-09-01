@@ -45,7 +45,7 @@
 
     ## File Manager
     pkgs.nnn 		# Terminal file manager
-    pkgs.thunar		# File Manager
+    pkgs.xfce.thunar	# File Manager
     pkgs.viewnior 	# Image Viewer
  
     # Audio
