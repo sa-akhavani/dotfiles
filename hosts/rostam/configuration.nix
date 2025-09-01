@@ -113,8 +113,6 @@
     wezterm
     kitty
     tmux
-
-    ashell
   ];
 
   environment.variables.EDITOR = "vim";

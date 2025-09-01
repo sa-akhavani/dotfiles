@@ -22,7 +22,11 @@
     pkgs.hyprshot
     pkgs.hyprpolkitagent
     
+    # Clipboard
+    pkgs.cliphist
+
     # GUI Tools
+    pkgs.ashell
     pkgs.waybar
     pkgs.fuzzel
     pkgs.wlogout
