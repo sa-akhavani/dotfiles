@@ -13,7 +13,6 @@
     pkgs.zip
     pkgs.fzf
     pkgs.tree
-    pkgs.nnn # terminal file manager
 
     # Hypr Ecosystem
     pkgs.hyprlock
@@ -32,6 +31,8 @@
     ## Status Bar
     pkgs.ashell
     pkgs.waybar
+    pkgs.wlogout
+    pkgs.lm_sensors	# Reading hardware sensors
 
     ## App Launcher
     pkgs.fuzzel
@@ -39,12 +40,22 @@
     # pkgs.rofi
     # pkgs.anyun
 
-    pkgs.wlogout
-    # pkgs.swappy # screenshot editing tool
+    # Notification Manager
+    pkgs.mako		
+
+    ## File Manager
+    pkgs.nnn 		# Terminal file manager
+    pkgs.thunar		# File Manager
+    pkgs.viewnior 	# Image Viewer
+ 
+    # Audio
+    pkgs.easyeffects	# Audio effects for PipeWire applications
+
+    ## Misc
+    # pkgs.swappy 	# Screenshot editing tool
     pkgs.cava
-    pkgs.wofi
-    pkgs.mako
-    
+#    pkgs.wofi
+
     # Work stuff
 #    pkgs.obsidian
 #    pkgs.teams-for-linux
@@ -61,9 +72,9 @@
 #    pkgs.discord
 
     # Download Managers
+    pkgs.axel
 
     # Utils
-#    pkgs.viewnior
 #    pkgs.catppuccin-cursors.macchiatoBlue
 #    pkgs.catppuccin-gtk
 #    pkgs.papirus-folders
