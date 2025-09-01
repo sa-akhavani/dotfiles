@@ -54,6 +54,15 @@
 			theme = "wedisagree";
 		};
 	};
+	  wayland.windowManager.hyprland = {
+	    enable = true;
+	    # set the Hyprland and XDPH packages to null to use the ones from the NixOS module
+	    package = null;
+	    portalPackage = null;
+	    settings = {
+		    # "$mod" = "SUPER";
+	    };
+	  };
 
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage

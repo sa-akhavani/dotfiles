@@ -17,7 +17,8 @@
     pkgs.waybar
     pkgs.fuzzel
     pkgs.wlogout
-    pkgs.swaylock
+    pkgs.hyprlock
+    # pkgs.swaylock
     pkgs.swappy
     pkgs.cava
     pkgs.tree
