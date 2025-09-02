@@ -57,7 +57,7 @@
 #    pkgs.wofi
 
     # Work stuff
-#    pkgs.obsidian
+    pkgs.obsidian
 #    pkgs.teams-for-linux
 #    pkgs.zoom-us
 #    pkgs.libreoffice-qt
@@ -70,6 +70,10 @@
     pkgs-unstable.telegram-desktop
     pkgs-unstable.vesktop
 #    pkgs.discord
+
+    # Players
+    pkgs.jellyfin-media-player
+    pkgs.vlc
 
     # Download Managers
     pkgs.axel
