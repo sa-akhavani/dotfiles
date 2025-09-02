@@ -34,7 +34,10 @@ config.harfbuzz_features = {
 }
 
 config.enable_tab_bar = false
-config.front_end = "WebGpu"
+
+-- config.front_end = "WebGpu" -- this caused wezterm to crash on a specific monitor on hyprland
+config.front_end = "OpenGL"
+
 config.enable_scroll_bar = true
 config.scrollback_lines = 10240
 config.automatically_reload_config = true
