@@ -63,9 +63,6 @@
 #    pkgs.libreoffice-qt
 #    pkgs.hunspell
  
-    # Connectivity
-    pkgs.blueberry
-
     # Social
     pkgs-unstable.telegram-desktop
     pkgs-unstable.vesktop
