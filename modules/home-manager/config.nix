@@ -18,10 +18,6 @@ in
       ".config/mako".source = "${configDir}/mako";
 
 #      ".config/wlogout".source = "${configDir}/wlogout";
-#      ".config/swaylock".source = "${configDir}/swaylock";
 #      ".config/swappy".source = "${configDir}/swappy";
-#
-      # ".config/swayidle".source = "${configDir}/swayidle";
-      # ".config/wallpapers".source = "${configDir}/wallpapers";
   };
 }
