@@ -10,4 +10,5 @@
 			PermitRootLogin = "no";
 		};
 	};
+	services.fail2ban.enable = true;		# Base security for ssh
 }
