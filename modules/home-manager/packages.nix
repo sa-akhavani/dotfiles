@@ -58,8 +58,8 @@
 
     # Work stuff
     pkgs.obsidian
-#    pkgs.teams-for-linux
-#    pkgs.zoom-us
+    pkgs.teams-for-linux
+    pkgs.zoom-us
 #    pkgs.libreoffice-qt
 #    pkgs.hunspell
  
