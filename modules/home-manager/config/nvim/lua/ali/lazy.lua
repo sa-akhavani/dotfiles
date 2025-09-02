@@ -13,7 +13,7 @@ vim.opt.rtp:prepend(lazypath)
 
 local plugins = {
 	{ import = "ali.plugins" },
-	{ import = "ali.plugins.lsp" },
+	-- { import = "ali.plugins.lsp" },
 	{ import = "ali.plugins.copilot" },
 }
 require("lazy").setup({ plugins }, {
