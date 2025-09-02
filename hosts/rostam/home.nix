@@ -33,6 +33,11 @@
 		enable = true;
 		userName = "Ali";
 		userEmail = "sa.akhavani@gmail.com";
+	        delta.enable = true;
+	        delta.options = {
+	          features = "dracula";
+	          navigate = true;
+	        };
 	};
 
 	programs.zsh = {
@@ -46,12 +51,15 @@
 			update = "sudo nixos-rebuild switch --flake /home/ali/dotfiles";
 		};
 
-		history.size = 10000;
+		history = {
+			size = 10000;
+		};
 
 		oh-my-zsh = {
 			enable = true;
 			plugins = [ "git" "sudo" ];	
 			theme = "wedisagree";
+			# theme = "robbyrussell";
 		};
 	};
 
@@ -63,6 +71,20 @@
 	    settings = {
 		    # "$mod" = "SUPER";
 	    };
+	  };
+
+	  gtk = {
+	    enable = true;
+	    theme = {
+	      name = "Adwaita-dark";
+	      package = pkgs.gnome-themes-extra;
+	    };
+	  };
+	  home.pointerCursor = {
+	    gtk.enable = true;
+	    name = "Bibata-Modern-Classic";
+	    package = pkgs.bibata-cursors;
+	    size = 30;
 	  };
 
 	  # hint electron apps to use wayland

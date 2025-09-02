@@ -6,6 +6,9 @@
 
     # Dev stuff
     pkgs.gcc
+    pkgs.nodejs_22
+    pkgs.python313
+    
 
     # Terminal Tools
     pkgs.zsh
@@ -45,7 +48,8 @@
 
     ## File Manager
     pkgs.nnn 		# Terminal file manager
-    pkgs.xfce.thunar	# File Manager
+    pkgs.nemo		# File Manager
+    # pkgs.xfce.thunar	# File Manager
     pkgs.viewnior 	# Image Viewer
  
     # Audio
@@ -71,6 +75,9 @@
     # Players
     pkgs.jellyfin-media-player
     pkgs.vlc
+
+    # PDF Viewer
+    pkgs.zathura
 
     # Download Managers
     pkgs.axel
