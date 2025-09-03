@@ -6,10 +6,10 @@ return {
       lua = { "stylua" },
       c = { "clang_format", lsp_format = "fallback" },
       cpp = { "clang_format", lsp_format = "fallback" },
-      json = { "prettier" },
+      json = { "prettierd" },
       rust = { "rustfmt", lsp_format = "fallback" },
       python = { "ruff", lsp_format = "fallback" },
-      markdown = { "prettier", lsp_format = "fallback" },
+      markdown = { "prettierd", lsp_format = "fallback" },
       nix = { "nixfmt" },
     },
     format_on_save = {

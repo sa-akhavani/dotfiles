@@ -1,24 +1,4 @@
 return {
-  -- A plugin that provides a way to manage LSP servers and their configurations.
-  {
-    "williamboman/mason.nvim",
-    config = function()
-      require("mason").setup()
-    end
-  },
-  -- mason-lspconfig.nvim is a plugin that provides a way to ensure that LSP servers are installed and configured.
-  {
-    "williamboman/mason-lspconfig.nvim",
-    config = function()
-      require("mason-lspconfig").setup({
-        ensure_installed = {
-          "lua_ls",
-	  "ruff", --python
-          "tsserver",
-        }
-      })
-    end
-  },
   -- nvim-lspconfig is a plugin that provides configurations for built-in LSP client in Neovim.
   {
     "neovim/nvim-lspconfig",

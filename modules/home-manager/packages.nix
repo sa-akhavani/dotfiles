@@ -8,7 +8,23 @@
     pkgs.gcc
     pkgs.nodejs_22
     pkgs.python313
-    
+
+    # LSP Servers
+    pkgs.ruff		# Extremely fast Python linter and code formatter
+    pkgs.clangd    # C/C++
+
+    pkgs.hyprls  # Hyprland LSP
+    pkgs.nil                  # Nix
+    pkgs.nixfmt-rfc-style  # Nix formatter
+
+    pkgs.typescript-language-server	# Typescript
+    pkgs.prettierd	# JavaScript, TypeScript, GraphQL, CSS, HTML and YAML
+
+    pkgs.lua-language-server  # Lua
+    pkgs.stylua                     # Lua formatter
+
+    pkgs.rustfmt                  # Rust formatter
+   
 
     # Terminal Tools
     pkgs.zsh
