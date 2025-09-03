@@ -67,7 +67,7 @@
     ali = {
 	    shell = pkgs.zsh;
 	    isNormalUser = true;
-	    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+	    extraGroups = [ "wheel" "networkmanager" ]; # Enable ‘sudo’ for the user.
     };
   };
 
