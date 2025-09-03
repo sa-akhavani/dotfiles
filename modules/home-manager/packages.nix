@@ -11,7 +11,6 @@
 
     # LSP Servers
     pkgs.ruff		# Extremely fast Python linter and code formatter
-    pkgs.clangd    # C/C++
 
     pkgs.hyprls  # Hyprland LSP
     pkgs.nil                  # Nix
