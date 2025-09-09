@@ -36,6 +36,7 @@
     pkgs.lsd          # Fancy ls
     pkgs.ripgrep      # Fast grep Alternative
     pkgs.fd           # Fast find Alternative
+    pkgs.luarocks     # used for neovim lazy package manager
 
     # Hypr Ecosystem
     pkgs.hyprlock

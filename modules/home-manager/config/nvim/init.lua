@@ -3,10 +3,8 @@
 
 -- https://github.com/LunarVim/Neovim-from-scratch/
 
-require("core.globals")
 require("core.keymaps")
-require("core.lsp")
-require("lazy")
 require("core.options")
 require("core.autocommands")
-
+require("core.lsp")
+require("lazy")
