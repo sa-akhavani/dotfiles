@@ -21,6 +21,8 @@
 
     pkgs.lua-language-server  # Lua
     pkgs.stylua                     # Lua formatter
+    
+    pkgs.clang-tools		  # C++
 
     pkgs.rustfmt                  # Rust formatter
    
@@ -32,6 +34,8 @@
     pkgs.fzf
     pkgs.tree
     pkgs.lsd          # Fancy ls
+    pkgs.ripgrep      # Fast grep Alternative
+    pkgs.fd           # Fast find Alternative
 
     # Hypr Ecosystem
     pkgs.hyprlock

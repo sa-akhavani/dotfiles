@@ -68,8 +68,6 @@ opt.spell = true
 
 opt.completeopt = { "menuone", "noselect" } -- mostly just for cmp
 opt.conceallevel = 0                        -- so that `` is visible in markdown files
--- opt.fileencoding = "utf-8"                  -- the encoding written to a file
--- -- opt.shortmess = "ilmnrx"                        -- flags to shorten vim messages see :help 'shortmess'
--- opt.shortmess:append "c"                           -- don't give |ins-completion-menu| messages
--- opt.formatoptions:remove({ "c" "r" "o" })        -- don't insert the current comment leader automatically for auto-wrapping comments using 'textwidth' hitting <Enter> in insert mode or hitting 'o' or 'O' in normal mode.
--- opt.runtimepath:remove("/usr/share/vim/vimfiles")  -- separate vim plugins from neovim in case vim still in use
+
+-- Border for floating windows
+opt.winborder = 'rounded'

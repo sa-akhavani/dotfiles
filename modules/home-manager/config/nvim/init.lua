@@ -3,8 +3,10 @@
 
 -- https://github.com/LunarVim/Neovim-from-scratch/
 
-require("ali.core.keymaps")
-require("ali.lazy")
-require("ali.core.options")
-require("ali.core.autocommands")
+require("core.globals")
+require("core.keymaps")
+require("core.lsp")
+require("lazy")
+require("core.options")
+require("core.autocommands")
 

@@ -3,19 +3,19 @@ return {
   {
     "neovim/nvim-lspconfig",
     config = function()
-      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+     -- local capabilities = require("cmp_nvim_lsp").default_capabilities()
 
       local lspconfig = require("lspconfig")
       lspconfig.lua_ls.setup({})
       lspconfig.ruff.setup({})
       lspconfig.tsserver.setup({})
-      lspconfig.clangd.setip({})
+      -- lspconfig.clangd.setip({})
 
       vim.keymap.set('n', 'K', vim.lsp.buf.hover, {})
       vim.keymap.set('n', 'gd', vim.lsp.buf.definition, {})
       vim.keymap.set({ 'n' }, '<leader>ca', vim.lsp.buf.code_action, {})
     end
-  },
+  }
   -- code actions now have a menu that could be selected using telescope format
   -- {
   --   "nvim-telescope/telescope-ui-select.nvim",
