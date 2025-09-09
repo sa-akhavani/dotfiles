@@ -31,6 +31,7 @@
     pkgs.zip
     pkgs.fzf
     pkgs.tree
+    pkgs.lsd          # Fancy ls
 
     # Hypr Ecosystem
     pkgs.hyprlock

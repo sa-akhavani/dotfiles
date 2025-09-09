@@ -9,6 +9,7 @@ return {
       lspconfig.lua_ls.setup({})
       lspconfig.ruff.setup({})
       lspconfig.tsserver.setup({})
+      lspconfig.clangd.setip({})
 
       vim.keymap.set('n', 'K', vim.lsp.buf.hover, {})
       vim.keymap.set('n', 'gd', vim.lsp.buf.definition, {})
@@ -16,21 +17,21 @@ return {
     end
   },
   -- code actions now have a menu that could be selected using telescope format
-  {
-    "nvim-telescope/telescope-ui-select.nvim",
-    depends = {
-      "nvim-telescope/telescope.nvim"
-    },
-    config = function()
-      require("telescope").setup {
-        extensions = {
-          ["ui-select"] = {
-            require("telescope.themes").get_dropdown {
-            }
-          }
-        }
-      }
-      require("telescope").load_extension("ui-select")
-    end
-  }
+  -- {
+  --   "nvim-telescope/telescope-ui-select.nvim",
+  --   depends = {
+  --     "nvim-telescope/telescope.nvim"
+  --   },
+  --   config = function()
+  --     require("telescope").setup {
+  --       extensions = {
+  --         ["ui-select"] = {
+  --           require("telescope.themes").get_dropdown {
+  --           }
+  --         }
+  --       }
+  --     }
+  --     require("telescope").load_extension("ui-select")
+  --   end
+  -- }
 }

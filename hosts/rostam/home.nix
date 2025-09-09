@@ -47,6 +47,7 @@
 		syntaxHighlighting.enable = true;
 
 		shellAliases = {
+      ls = "lsd";
 			ll = "ls -l";
 			update = "sudo nixos-rebuild switch --flake /home/ali/dotfiles";
 		};
