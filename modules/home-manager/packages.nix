@@ -10,22 +10,23 @@
     pkgs.python313
 
     # LSP Servers
-    pkgs.ruff		# Extremely fast Python linter and code formatter
+    pkgs.ruff # Extremely fast Python linter and code formatter
 
-    pkgs.hyprls  # Hyprland LSP
-    pkgs.nil                  # Nix
-    pkgs.nixfmt-rfc-style  # Nix formatter
+    pkgs.hyprls # Hyprland LSP
+    pkgs.nil # Nix
+    pkgs.nixfmt-rfc-style # Nix formatter
 
-    pkgs.typescript-language-server	# Typescript
-    pkgs.prettierd	# JavaScript, TypeScript, GraphQL, CSS, HTML and YAML
+    pkgs.typescript-language-server # Typescript
+    pkgs.prettierd # JavaScript, TypeScript, GraphQL, CSS, HTML and YAML
+    pkgs.nodePackages.js-beautify # JS Beautifier
 
-    pkgs.lua-language-server  # Lua
-    pkgs.stylua                     # Lua formatter
-    
-    pkgs.clang-tools		  # C++
+    pkgs.lua-language-server # Lua
+    pkgs.stylua # Lua formatter
 
-    pkgs.rustfmt                  # Rust formatter
-   
+    pkgs.clang-tools # C++
+
+    pkgs.rustfmt # Rust formatter
+    pkgs.codespell
 
     # Terminal Tools
     pkgs.zsh
@@ -33,10 +34,10 @@
     pkgs.zip
     pkgs.fzf
     pkgs.tree
-    pkgs.lsd          # Fancy ls
-    pkgs.ripgrep      # Fast grep Alternative
-    pkgs.fd           # Fast find Alternative
-    pkgs.luarocks     # used for neovim lazy package manager
+    pkgs.lsd # Fancy ls
+    pkgs.ripgrep # Fast grep Alternative
+    pkgs.fd # Fast find Alternative
+    pkgs.luarocks # used for neovim lazy package manager
 
     # Hypr Ecosystem
     pkgs.hyprlock
@@ -56,7 +57,7 @@
     pkgs.ashell
     pkgs.waybar
     pkgs.wlogout
-    pkgs.lm_sensors	# Reading hardware sensors
+    pkgs.lm_sensors # Reading hardware sensors
 
     ## App Launcher
     pkgs.fuzzel
@@ -65,33 +66,33 @@
     # pkgs.anyun
 
     # Notification Manager
-    pkgs.mako		
+    pkgs.mako
 
     ## File Manager
-    pkgs.nnn 		# Terminal file manager
-    pkgs.nemo		# File Manager
+    pkgs.nnn # Terminal file manager
+    pkgs.nemo # File Manager
     # pkgs.xfce.thunar	# File Manager
-    pkgs.viewnior 	# Image Viewer
- 
+    pkgs.viewnior # Image Viewer
+
     # Audio
-    pkgs.easyeffects	# Audio effects for PipeWire applications
+    pkgs.easyeffects # Audio effects for PipeWire applications
 
     ## Misc
     # pkgs.swappy 	# Screenshot editing tool
     pkgs.cava
-#    pkgs.wofi
+    #    pkgs.wofi
 
     # Work stuff
     pkgs.obsidian
     pkgs.teams-for-linux
     pkgs.zoom-us
-#    pkgs.libreoffice-qt
-#    pkgs.hunspell
- 
+    #    pkgs.libreoffice-qt
+    #    pkgs.hunspell
+
     # Social
     pkgs-unstable.telegram-desktop
     pkgs-unstable.vesktop
-#    pkgs.discord
+    #    pkgs.discord
 
     # Players
     pkgs.jellyfin-media-player
@@ -104,9 +105,9 @@
     pkgs.axel
 
     # Utils
-#    pkgs.catppuccin-cursors.macchiatoBlue
-#    pkgs.catppuccin-gtk
-#    pkgs.papirus-folders
+    #    pkgs.catppuccin-cursors.macchiatoBlue
+    #    pkgs.catppuccin-gtk
+    #    pkgs.papirus-folders
   ];
 
 }
