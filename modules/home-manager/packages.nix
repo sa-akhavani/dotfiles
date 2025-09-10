@@ -9,24 +9,26 @@
     pkgs.nodejs_22
     pkgs.python313
 
-    # LSP Servers
-    pkgs.ruff # Extremely fast Python linter and code formatter
+    # LSP, Linters, Formatters
+    pkgs.ruff # Python linter and code formatter
 
     pkgs.hyprls # Hyprland LSP
-    pkgs.nil # Nix
+
+    pkgs.nil # Nix LSP
     pkgs.nixfmt-rfc-style # Nix formatter
 
-    pkgs.typescript-language-server # Typescript
-    pkgs.prettierd # JavaScript, TypeScript, GraphQL, CSS, HTML and YAML
-    pkgs.nodePackages.js-beautify # JS Beautifier
+    pkgs.typescript-language-server # Typescript LSP
+    pkgs.eslint_d # Linter for js and ts
+    pkgs.prettierd # JavaScript, TypeScript, GraphQL, CSS, HTML and YAML formatter
+    pkgs.nodePackages.js-beautify # JS formatter
 
-    pkgs.lua-language-server # Lua
+    pkgs.lua-language-server # Lua LSP
     pkgs.stylua # Lua formatter
 
-    pkgs.clang-tools # C++
+    pkgs.clang-tools # C++ LSP and formatter
 
     pkgs.rustfmt # Rust formatter
-    pkgs.codespell
+    pkgs.codespell # Spell checker
 
     # Terminal Tools
     pkgs.zsh
