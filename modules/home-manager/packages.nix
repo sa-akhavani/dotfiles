@@ -34,6 +34,7 @@
     pkgs.zsh
     pkgs.fastfetch
     pkgs.zip
+    pkgs.unzip
     pkgs.fzf
     pkgs.tree
     pkgs.lsd # Fancy ls
