@@ -1,15 +1,22 @@
-{ config, pkgs, pkgs-unstable, lib, inputs, ... }:
+{
+  config,
+  pkgs,
+  pkgs-unstable,
+  lib,
+  inputs,
+  ...
+}:
 
 {
 
   imports = [
     ../../modules/home-manager/config.nix
     ../../modules/home-manager/packages.nix
+    ../../modules/programs/default.nix
   ];
 
   home.username = "ali";
   home.homeDirectory = "/home/ali";
-
 
   # The home.packages option allows you to install Nix packages into your
   # environment.
@@ -29,68 +36,32 @@
     # '')
   ];
 
-	programs.git = {
-		enable = true;
-		userName = "Ali";
-		userEmail = "sa.akhavani@gmail.com";
-	        delta.enable = true;
-	        delta.options = {
-	          features = "dracula";
-	          navigate = true;
-	        };
-	};
+  wayland.windowManager.hyprland = {
+    enable = true;
+    # set the Hyprland and XDPH packages to null to use the ones from the NixOS module
+    package = null;
+    portalPackage = null;
+    settings = {
+      # "$mod" = "SUPER";
+    };
+  };
 
-	programs.zsh = {
-		enable = true;
-		enableCompletion = true;
-		autosuggestion.enable = true;
-		syntaxHighlighting.enable = true;
+  gtk = {
+    enable = true;
+    theme = {
+      name = "Adwaita-dark";
+      package = pkgs.gnome-themes-extra;
+    };
+  };
+  home.pointerCursor = {
+    gtk.enable = true;
+    name = "Bibata-Modern-Classic";
+    package = pkgs.bibata-cursors;
+    size = 30;
+  };
 
-		shellAliases = {
-      ls = "lsd";
-			ll = "ls -l";
-			update = "sudo nixos-rebuild switch --flake /home/ali/dotfiles";
-		};
-
-		history = {
-			size = 10000;
-		};
-
-		oh-my-zsh = {
-			enable = true;
-			plugins = [ "git" "sudo" ];	
-			theme = "wedisagree";
-			# theme = "robbyrussell";
-		};
-	};
-
-	  wayland.windowManager.hyprland = {
-	    enable = true;
-	    # set the Hyprland and XDPH packages to null to use the ones from the NixOS module
-	    package = null;
-	    portalPackage = null;
-	    settings = {
-		    # "$mod" = "SUPER";
-	    };
-	  };
-
-	  gtk = {
-	    enable = true;
-	    theme = {
-	      name = "Adwaita-dark";
-	      package = pkgs.gnome-themes-extra;
-	    };
-	  };
-	  home.pointerCursor = {
-	    gtk.enable = true;
-	    name = "Bibata-Modern-Classic";
-	    package = pkgs.bibata-cursors;
-	    size = 30;
-	  };
-
-	  # hint electron apps to use wayland
-	  # home.sessionVariables.NIXOS_OZONE_WL = "1"; # already done in config.nix so it's commented here
-
+  # hint electron apps to use wayland
+  # home.sessionVariables.NIXOS_OZONE_WL = "1"; # already done in config.nix so it's commented here
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
   # plain files is through 'home.file'.
