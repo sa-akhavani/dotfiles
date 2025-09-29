@@ -2,7 +2,7 @@
 {
   programs.tmux = {
     enable = true;
-    shell = "${pkgs.bash}/bin/bash";
+    # shell = "${pkgs.bash}/bin/bash";
     shortcut = "a";
     # aggressiveResize = true; -- Disabled to be iTerm-friendly
     baseIndex = 1;
@@ -10,10 +10,10 @@
     # Stop tmux+escape craziness.
     escapeTime = 0;
     # Force tmux to use /tmp for sockets (WSL2 compat)
-    secureSocket = false;
+    # secureSocket = false;
     mouse = true;
     clock24 = true;
-    historyLimit = 1000000;
+    historyLimit = 500000;
 
     plugins = with pkgs; [
       tmuxPlugins.better-mouse-mode

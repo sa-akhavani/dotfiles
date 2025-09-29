@@ -124,7 +124,6 @@
     greetd.tuigreet
     wezterm
     kitty
-    tmux
   ];
 
   environment.variables.EDITOR = "vim";
