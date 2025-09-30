@@ -83,6 +83,8 @@
     ## Misc
     # pkgs.swappy 	# Screenshot editing tool
     pkgs.cava
+    pkgs.socat # smart borders dependency
+    pkgs.jq # smart borders dependency
     #    pkgs.wofi
 
     # Work stuff
@@ -108,6 +110,8 @@
     pkgs.axel
 
     # Utils
+    pkgs.gparted # GUI Formatting tool
+    pkgs.ntfs3g # NTFS Formatting driver
     #    pkgs.catppuccin-cursors.macchiatoBlue
     #    pkgs.catppuccin-gtk
     #    pkgs.papirus-folders

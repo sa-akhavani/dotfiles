@@ -6,7 +6,6 @@ in
     ".config/fastfetch".source = "${configDir}/fastfetch";
     ".config/btop".source = "${configDir}/btop";
 
-    # ".config/tmux".source = "${configDir}/tmux";
     ".config/wezterm".source = "${configDir}/wezterm";
     ".config/kitty".source = "${configDir}/kitty";
 

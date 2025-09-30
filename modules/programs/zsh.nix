@@ -9,6 +9,9 @@
     shellAliases = {
       ls = "lsd";
       ll = "ls -l";
+      t = "tmux";
+      ta = "tmux attach";
+      td = "tmux detach";
       update = "sudo nixos-rebuild switch --flake /home/ali/dotfiles";
     };
 
