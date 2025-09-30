@@ -6,7 +6,7 @@
     shortcut = "a";
     # aggressiveResize = true; -- Disabled to be iTerm-friendly
     baseIndex = 1;
-    # newSession = true;
+    newSession = false;
     # Stop tmux+escape craziness.
     escapeTime = 0;
     # Force tmux to use /tmp for sockets (WSL2 compat)
@@ -19,9 +19,9 @@
       tmuxPlugins.better-mouse-mode
       tmuxPlugins.sensible
       tmuxPlugins.resurrect
-      tmuxPlugins.continuum
       tmuxPlugins.pain-control
       # tmuxPlugins.vim-tmux-navigator
+      # tmuxPlugins.continuum
     ];
 
     extraConfig = ''
@@ -36,16 +36,20 @@
       # bind - split-window -v -c "#{pane_current_path}"
       # bind c new-window -c "#{pane_current_path}"
 
-      # Tmux continuum enable
-      set -g @continuum-restore 'on'
-      # Continuum status in tmux status line
-      set -g status-right 'Continuum status: #{continuum_status}'
-
       # Change border color of active pane to yellow
       set -g pane-active-border-style "fg=yellow"
-      # set-option -g pane-active-border-style fg=red
 
+      # Status bar customizations
+      set -g status-style "bg=#005f00"
+      set-option -g status-position top
 
+      run-shell ${pkgs.tmuxPlugins.cpu}/share/tmux-plugins/cpu/cpu.tmux
+
+      # Tmux continuum enable
+      run-shell ${pkgs.tmuxPlugins.continuum}
+      set -g @continuum-restore 'on'
+
+      set -g status-right 'Continuum: #{continuum_status} -- #{cpu_percentage}  %H:%M'
     '';
   };
 }

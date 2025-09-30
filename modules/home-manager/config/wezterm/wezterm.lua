@@ -45,6 +45,12 @@ config.default_cursor_style = "BlinkingBar"
 config.initial_cols = 80
 config.initial_rows = 25
 
+config.window_padding = {
+	left = 2,
+	right = 2,
+	top = 0,
+	bottom = 0,
+}
 
 -- config.background = {
 -- 	source = { File = { path = "/home/ali/Downloads/Backgrounds/spaceship_bg_1.png" } },
@@ -53,7 +59,7 @@ config.initial_rows = 25
 
 -- config.color_scheme = 'AdventureTime'
 config.color_scheme = "OneDark"
-config.window_background_opacity = 0.97
+config.window_background_opacity = 0.96
 config.color_schemes = {
 	["OneDark"] = {
 		foreground = "#f0f6fc",
