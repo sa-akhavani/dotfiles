@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+# https://github.com/devadathanmb/hyprland-smart-borders
 function handle {
     if [[ ${1:0:10} == "openwindow" ]]
     then
