@@ -57,7 +57,7 @@
 
     # GUI Utilities
     ## Status Bar
-    pkgs.ashell
+    # pkgs.ashell
     pkgs.waybar
     pkgs.wlogout
     pkgs.lm_sensors # Reading hardware sensors
@@ -79,6 +79,7 @@
 
     # Audio
     pkgs.easyeffects # Audio effects for PipeWire applications
+    pkgs.playerctl # Control media players from the command-line
 
     ## Misc
     # pkgs.swappy 	# Screenshot editing tool

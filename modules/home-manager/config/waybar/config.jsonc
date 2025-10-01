@@ -1,24 +1,23 @@
 {
   "include": [
-    "~/.config/waybar/modules/modules.jsonc",
-    "~/.config/waybar/modules/cava.jsonc",
-    // "~/.config/waybar/modules/privacy.jsonc",
-    "~/.config/waybar/modules/bluetooth.jsonc",
-    "~/.config/waybar/modules/clock.jsonc",
-    "~/.config/waybar/modules/battery.jsonc",
-    "~/.config/waybar/modules/backlight.jsonc",
-    // "~/.config/waybar/modules/keyboard-state.jsonc",
-    "~/.config/waybar/modules/hyprland-language.jsonc", //needs fix
-    "~/.config/waybar/modules/hyprland-workspaces.jsonc",
-    "~/.config/waybar/modules/hyprland-window.jsonc",
-    "~/.config/waybar/modules/wireplumber.jsonc",
-    "~/.config/waybar/modules/mpris.jsonc",
-    "~/.config/waybar/modules/network.jsonc",
-    "~/.config/waybar/modules/systeminfo.jsonc",
-    "~/.config/waybar/modules/idle_inhibitor.jsonc",
-    // "~/.config/waybar/modules/custom-weather.jsonc",
-    "~/.config/waybar/modules/custom-updater.jsonc",
-    "~/.config/waybar/modules/custom-color-picker.jsonc",
+    "./modules/modules.jsonc",
+    "./modules/systeminfo.jsonc",
+    "./modules/cava.jsonc",
+    "./modules/privacy.jsonc",
+    "./modules/bluetooth.jsonc",
+    "./modules/network.jsonc",
+    "./modules/clock.jsonc",
+    "./modules/battery.jsonc",
+    "./modules/hyprland-language.jsonc",
+    "./modules/hyprland-workspaces.jsonc",
+    "./modules/idle_inhibitor.jsonc",
+    "./modules/custom-color-picker.jsonc",
+
+
+    "./modules/backlight.jsonc",
+    "./modules/hyprland-window.jsonc",
+    "./modules/wireplumber.jsonc",
+    "./modules/mpris.jsonc"
   ],
 
   "output": ["DP-1", "eDP-1"],
@@ -39,38 +38,25 @@
   "margin-left": 0,
   "margin-right": 0,
   "fixed-center": true,
-  // "ipc": true,
+  "ipc": true,
 
   "modules-left": [
     "custom/power",
     "hyprland/workspaces",
-    "custom/menu",
-    "group/usage",
-    // "temperature",
-    // "cpu",
-    // "memory",
-    // "disk",
-    // "custom/updater",
-    "cava",
+    "custom/menu", // custom launcher (fuzzel)
+    "group/usage", // temprature, cpu, memory, disk
+    "cava"
   ],
   "modules-center": ["hyprland/window"],
   "modules-right": [
-    // "mpris",
+    "privacy",
+    "mpris",
     // "wireplumber",
-    // "idle_inhibitor",
-    // "custom/color-picker",
     "group/brightness",
-    // "battery",
-    // "backlight",
     "group/connections",
-    // "bluetooth",
-    // "network",
-    // "keyboard-state",
     "hyprland/language",
-    // "clock#c2", // multiple instances of the same module
-    // "custom/weather",
     "clock",
-    "tray",
-  ],
+    "tray"
+  ]
 }
 

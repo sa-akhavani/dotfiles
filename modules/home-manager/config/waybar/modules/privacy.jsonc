@@ -7,19 +7,33 @@
       {
         "type": "screenshare",
         "tooltip": true,
-        "tooltip-icon-size": 24,
+        "tooltip-icon-size": 24
       },
       {
         "type": "audio-out",
         "tooltip": true,
-        "tooltip-icon-size": 24,
+        "tooltip-icon-size": 24
       },
       {
         "type": "audio-in",
-        "exclude": ["cava"],
         "tooltip": true,
-        "tooltip-icon-size": 24,
-      },
+        "tooltip-icon-size": 24
+      }
     ],
-  },
+    // "ignore-monitor": true,
+    "ignore": [
+      {
+        "type": "audio-in",
+        "name": "cava"
+      },
+      {
+        "type": "audio-in",
+        "name": "Cava"
+      },
+      {
+        "type": "audio-in",
+        "name": "libcava"
+      }
+    ]
+  }
 }

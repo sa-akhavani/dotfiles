@@ -45,10 +45,10 @@
   fileSystems."/mnt/data" = {
     device = "/dev/sda1";
     fsType = "ntfs";
-    optiions = [
-    "users"   # Allow non-root users to mount
-    "nofail"  # Prevent system from failing if this drive doesn't mount 
-    ]
+    options = [
+      "users" # Allow non-root users to mount
+      "nofail" # Prevent system from failing if this drive doesn't mount
+    ];
   };
 
   swapDevices = [
