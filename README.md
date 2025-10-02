@@ -49,7 +49,7 @@ I Have tried KDE and GNOME display managers in Ubuntu and Kubuntu
 But both of them are extremely bloated.
 So I chose `Ly` as my display manager, keeping everything minimal.
 
-## Shell and Prompt Engine (Starship, ZSH)
+## Shell and Prompt Engine (ZSH)
 
 ### ZSH
 
@@ -67,11 +67,22 @@ So I chose `Ly` as my display manager, keeping everything minimal.
 - My go-to editor is Neovim, a highly customizable and modern vim-based editor.
 - I mainly use Neovim but I also other IDEs if I am working on a project with a huge codebase.
 
-## WIP
+## ToDo
 
 #### Waybar
 
 - [ ] Fix waybar keyboard layout change in multiple keyboards
+
+#### Tmux
+
+- [ ] Fix tmux continuum plugin issues
+- [ ] Update tmux status bar
+
+#### Misc
+
+- Use walker app manager instead of fuzzel
+- Fix jack 3.5 output not being detected
+- Modularize home.nix and move most of it to `modules/programs`
 
 ## Misc
 
