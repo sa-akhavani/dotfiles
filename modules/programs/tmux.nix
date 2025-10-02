@@ -2,7 +2,7 @@
 {
   programs.tmux = {
     enable = true;
-    # shell = "${pkgs.bash}/bin/bash";
+    shell = "${pkgs.zsh}/bin/zsh";
     shortcut = "a";
     # aggressiveResize = true; -- Disabled to be iTerm-friendly
     baseIndex = 1;
@@ -13,19 +13,31 @@
     # secureSocket = false;
     mouse = true;
     clock24 = true;
-    historyLimit = 500000;
+    historyLimit = 1000000;
 
-    plugins = with pkgs; [
-      tmuxPlugins.better-mouse-mode
-      tmuxPlugins.sensible
-      tmuxPlugins.resurrect
-      tmuxPlugins.pain-control
-      # tmuxPlugins.vim-tmux-navigator
-      # tmuxPlugins.continuum
+    plugins = [
+      pkgs.tmuxPlugins.better-mouse-mode
+      pkgs.tmuxPlugins.sensible
+      pkgs.tmuxPlugins.pain-control
+      {
+        plugin = pkgs.tmuxPlugins.resurrect;
+        extraConfig = ''
+          set -g @resurrect-strategy-vim 'session'
+          set -g @resurrect-strategy-nvim 'session'
+          set -g @resurrect-capture-pane-contents 'on'
+        '';
+      }
+      {
+        plugin = pkgs.tmuxPlugins.continuum;
+        extraConfig = ''
+          set -g @continuum-restore 'on'
+          set -g @continuum-boot 'on'
+          set -g @continuum-save-interval '10'
+        '';
+      }
     ];
 
     extraConfig = ''
-      # https://old.reddit.com/r/tmux/comments/mesrci/tmux_2_doesnt_seem_to_use_256_colors/
       set -g default-terminal "xterm-256color"
       set -ga terminal-overrides ",*256col*:Tc"
       set -ga terminal-overrides '*:Ss=\E[%p1%d q:Se=\E[ q'
@@ -43,13 +55,7 @@
       set -g status-style "bg=#005f00"
       set-option -g status-position top
 
-      run-shell ${pkgs.tmuxPlugins.cpu}/share/tmux-plugins/cpu/cpu.tmux
-
-      # Tmux continuum enable
-      run-shell ${pkgs.tmuxPlugins.continuum}
-      set -g @continuum-restore 'on'
-
-      set -g status-right 'Continuum: #{continuum_status} -- #{cpu_percentage}  %H:%M'
+      set -g status-right 'Continuum: #{continuum_status}'
     '';
   };
 }

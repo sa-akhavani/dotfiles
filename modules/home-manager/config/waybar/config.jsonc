@@ -1,23 +1,21 @@
 {
   "include": [
-    "./modules/modules.jsonc",
-    "./modules/systeminfo.jsonc",
-    "./modules/cava.jsonc",
-    "./modules/privacy.jsonc",
-    "./modules/bluetooth.jsonc",
-    "./modules/network.jsonc",
-    "./modules/clock.jsonc",
-    "./modules/battery.jsonc",
-    "./modules/hyprland-language.jsonc",
-    "./modules/hyprland-workspaces.jsonc",
-    "./modules/idle_inhibitor.jsonc",
-    "./modules/custom-color-picker.jsonc",
-
-
-    "./modules/backlight.jsonc",
-    "./modules/hyprland-window.jsonc",
-    "./modules/wireplumber.jsonc",
-    "./modules/mpris.jsonc"
+    "$HOME/.config/waybar/modules/modules.jsonc",
+    "$HOME/.config/waybar/modules/systeminfo.jsonc",
+    "$HOME/.config/waybar/modules/cava.jsonc",
+    "$HOME/.config/waybar/modules/privacy.jsonc",
+    "$HOME/.config/waybar/modules/bluetooth.jsonc",
+    "$HOME/.config/waybar/modules/network.jsonc",
+    "$HOME/.config/waybar/modules/clock.jsonc",
+    "$HOME/.config/waybar/modules/battery.jsonc",
+    "$HOME/.config/waybar/modules/hyprland-language.jsonc",
+    "$HOME/.config/waybar/modules/hyprland-workspaces.jsonc",
+    "$HOME/.config/waybar/modules/idle_inhibitor.jsonc",
+    "$HOME/.config/waybar/modules/custom-color-picker.jsonc",
+    "$HOME/.config/waybar/modules/backlight.jsonc",
+    "$HOME/.config/waybar/modules/hyprland-window.jsonc",
+    "$HOME/.config/waybar/modules/wireplumber.jsonc",
+    "$HOME/.config/waybar/modules/mpris.jsonc"
   ],
 
   "output": ["DP-1", "eDP-1"],
