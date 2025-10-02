@@ -1,6 +1,6 @@
 {
   "mpris": {
-    "format": "{player_icon}{dynamic}",
+    "format": "{player_icon} {dynamic}",
     // 	"format": "DEFAULT: {player_icon} {dynamic}",
     // 	"format-paused": "DEFAULT: {status_icon} <i>{dynamic}</i>",
     // "interval": 1,
