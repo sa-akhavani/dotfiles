@@ -22,11 +22,11 @@ To replicate my setup:
 1. **Install NixOS**: Follow the [official installation guide](https://nixos.wiki/wiki/NixOS_Installation_Guide).
 2. **Clone this repository.**
 3. **Change `hardware-configuration.nix` file for your own `host`.**
-4. **Run the `update` command while in the cloned repository directory.**
+4. **Run the `nixos-rebuild switch --flake ./` command while in the cloned repository directory.**
 
 ```bash
 git clone https://github.com/sa-akhavani/dotfiles.git && cd dotfiles
-update
+sudo nixos-rebuild switch --flake ./
 ```
 
 ## Setup
