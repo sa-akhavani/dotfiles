@@ -10,7 +10,7 @@ Fast, minimal, and feature-packed, yet aesthetically pleasing environment optimi
 | **OS**                 | [NixOS](https://nixos.org/)                    |
 | **Terminal**           | [WezTerm](https://github.com/wez/wezterm)      |
 | **Multiplexer**        | [tmux](https://github.com/tmux/tmux)           |
-| **Text Editor**        | [nvim](https://github.com/neovim/neovim)       |
+| **Text Editor**        | [neovim](https://github.com/neovim/neovim)       |
 | **Shell**              | [zsh](https://github.com/ohmyzsh/ohmyzsh)      |
 | **Window Manager**     | [Hyprland](https://github.com/hyprwm/Hyprland) |
 | **Display Manager**    | [ly](https://github.com/fairyglade/ly)         |
