@@ -54,8 +54,6 @@
       # Status bar customizations
       set -g status-style "bg=#005f00"
       set-option -g status-position top
-
-      set -g status-right 'Continuum: #{continuum_status}'
     '';
   };
 }
