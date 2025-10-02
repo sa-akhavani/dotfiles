@@ -1,0 +1,60 @@
+{
+  "include": [
+    "$HOME/.config/waybar/modules/modules.jsonc",
+    "$HOME/.config/waybar/modules/systeminfo.jsonc",
+    "$HOME/.config/waybar/modules/cava.jsonc",
+    "$HOME/.config/waybar/modules/privacy.jsonc",
+    "$HOME/.config/waybar/modules/bluetooth.jsonc",
+    "$HOME/.config/waybar/modules/network.jsonc",
+    "$HOME/.config/waybar/modules/clock.jsonc",
+    "$HOME/.config/waybar/modules/battery.jsonc",
+    "$HOME/.config/waybar/modules/hyprland-language.jsonc",
+    "$HOME/.config/waybar/modules/hyprland-workspaces.jsonc",
+    "$HOME/.config/waybar/modules/idle_inhibitor.jsonc",
+    "$HOME/.config/waybar/modules/custom-color-picker.jsonc",
+    "$HOME/.config/waybar/modules/backlight.jsonc",
+    "$HOME/.config/waybar/modules/hyprland-window.jsonc",
+    "$HOME/.config/waybar/modules/wireplumber.jsonc",
+    "$HOME/.config/waybar/modules/mpris.jsonc"
+  ],
+
+  "output": ["DP-1", "eDP-1"],
+  "name": "main-bar",
+  "id": "main-bar",
+  "layer": "top",
+  "mode": "dock",
+  "exclusive": true,
+  "passthrough": false,
+  "position": "top", // (top|bottom|left|right)
+  // "height": 30, // "" for auto height
+  "height": 24,
+  "width": "",
+  "spacing": 1,
+  "margin": 0,
+  "margin-top": 0,
+  "margin-bottom": 0,
+  "margin-left": 0,
+  "margin-right": 0,
+  "fixed-center": true,
+  "ipc": true,
+
+  "modules-left": [
+    "custom/power",
+    "hyprland/workspaces",
+    "custom/menu", // custom launcher (fuzzel)
+    "group/usage", // temprature, cpu, memory, disk
+    "cava"
+  ],
+  "modules-center": ["hyprland/window"],
+  "modules-right": [
+    "privacy",
+    "mpris",
+    // "wireplumber",
+    "group/brightness",
+    "group/connections",
+    "hyprland/language",
+    "clock",
+    "tray"
+  ]
+}
+

@@ -1,0 +1,19 @@
+{
+  "wireplumber": {
+    "scroll-step": 1, // %, can be a float
+    "format": "{icon}{volume}%",
+    "format-bluetooth": "{icon}{volume}% ",
+    "format-bluetooth-muted": "󰝟 {icon}",
+    "format-muted": "󰝟 mute",
+    "format-icons": {
+      "headphone": "",
+      "hands-free": "",
+      "headset": "",
+      "phone": "",
+      "portable": "",
+      "car": "",
+      "default": ["", " ", " "],
+    },
+    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+  },
+}

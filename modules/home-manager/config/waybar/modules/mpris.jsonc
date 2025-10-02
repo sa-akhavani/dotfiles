@@ -1,0 +1,25 @@
+{
+  "mpris": {
+    "format": "{player_icon} {dynamic}",
+    // 	"format": "DEFAULT: {player_icon} {dynamic}",
+    // 	"format-paused": "DEFAULT: {status_icon} <i>{dynamic}</i>",
+    // "interval": 1,
+    "dynamic-len": 40,
+    "status-icons": {
+      "playing": "▶",
+      // "paused": "⏸",
+      "paused": "",
+      "stopped": "",
+    },
+    "player-icons": {
+      "default": " ",
+      "spotify": "󰓇 ",
+      "vlc": "󰕼 ",
+      "telegram": " ",
+      "mpv": " ",
+      "jellyfin": "󰼁 ",
+    },
+    "dynamic-order": ["title", "artist"],
+    "ignored-players": ["firefox"],
+  },
+}

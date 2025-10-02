@@ -1,0 +1,148 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+  // "logo": {
+  //   "source": "$(find \"${XDG_CONFIG_HOME:-$HOME/.config}/fastfetch/pngs/\" -name \"*.png\" | sort -R | head -1)",
+  //   "height": 18,
+  // },
+  // "logo": {
+  //   "source": "~/.config/fastfetch/logos/yoda.txt",
+  // },
+  "display": {
+    "separator": ": ",
+  },
+  "modules": [
+    {
+      "type": "title",
+      "key": "  ",
+    },
+    {
+      "type": "custom",
+      "format": "┌───────────────────────────────────────────────────┐",
+    },
+    {
+      "type": "host",
+      "key": "   Model",
+
+      "keyColor": "red",
+    },
+    {
+      "type": "os",
+      "key": "   OS",
+      "keyColor": "red",
+    },
+    {
+      "type": "kernel",
+      "key": "   Kernel",
+      "keyColor": "red",
+    },
+    {
+      "type": "shell",
+      "key": "   Shell",
+      "keyColor": "yellow",
+    },
+    {
+      "type": "terminal",
+      "key": "   Terminal",
+      "keyColor": "yellow",
+    },
+    {
+      "type": "wm",
+      "key": "  󱂬 WM",
+      "keyColor": "yellow",
+    },
+    {
+      "type": "packages",
+      "key": "  󰮯 Packages",
+      "keyColor": "green",
+    },
+    {
+      "type": "custom",
+      "format": "└───────────────────────────────────────────────────┘",
+    },
+    {
+      "type": "custom",
+      "format": "┌───────────────────────────────────────────────────┐",
+    },
+    {
+      "type": "uptime",
+      "key": "  󰁫 Uptime",
+      "keyColor": "red",
+    },
+    // {
+    //   "type": "battery",
+    //   "key": "    Battery",
+    //   "keyColor": "magenta",
+    // },
+    {
+      "type": "disk",
+      "key": "   Disk",
+      "folders": "/",
+      "keyColor": "magenta",
+    },
+    {
+      "type": "memory",
+      "key": "    Memory",
+      "keyColor": "magenta",
+    },
+    {
+      "type": "localip",
+      "key": "  󰌗 LAN IP",
+      "showIpv6": true,
+      "showPrefixLen": false,
+      "keyColor": "green",
+    },
+    {
+      "type": "publicip",
+      "key": "   WAN IP",
+      "keyColor": "green",
+    },
+    {
+      "type": "custom",
+      "format": "└───────────────────────────────────────────────────┘",
+    },
+    {
+      "type": "custom",
+      "format": "┌───────────────────────────────────────────────────┐",
+    },
+    {
+      "type": "cpu",
+      "key": "  󰏈 Temperature",
+      "temp": true,
+      "format": "{8}",
+      "keyColor": "red",
+    },
+    {
+      "type": "cpu",
+      "format": "{1} @ {7} GHz",
+      "key": "   CPU",
+      "keyColor": "blue",
+    },
+    {
+      "type": "gpu",
+      // "format": "{1} {2} {3} {4}",
+      "key": "   GPU",
+      "keyColor": "blue",
+    },
+    // {
+    //   "type": "gpu",
+    //   "format": "{3}",
+    //   "key": "   GPU Driver",
+    //   "keyColor": "magenta",
+    // },
+    {
+      "type": "display",
+      "key": "  󰍹 {2}",
+      "keyColor": "yellow",
+    },
+    {
+      "type": "custom",
+      "format": "└───────────────────────────────────────────────────┘",
+    },
+    {
+      "type": "colors",
+      "paddingLeft": 2,
+      // "symbol": "circle",
+    },
+    "break",
+  ],
+}

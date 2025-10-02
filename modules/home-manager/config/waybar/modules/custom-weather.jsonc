@@ -1,0 +1,13 @@
+{
+  "custom/weather": {
+    "format": "{}",
+    "format-alt": "{alt}: {}",
+    "format-alt-click": "click-right",
+    "interval": 1800,
+    "len": 10,
+    "return-type": "json",
+    "exec": "~/.config/waybar/scripts/weather.sh",
+    // "exec": "~/.config/waybar/scripts/weather-2.sh",
+    "exec-if": "ping wttr.in -c1",
+  },
+}
