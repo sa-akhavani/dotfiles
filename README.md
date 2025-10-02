@@ -10,7 +10,7 @@ Fast, minimal, and feature-packed, yet aesthetically pleasing environment optimi
 | **OS**                 | [NixOS](https://nixos.org/)                    |
 | **Terminal**           | [WezTerm](https://github.com/wez/wezterm)      |
 | **Multiplexer**        | [tmux](https://github.com/tmux/tmux)           |
-| **Text Editor**        | [neovim](https://github.com/neovim/neovim)       |
+| **Text Editor**        | [neovim](https://github.com/neovim/neovim)     |
 | **Shell**              | [zsh](https://github.com/ohmyzsh/ohmyzsh)      |
 | **Window Manager**     | [Hyprland](https://github.com/hyprwm/Hyprland) |
 | **Display Manager**    | [ly](https://github.com/fairyglade/ly)         |
@@ -33,8 +33,8 @@ sudo nixos-rebuild switch --flake ./
 
 ### NixOS
 
-I was an Ubuntu user for a long time (7+ years) but eventually decided to migrate to Arch Linux
-Loved Arch Linux for its complex but minimalism but my os and packages broke multiple times due to updates which was really frustrating.
+I was an Ubuntu user for a long time (7+ years) but eventually decided to migrate to Arch Linux.
+Loved Arch Linux because of the amount of control I had in it. But my os and packages broke multiple times due to updates which was really frustrating.
 That's why I decided to switch to NixOS and try the declarative approach.
 
 ### Hyprland (Wayland)
@@ -105,6 +105,8 @@ Do not install patched nerdfonts. I install FiraCode alone, then install
 `Symbols Nerd Font Mono` separately from their releases.
 check: https://github.com/ryanoasis/nerd-fonts/releases
 
-### Three Finger Drag Gesture
+#### Error: Path not found issue
+
+If you are using `nix-rebuild switch` but having issues with path not found for modules that are defined in a relative path and imported in configuration.nix or flake.nix, the issue is that those files are not "commited" or "tracked" in the git repository. Commit or add them and then run the command again!
 
 You need to install `ydotool` and `fusuma` and configure them.
