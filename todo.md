@@ -1,3 +1,0 @@
-- Use walker app manager instead of fuzzel
-- Fix jack 3.5 output not being detected
-- Modularize home.nix and move most of it to modules
