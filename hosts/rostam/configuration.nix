@@ -15,9 +15,6 @@
   imports = [
     ./hardware-configuration.nix
     ../../modules/nixos
-    # ../../modules/nixos/services
-    # ../../modules/nixos/networking
-    # ../../modules/nixos/fonts
   ];
 
   # Use the systemd-boot EFI boot loader.
@@ -73,10 +70,10 @@
       shell = pkgs.zsh;
       isNormalUser = true;
       extraGroups = [
-        "wheel"
+        "wheel" # Enable ‘sudo’ for the user.
         "networkmanager"
         "docker"
-      ]; # Enable ‘sudo’ for the user.
+      ];
     };
   };
 
@@ -117,9 +114,9 @@
   environment.systemPackages = with pkgs; [
     git
     vim
+    rsync
     neovim
     wget
-    zsh
     btop
     greetd.tuigreet
     wezterm
@@ -133,7 +130,7 @@
   programs.mtr.enable = true;
   programs.gnupg.agent = {
     enable = true;
-    enableSSHSupport = true;
+    # enableSSHSupport = true;
   };
 
   # Copy the NixOS configuration file and link it from the resulting system

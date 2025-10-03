@@ -13,7 +13,7 @@ Fast, minimal, and feature-packed, yet aesthetically pleasing environment optimi
 | **Text Editor**        | [neovim](https://github.com/neovim/neovim)     |
 | **Shell**              | [zsh](https://github.com/ohmyzsh/ohmyzsh)      |
 | **Window Manager**     | [Hyprland](https://github.com/hyprwm/Hyprland) |
-| **Display Manager**    | [ly](https://github.com/fairyglade/ly)         |
+| **Display Manager**    | [tuigreet](https://github.com/apognu/tuigreet) |
 
 ## Installation
 
@@ -45,9 +45,9 @@ Now that Wayland is becoming stable and lots of people are creating packages for
 Hyprland is an amazing tiling window manager for wayland.
 It's highly customizablity and native Wayland support significantly enhance my workflow compared to traditional X11 setups.
 
-### Display Manager (Ly)
+### Display Manager (Tuigreet)
 
-I chose `Ly` as my display manager, keeping everything minimal.
+I chose `tuigreet` as my display manager, keeping everything minimal.
 
 ### Shell and Prompt Engine (ZSH)
 

@@ -1,9 +1,9 @@
 { ... }:
 
 {
-	imports = [
-		./audio.nix
-		./openssh.nix
-		./bluetooth.nix
-	];
+  imports = [
+    ./audio.nix
+    ./ssh.nix
+    ./bluetooth.nix
+  ];
 }
