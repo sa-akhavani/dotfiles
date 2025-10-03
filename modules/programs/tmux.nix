@@ -43,10 +43,6 @@
       # Status bar customizations
       set -g status-style "bg=#005f00"
       set-option -g status-position top
-
-      # Continuum plugin settings
-      set -g @continuum-restore 'on'
-      set -g @continuum-save-interval '10'
     '';
   };
 }
