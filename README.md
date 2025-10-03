@@ -23,10 +23,12 @@ To replicate my setup:
 2. **Clone this repository.**
 3. **Change `hardware-configuration.nix` file for your own `host`.**
 4. **Run the `nixos-rebuild switch --flake ./` command while in the cloned repository directory.**
+5. **Copy your Pictures folder to your home directory.**
 
 ```bash
 git clone https://github.com/sa-akhavani/dotfiles.git && cd dotfiles
 sudo nixos-rebuild switch --flake ./
+cp -r ./Pictures ~/
 ```
 
 ## Setup
@@ -45,19 +47,13 @@ It's highly customizablity and native Wayland support significantly enhance my w
 
 ### Display Manager (Ly)
 
-I Have tried KDE and GNOME display managers in Ubuntu and Kubuntu
-But both of them are extremely bloated.
-So I chose `Ly` as my display manager, keeping everything minimal.
+I chose `Ly` as my display manager, keeping everything minimal.
 
-## Shell and Prompt Engine (ZSH)
-
-### ZSH
+### Shell and Prompt Engine (ZSH)
 
 - ZSH with Oh My ZSH
 
-## Terminal and Multiplexer (Wezterm, Tmux)
-
-### Wezterm
+### Terminal and Multiplexer (Wezterm, Tmux)
 
 - Wezterm: a GPU-Accelared cross-platform terminal emulator that supports font ligatures
 - Tmux: Highly customizable terminal multiplexer
