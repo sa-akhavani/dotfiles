@@ -36,10 +36,7 @@
   programs.keychain = {
     enable = true;
     enableZshIntegration = true;
-    keys = lib.mkForce ''
-      # Add your private key paths here
-      /home/ali/.ssh/id_ed25519
-    '';
+    keys = [ "/home/ali/.ssh/id_ed25519" ];
   };
 
 }

@@ -11,22 +11,16 @@
 
     # LSP, Linters, Formatters
     pkgs.ruff # Python linter and code formatter
-
     pkgs.hyprls # Hyprland LSP
-
     pkgs.nil # Nix LSP
     pkgs.nixfmt-rfc-style # Nix formatter
-
     pkgs.typescript-language-server # Typescript LSP
     pkgs.eslint_d # Linter for js and ts
     pkgs.prettierd # JavaScript, TypeScript, GraphQL, CSS, HTML and YAML formatter
     pkgs.nodePackages.js-beautify # JS formatter
-
     pkgs.lua-language-server # Lua LSP
     pkgs.stylua # Lua formatter
-
     pkgs.clang-tools # C++ LSP and formatter
-
     pkgs.rustfmt # Rust formatter
     pkgs.codespell # Spell checker
 
@@ -76,10 +70,14 @@
     pkgs.nemo # File Manager
     # pkgs.xfce.thunar	# File Manager
     pkgs.viewnior # Image Viewer
+    pkgs.zathura # PDF Viewer
 
     # Audio
     pkgs.easyeffects # Audio effects for PipeWire applications
     pkgs.playerctl # Control media players from the command-line
+
+    # Networking
+    pkgs.openvpn
 
     ## Misc
     # pkgs.swappy 	# Screenshot editing tool
@@ -103,9 +101,6 @@
     # Players
     pkgs.jellyfin-media-player
     pkgs.vlc
-
-    # PDF Viewer
-    pkgs.zathura
 
     # Download Managers
     pkgs.axel

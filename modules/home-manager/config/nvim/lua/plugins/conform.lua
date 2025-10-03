@@ -7,6 +7,7 @@ return {
 			python = { "ruff_format", lsp_format = "fallback" },
 			json = { "prettierd" },
 			markdown = { "prettierd", lsp_format = "fallback" },
+			yaml = { "prettierd", lsp_format = "fallback" },
 			javascript = { "js_beautify", "prettierd", lsp_format = "fallback" },
 			nix = { "nixfmt" },
 			c = { "clang_format", lsp_format = "fallback" },
