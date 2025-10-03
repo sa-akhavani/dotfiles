@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 {
   programs.zsh = {
     enable = true;
@@ -16,7 +16,7 @@
     };
 
     history = {
-      size = 50000;
+      size = 100000;
     };
 
     oh-my-zsh = {
@@ -27,6 +27,19 @@
       ];
       theme = "wedisagree";
       # theme = "robbyrussell";
+      # extraConfig = ''
+      #   eval `keychain --eval id_ed25519`
+      # '';
     };
   };
+
+  programs.keychain = {
+    enable = true;
+    enableZshIntegration = true;
+    keys = lib.mkForce ''
+      # Add your private key paths here
+      /home/ali/.ssh/id_ed25519
+    '';
+  };
+
 }

@@ -41,6 +41,7 @@
     pkgs.ripgrep # Fast grep Alternative
     pkgs.fd # Fast find Alternative
     pkgs.luarocks # used for neovim lazy package manager
+    pkgs.keychain
 
     # Hypr Ecosystem
     pkgs.hyprlock
@@ -57,7 +58,6 @@
 
     # GUI Utilities
     ## Status Bar
-    # pkgs.ashell
     pkgs.waybar
     pkgs.wlogout
     pkgs.lm_sensors # Reading hardware sensors
@@ -72,7 +72,7 @@
     pkgs.mako
 
     ## File Manager
-    pkgs.nnn # Terminal file manager
+    pkgs.yazi # Terminal file manager
     pkgs.nemo # File Manager
     # pkgs.xfce.thunar	# File Manager
     pkgs.viewnior # Image Viewer
