@@ -41,15 +41,15 @@
     ];
   };
 
-  # HDD data partition
-  fileSystems."/mnt/data" = {
-    device = "/dev/sda1";
-    fsType = "ntfs";
-    options = [
-      "users" # Allow non-root users to mount
-      "nofail" # Prevent system from failing if this drive doesn't mount
-    ];
-  };
+  # # HDD data partition
+  # fileSystems."/mnt/data" = {
+  #   device = "/dev/sda1";
+  #   fsType = "ntfs";
+  #   options = [
+  #     "users" # Allow non-root users to mount
+  #     "nofail" # Prevent system from failing if this drive doesn't mount
+  #   ];
+  # };
 
   swapDevices = [
     { device = "/dev/disk/by-uuid/c36bd0ed-1642-41eb-8f73-44ef2238c3c0"; }

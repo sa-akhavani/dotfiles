@@ -20,6 +20,6 @@
       "jellyfin": "󰼁 ",
     },
     "dynamic-order": ["title", "artist"],
-    "ignored-players": ["firefox"],
+    // "ignored-players": ["firefox"],
   },
 }

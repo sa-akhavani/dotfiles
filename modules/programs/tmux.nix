@@ -43,6 +43,9 @@
       # Status bar customizations
       set -g status-style "bg=#005f00"
       set-option -g status-position top
+
+      # Reorder window numbers when one is deleted
+      set-option -g renumber-windows on
     '';
   };
 }
