@@ -5,8 +5,9 @@
 -- vim.lsp.enable('clangd')
 
 vim.lsp.enable({
-    "lua_ls",
-    "ruff",
-    "ts_ls",
-    "clangd",
+	"lua_ls",
+	"ruff",
+	"ts_ls",
+	"clangd",
+	"rust_analyzer",
 })
