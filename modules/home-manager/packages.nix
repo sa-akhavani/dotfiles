@@ -8,8 +8,9 @@
     pkgs.gcc
     pkgs.nodejs_22
     pkgs.python313
-    pkgs.rustc
-    pkgs.cargo
+    # pkgs.rustc
+    # pkgs.cargo
+    pkgs.rustup
 
     # LSP, Linters, Formatters
     pkgs.ruff # Python linter and code formatter
@@ -23,8 +24,8 @@
     pkgs.lua-language-server # Lua LSP
     pkgs.stylua # Lua formatter
     pkgs.clang-tools # C++ LSP and formatter
-    pkgs.rustfmt # Rust formatter
-    pkgs.rust-analyzer # Rust LSP
+    # pkgs.rustfmt # Rust formatter
+    # pkgs.rust-analyzer # Rust LSP
     pkgs.codespell # Spell checker
 
     # Terminal Tools
@@ -104,6 +105,7 @@
     # Players
     pkgs.jellyfin-media-player
     pkgs.vlc
+    pkgs.spotify
 
     # Download Managers
     pkgs.axel
