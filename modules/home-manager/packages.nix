@@ -99,7 +99,6 @@
 
     # Social
     pkgs-unstable.telegram-desktop
-    pkgs-unstable.vesktop
     #    pkgs.discord
 
     # Players
