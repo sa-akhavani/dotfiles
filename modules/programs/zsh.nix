@@ -12,7 +12,7 @@
       t = "tmux";
       ta = "tmux attach";
       td = "tmux detach";
-      update = "sudo nixos-rebuild switch --flake /home/ali/dotfiles";
+      update = "sudo nixos-rebuild switch --flake .";
     };
 
     history = {
