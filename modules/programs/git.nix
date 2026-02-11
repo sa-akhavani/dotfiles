@@ -7,9 +7,11 @@
       user.name = "Ali";
       user.email = "sa.akhavani@gmail.com";
     };
+  };
 
-    delta.enable = true;
-    delta.options = {
+  programs.delta = {
+    enable = true;
+    options = {
       features = "dracula";
       navigate = true;
     };
