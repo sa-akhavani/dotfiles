@@ -30,6 +30,7 @@ To replicate my setup:
 
 ```bash
 git clone https://github.com/sa-akhavani/dotfiles.git && cd dotfiles
+Generate new pair of ssh keys `ssh-keygen -t ed25519`
 sudo nixos-rebuild switch --flake .#<hostname>
 cp -r ./Pictures ~/
 ```
