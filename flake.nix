@@ -3,12 +3,12 @@
 
   inputs = {
     # NixOS official package source
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     # Home Manager
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.05";
+      url = "github:nix-community/home-manager/release-25.11";
       #     url = "github:nix-community/home-manager";
 
       inputs.nixpkgs.follows = "nixpkgs";
@@ -33,19 +33,40 @@
       # Available through 'nixos-rebuild --flake .#your-hostname'
       nixosConfigurations = {
 
-        rostam = nixpkgs.lib.nixosSystem {
+#        rostam = nixpkgs.lib.nixosSystem {
+#          inherit system;
+#          specialArgs = {
+#            inherit inputs;
+#          };
+#          modules = [
+#            ./hosts/rostam/configuration.nix
+#
+#            home-manager.nixosModules.home-manager
+#            {
+#              home-manager.useGlobalPkgs = true;
+#              home-manager.useUserPackages = true;
+#              home-manager.users.ali = import ./hosts/rostam/home.nix;
+#              home-manager.extraSpecialArgs = {
+#                inherit inputs;
+#                inherit pkgs-unstable;
+#              };
+#            }
+#          ];
+#        };
+#
+        sohrab = nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = {
             inherit inputs;
           };
           modules = [
-            ./hosts/rostam/configuration.nix
+            ./hosts/sohrab/configuration.nix
 
             home-manager.nixosModules.home-manager
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
-              home-manager.users.ali = import ./hosts/rostam/home.nix;
+              home-manager.users.ali = import ./hosts/sohrab/home.nix;
               home-manager.extraSpecialArgs = {
                 inherit inputs;
                 inherit pkgs-unstable;

@@ -19,15 +19,18 @@ Fast, minimal, and feature-packed, yet aesthetically pleasing environment optimi
 
 To replicate my setup:
 
-1. **Install NixOS**: Follow the [official installation guide](https://nixos.wiki/wiki/NixOS_Installation_Guide).
-2. **Clone this repository.**
-3. **Change `hardware-configuration.nix` file for your own `host`.**
-4. **Run the `nixos-rebuild switch --flake ./` command while in the cloned repository directory.**
-5. **Copy your Pictures folder to your home directory.**
+1. **Install NixOS**: Follow the [official installation guide](https://nixos.wiki/wiki/NixOS_Installation_Guide) or [manual](https://nixos.org/manual/nixos/stable/#ch-installation).
+2. **Add a new user to configuration.nix, add `git` and `vim` to pkgs.**
+3. **Clone this repository.**
+4. **Change `hardware-configuration.nix` file for your own `host`.**
+5. **Add the new hostname to flake.nix**
+6. **Change version number if necessary**
+7. **Run the `nixos-rebuild switch --flake ./` command while in the cloned repository directory.**
+8. **Copy your Pictures folder to your home directory.**
 
 ```bash
 git clone https://github.com/sa-akhavani/dotfiles.git && cd dotfiles
-sudo nixos-rebuild switch --flake ./
+sudo nixos-rebuild switch --flake .#<hostname>
 cp -r ./Pictures ~/
 ```
 
