@@ -120,7 +120,6 @@
     btop
     tuigreet
     wezterm
-    kitty
   ];
 
   environment.variables.EDITOR = "vim";
