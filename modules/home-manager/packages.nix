@@ -99,7 +99,7 @@
 
     # Social
     pkgs-unstable.telegram-desktop
-    #    pkgs.discord
+    pkgs.signal-desktop
 
     # Players
     pkgs.jellyfin-media-player
