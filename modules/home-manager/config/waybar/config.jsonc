@@ -49,7 +49,7 @@
   "modules-right": [
     "privacy",
     "mpris",
-    // "wireplumber",
+    "wireplumber",
     "group/brightness",
     "group/connections",
     "hyprland/language",
