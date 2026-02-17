@@ -74,11 +74,11 @@
             {
               home-manager.useGlobalPkgs = true;
               home-manager.useUserPackages = true;
-              home-manager.users.ali = import ./hosts/sohrab/home.nix;
               home-manager.extraSpecialArgs = {
                 inherit inputs;
                 inherit pkgs-unstable;
               };
+              home-manager.users.ali = import ./hosts/sohrab/home.nix;
             }
           ];
         };
