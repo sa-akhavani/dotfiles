@@ -13,11 +13,19 @@
     clock24 = true;
     historyLimit = 1000000;
 
-    plugins = [
-      pkgs.tmuxPlugins.better-mouse-mode
-      pkgs.tmuxPlugins.sensible
-      pkgs.tmuxPlugins.pain-control
-      pkgs.tmuxPlugins.resurrect
+    plugins = with pkgs.tmuxPlugins; [
+      sensible
+      yank
+      better-mouse-mode
+      pain-control
+      resurrect
+      {
+        plugin = pkgs.tmuxPlugins.continuum;
+        extraConfig = ''
+          set -g @continuum-restore 'on'
+          set -g @continuum-save-interval '10'  # minutes
+        '';
+      }
     ];
 
     extraConfig = ''

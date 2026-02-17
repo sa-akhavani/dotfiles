@@ -40,6 +40,7 @@
     pkgs.fd # Fast find Alternative
     pkgs.luarocks # used for neovim lazy package manager
     pkgs.keychain
+    pkgs.psmisc # utils for proc filesystem such as killall
 
     # Hypr Ecosystem
     pkgs.hyprlock

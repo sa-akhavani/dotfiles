@@ -13,6 +13,13 @@
 
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Hyprland
+    hyprland.url = "github:hyprwm/Hyprland";
+    split-monitor-workspaces = {
+      url = "github:Duckonaut/split-monitor-workspaces";
+      inputs.hyprland.follows = "hyprland"; # <- make sure this line is present for the plugin to work as intended
+    };
   };
 
   outputs =
@@ -21,6 +28,7 @@
       nixpkgs,
       nixpkgs-unstable,
       home-manager,
+      split-monitor-workspaces,
       ...
     }@inputs:
     let
@@ -33,27 +41,27 @@
       # Available through 'nixos-rebuild --flake .#your-hostname'
       nixosConfigurations = {
 
-#        rostam = nixpkgs.lib.nixosSystem {
-#          inherit system;
-#          specialArgs = {
-#            inherit inputs;
-#          };
-#          modules = [
-#            ./hosts/rostam/configuration.nix
-#
-#            home-manager.nixosModules.home-manager
-#            {
-#              home-manager.useGlobalPkgs = true;
-#              home-manager.useUserPackages = true;
-#              home-manager.users.ali = import ./hosts/rostam/home.nix;
-#              home-manager.extraSpecialArgs = {
-#                inherit inputs;
-#                inherit pkgs-unstable;
-#              };
-#            }
-#          ];
-#        };
-#
+        #        rostam = nixpkgs.lib.nixosSystem {
+        #          inherit system;
+        #          specialArgs = {
+        #            inherit inputs;
+        #          };
+        #          modules = [
+        #            ./hosts/rostam/configuration.nix
+        #
+        #            home-manager.nixosModules.home-manager
+        #            {
+        #              home-manager.useGlobalPkgs = true;
+        #              home-manager.useUserPackages = true;
+        #              home-manager.users.ali = import ./hosts/rostam/home.nix;
+        #              home-manager.extraSpecialArgs = {
+        #                inherit inputs;
+        #                inherit pkgs-unstable;
+        #              };
+        #            }
+        #          ];
+        #        };
+        #
         sohrab = nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = {
