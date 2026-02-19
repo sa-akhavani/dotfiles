@@ -50,6 +50,7 @@
     pkgs.hyprpicker
     pkgs.hyprshot
     pkgs.hyprpolkitagent
+    pkgs.hyprlandPlugins.hyprsplit
 
     # Clipboard
     pkgs.wl-clipboard
@@ -117,5 +118,4 @@
     #    pkgs.catppuccin-gtk
     #    pkgs.papirus-folders
   ];
-
 }

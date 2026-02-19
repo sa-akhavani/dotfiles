@@ -33,6 +33,12 @@
     #   useXkbConfig = true; # use xkb.options in tty.
   };
 
+  # Add this line for XDG portals to work with home-manager
+  environment.pathsToLink = [
+    "/share/applications"
+    "/share/xdg-desktop-portal"
+  ];
+
   # Flatpak
   services.flatpak.enable = true;
 
@@ -94,20 +100,22 @@
 
   programs.firefox.enable = true;
 
+  # # Use Hyprland from the flake input
   programs.hyprland = {
     enable = true;
-    withUWSM = true; # recommended for most users
-    xwayland.enable = true;
   };
 
   # Tell electron apps to use wayland
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
-  # Screen sharing
+  # Enable XDG portals (required for Flatpak)
   xdg.portal = {
     enable = true;
-    extraPortals = with pkgs; [ xdg-desktop-portal-hyprland ];
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   };
+
+  # Enable dconf (required for GTK settings)
+  programs.dconf.enable = true;
 
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
@@ -123,6 +131,14 @@
   ];
 
   environment.variables.EDITOR = "vim";
+
+  # Garbage Collection Automation
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  }
+
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.

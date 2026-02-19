@@ -1,5 +1,8 @@
+{ inputs, pkgs, ... }:
+
 let
   configDir = ./config;
+  hyprsplitLib = "${pkgs.hyprlandPlugins.hyprsplit}/lib/libhyprsplit.so";
 in
 {
   home.file = {
@@ -12,5 +15,8 @@ in
     ".config/cava".source = "${configDir}/cava";
     ".config/wofi".source = "${configDir}/wofi";
     ".config/mako".source = "${configDir}/mako";
+
+    # Create symlink to the plugin
+    ".config/hypr-plugins/hyprsplit.so".source = hyprsplitLib;
   };
 }

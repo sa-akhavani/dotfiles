@@ -19,15 +19,13 @@
   home.homeDirectory = "/home/ali";
 
   home.packages = with pkgs; [
-
   ];
 
-  wayland.windowManager.hyprland = {
-    enable = true;
-    plugins = [
-      inputs.split-monitor-workspaces.packages.${pkgs.system}.split-monitor-workspaces
-    ];
-  };
+  # wayland.windowManager.hyprland = {
+  #   enable = true;
+  #   package = null;
+  #   portalPackage = null;
+  # };
 
   gtk = {
     enable = true;
