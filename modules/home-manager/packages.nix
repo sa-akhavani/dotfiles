@@ -7,13 +7,30 @@
     # Dev stuff
     pkgs.gcc
     pkgs.nodejs_22
-    pkgs.python313
+
+    # Coding
+
+    ## IDEs and Agents
+    pkgs.claude-code
+    pkgs.code-cursor-fhs
+    pkgs.vscode-fhs
+
+    ## Rust
+    pkgs.rustup # Rust toolchain installer
+    # later, run `rustup component add rust-analyzer`
+
+    ### Rust components installed via rustup. Should not install these via nix to avoid conflicts with rustup
+    # pkgs.rust-analyzer # Rust LSP
+    # pkgs.rustfmt # Rust formatter
     # pkgs.rustc
     # pkgs.cargo
-    pkgs.rustup
+
+    ## Python
+    pkgs.python313
+    pkgs.arxiv-latex-cleaner
+    pkgs.ruff # Python linter and code formatter
 
     # LSP, Linters, Formatters
-    pkgs.ruff # Python linter and code formatter
     pkgs.hyprls # Hyprland LSP
     pkgs.nil # Nix LSP
     pkgs.nixfmt-rfc-style # Nix formatter
@@ -24,8 +41,6 @@
     pkgs.lua-language-server # Lua LSP
     pkgs.stylua # Lua formatter
     pkgs.clang-tools # C++ LSP and formatter
-    # pkgs.rustfmt # Rust formatter
-    # pkgs.rust-analyzer # Rust LSP
     pkgs.codespell # Spell checker
 
     # Terminal Tools
@@ -96,6 +111,7 @@
     pkgs.obsidian
     pkgs.teams-for-linux
     pkgs.zoom-us
+    pkgs.slack
     #    pkgs.libreoffice-qt
     #    pkgs.hunspell
 
