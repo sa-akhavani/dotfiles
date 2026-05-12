@@ -127,6 +127,9 @@
     # Download Managers
     pkgs.axel
 
+    # Browsers
+    pkgs.google-chrome
+
     # Utils
     pkgs.gparted # GUI Formatting tool
     pkgs.ntfs3g # NTFS Formatting driver
