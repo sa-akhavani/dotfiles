@@ -5,6 +5,7 @@
     # NixOS official package source
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+    claude-code.url = "github:sadjow/claude-code-nix";
 
     # Home Manager
     home-manager = {
@@ -21,6 +22,7 @@
       nixpkgs,
       nixpkgs-unstable,
       home-manager,
+      claude-code,
       ...
     }@inputs:
     let
@@ -71,6 +73,9 @@
                 inherit pkgs-unstable;
               };
               home-manager.users.ali = import ./hosts/sohrab/home.nix;
+
+              # pkgs.claude-code is available everywhere
+              nixpkgs.overlays = [ inputs.claude-code.overlays.default ];
             }
           ];
         };

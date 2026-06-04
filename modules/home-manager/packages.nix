@@ -27,6 +27,7 @@
 
     ## Python
     pkgs.python313
+    pkgs.uv
     pkgs.arxiv-latex-cleaner
     pkgs.ruff # Python linter and code formatter
 
@@ -129,6 +130,11 @@
 
     # Browsers
     pkgs.google-chrome
+
+    pkgs.discord
+
+    # Docker
+    pkgs.docker-compose
 
     # Utils
     pkgs.gparted # GUI Formatting tool
