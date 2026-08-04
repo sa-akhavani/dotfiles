@@ -1,0 +1,42 @@
+# AUR packages — shared across ALL hosts.
+# One package per line. Blank lines and #comments are ignored.
+# Per-host extras go in  packages/aur.<hostname>.txt
+
+# Fonts
+ttf-firacode-nerd
+ttf-vazir
+
+# Hypr ecosystem extras
+hyprsunset
+hyprshot
+hyprpolkitagent
+wlogout
+
+# GTK/cursor theme (referenced by ~/.config/gtk-*/settings.ini)
+bibata-cursor-theme
+
+# App launcher + waybar-with-cava
+walker-bin
+waybar-cava
+libcava
+
+# IDEs / agents
+claude-code
+visual-studio-code-bin
+cursor-bin
+
+# Work / social / media
+postman-bin
+teams-for-linux
+zoom
+slack-desktop
+jellyfin-media-player
+spotify
+google-chrome
+
+# Editor tooling (LSP / formatters not in official repos)
+hyprls
+stylua
+
+# Python tool
+arxiv-latex-cleaner

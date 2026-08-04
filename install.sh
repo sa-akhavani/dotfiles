@@ -48,100 +48,34 @@ install_yay() {
 [[ "$NO_AUR" -eq 0 ]] && install_yay
 
 ########################################
-# Package lists
+# Package lists (loaded from packages/)
 ########################################
+# Package names live in plain-text files so each host can differ:
+#   packages/pacman.txt            shared official-repo packages
+#   packages/aur.txt               shared AUR packages
+#   packages/pacman.<hostname>.txt per-host official extras (optional)
+#   packages/aur.<hostname>.txt    per-host AUR extras (optional)
+# One package per line; blank lines and #comments ignored.
 
-# --- Official repos (pacman) ------------------------------------------------
-PACMAN_PKGS=(
-  # Core system tools (from configuration.nix systemPackages)
-  vim neovim wget rsync btop
+PKG_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/packages"
+HOSTNAME_SHORT="$(hostnamectl --static 2>/dev/null || cat /etc/hostname 2>/dev/null || echo unknown)"
 
-  # Terminal (wezterm config present in dotfiles)
-  wezterm
+# Read "<base>.txt" + "<base>.<host>.txt", stripping comments/blank lines.
+read_pkg_list() {
+  local base="$1" f
+  for f in "$PKG_DIR/$base.txt" "$PKG_DIR/$base.$HOSTNAME_SHORT.txt"; do
+    [[ -f "$f" ]] && sed -e 's/#.*//' -e '/^[[:space:]]*$/d' "$f"
+  done
+}
 
-  # Shell + terminal tools (packages.nix)
-  zsh fastfetch zip unzip fzf tree lsd ripgrep fd luarocks keychain psmisc bat pacman-contrib
-
-  # Shell/editor config stack (dotfiles managed with chezmoi)
-  chezmoi tmux git-delta zsh-autosuggestions zsh-syntax-highlighting
-
-  # GTK dark theme referenced by ~/.config/gtk-*/settings.ini
-  gnome-themes-extra
-
-  # Dev toolchains
-  gcc nodejs npm postgresql python rustup uv ruff
-
-  # LSPs / linters / formatters
-  typescript-language-server lua-language-server clang codespell
-
-  # Wayland / Hyprland core
-  hyprland hyprlock hyprpaper hypridle hyprpicker
-  xdg-desktop-portal-hyprland xdg-desktop-portal-gtk
-  qt5-wayland qt6-wayland polkit
-  brightnessctl grim slurp swappy
-  wl-clipboard cliphist
-
-  # Desktop shell / utilities
-  waybar lm_sensors fuzzel mako
-  nwg-look qt5ct qt6ct
-  yazi nemo gvfs viewnior zathura zathura-pdf-mupdf
-
-  # Audio (services/audio.nix)
-  pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber rtkit
-  pamixer pavucontrol easyeffects playerctl pulsemixer
-
-  # Bluetooth (services/bluetooth.nix)
-  bluez bluez-utils blueman
-
-  # Networking (networking/*) + SSH (services/ssh.nix)
-  networkmanager network-manager-applet openssh fail2ban openvpn
-
-  # Virtualisation (virtualisation/docker.nix)
-  docker docker-compose docker-buildx
-
-  # Fonts (fonts/default.nix)
-  noto-fonts noto-fonts-cjk noto-fonts-emoji
-  ttf-fira-code ttf-liberation
-  xkeyboard-config
-
-  # Session / misc (configuration.nix)
-  firefox dconf flatpak gnupg mtr
-
-  # Display manager: greetd + tuigreet (all in extra repo)
-  greetd greetd-tuigreet
-
-  # Apps available in official repos (packages.nix)
-  telegram-desktop signal-desktop vlc discord obsidian axel
-  cava socat jq gparted ntfs-3g
-)
-
-# --- AUR (yay) --------------------------------------------------------------
-AUR_PKGS=(
-  # Fonts
-  ttf-firacode-nerd ttf-vazir
-
-  # Hypr ecosystem extras
-  hyprsunset hyprshot hyprpolkitagent wlogout 
-
-  # GTK/cursor theme referenced by ~/.config/gtk-*/settings.ini
-  bibata-cursor-theme
-
-  # App launcher + waybar-with-cava
-  walker-bin waybar-cava libcava
-
-  # IDEs / agents
-  claude-code visual-studio-code-bin cursor-bin
-
-  # Work / social / media (packages.nix)
-  postman-bin teams-for-linux zoom slack-desktop
-  jellyfin-media-player spotify google-chrome
-
-  # Editor tooling (LSP / formatters not in official repos)
-  hyprls stylua
-
-  # Python tool
-  arxiv-latex-cleaner
-)
+info "Loading package lists for host '$HOSTNAME_SHORT' from $PKG_DIR"
+# Package names never contain spaces/globs, so word-splitting is safe here.
+# shellcheck disable=SC2207
+PACMAN_PKGS=( $(read_pkg_list pacman) )
+# shellcheck disable=SC2207
+AUR_PKGS=( $(read_pkg_list aur) )
+[[ -f "$PKG_DIR/pacman.$HOSTNAME_SHORT.txt" ]] && info "  + per-host pacman extras applied"
+[[ -f "$PKG_DIR/aur.$HOSTNAME_SHORT.txt" ]] && info "  + per-host AUR extras applied"
 
 # --- npm globals (formatters/linters that live in npm) ----------------------
 NPM_PKGS=(
@@ -151,12 +85,31 @@ NPM_PKGS=(
 ########################################
 # 4b/4c. Install packages
 ########################################
+# Resilient installers: try the whole list at once (fast), and if that fails
+# (e.g. a renamed/removed package name), fall back to one-by-one so every good
+# package still installs and only the bad names are reported. This prevents a
+# single bad name from aborting the script under `set -e`.
+pac_install() {
+  sudo pacman -S --needed --noconfirm "$@" && return
+  warn "Batch pacman install failed; retrying individually…"
+  local p
+  for p in "$@"; do
+    sudo pacman -S --needed --noconfirm "$p" || warn "pacman: could not install '$p' (skipped)"
+  done
+}
+aur_install() {
+  local p
+  for p in "$@"; do
+    yay -S --needed --noconfirm "$p" || warn "AUR: could not install '$p' (skipped)"
+  done
+}
+
 info "Installing official (pacman) packages"
-sudo pacman -S --needed --noconfirm "${PACMAN_PKGS[@]}"
+pac_install "${PACMAN_PKGS[@]}"
 
 if [[ "$NO_AUR" -eq 0 ]]; then
   info "Installing AUR packages"
-  yay -S --needed --noconfirm "${AUR_PKGS[@]}" || warn "Some AUR packages failed; review the output above."
+  aur_install "${AUR_PKGS[@]}"
 else
   warn "Skipping AUR packages (--no-aur)."
 fi

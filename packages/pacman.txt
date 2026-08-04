@@ -1,0 +1,150 @@
+# Official-repo (pacman) packages — shared across ALL hosts.
+# One package per line. Blank lines and #comments are ignored.
+# Per-host extras go in  packages/pacman.<hostname>.txt
+
+# Core system tools
+vim
+neovim
+wget
+rsync
+btop
+
+# Terminal
+wezterm
+
+# Shell + terminal tools
+zsh
+fastfetch
+zip
+unzip
+fzf
+tree
+lsd
+ripgrep
+fd
+luarocks
+keychain
+psmisc
+bat
+pacman-contrib
+
+# Shell/editor config stack (dotfiles managed with chezmoi)
+chezmoi
+tmux
+git-delta
+zsh-autosuggestions
+zsh-syntax-highlighting
+
+# GTK dark theme (referenced by ~/.config/gtk-*/settings.ini)
+gnome-themes-extra
+
+# Dev toolchains
+gcc
+nodejs
+npm
+postgresql
+python
+rustup
+uv
+ruff
+
+# LSPs / linters / formatters
+typescript-language-server
+lua-language-server
+clang
+codespell
+
+# Wayland / Hyprland core
+hyprland
+hyprlock
+hyprpaper
+hypridle
+hyprpicker
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+qt5-wayland
+qt6-wayland
+polkit
+brightnessctl
+grim
+slurp
+swappy
+wl-clipboard
+cliphist
+
+# Desktop shell / utilities
+waybar
+lm_sensors
+fuzzel
+mako
+nwg-look
+qt5ct
+qt6ct
+yazi
+nemo
+gvfs
+viewnior
+zathura
+zathura-pdf-mupdf
+
+# Audio
+pipewire
+pipewire-alsa
+pipewire-pulse
+pipewire-jack
+wireplumber
+rtkit
+pamixer
+pavucontrol
+easyeffects
+playerctl
+pulsemixer
+
+# Bluetooth
+bluez
+bluez-utils
+blueman
+
+# Networking + SSH
+networkmanager
+network-manager-applet
+openssh
+fail2ban
+openvpn
+
+# Virtualisation
+docker
+docker-compose
+docker-buildx
+
+# Fonts
+noto-fonts
+noto-fonts-cjk
+noto-fonts-emoji
+ttf-fira-code
+ttf-liberation
+xkeyboard-config
+
+# Session / misc
+firefox
+dconf
+flatpak
+gnupg
+mtr
+
+# Display manager
+greetd
+greetd-tuigreet
+
+# Apps
+telegram-desktop
+signal-desktop
+vlc
+discord
+obsidian
+axel
+cava
+socat
+jq
+gparted
+ntfs-3g
