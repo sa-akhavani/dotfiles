@@ -7,6 +7,7 @@
     # Dev stuff
     pkgs.gcc
     pkgs.nodejs_22
+    pkgs.postgresql
 
     # Coding
 
@@ -107,6 +108,7 @@
     pkgs.socat # smart borders dependency
     pkgs.jq # smart borders dependency
     #    pkgs.wofi
+    pkgs.postman
 
     # Work stuff
     pkgs.obsidian
