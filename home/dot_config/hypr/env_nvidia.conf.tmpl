@@ -1,0 +1,19 @@
+{{- if eq (.gpu | default "intel") "nvidia" -}}
+# ─── NVIDIA host ────────────────────────────────────────────────
+# Rendered by chezmoi only when this host's `gpu` = "nvidia".
+# Ref: https://wiki.hypr.land/Nvidia/
+
+# VA-API / hardware video acceleration
+env = LIBVA_DRIVER_NAME,nvidia
+env = NVD_BACKEND,direct
+
+# GLX vendor for Xwayland / GL apps
+env = __GLX_VENDOR_LIBRARY_NAME,nvidia
+
+# NOTE: the old wlroots-era vars WLR_NO_HARDWARE_CURSORS and WLR_DRM_NO_ATOMIC
+# have NO effect on modern Hyprland (aquamarine backend) and were removed.
+# If cursors still glitch on nvidia, set in graphics.conf instead:
+#   cursor { no_hardware_cursors = true }
+{{- else -}}
+# Non-nvidia host (gpu = {{ .gpu | default "intel" }}): no GPU-specific env needed.
+{{- end -}}

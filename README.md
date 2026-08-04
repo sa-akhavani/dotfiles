@@ -78,18 +78,39 @@ git checkout arch-v3          # this branch
 ```bash
 chezmoi init --apply --source ~/dotfiles
 ```
-This symlinks/writes everything under `home/` into `$HOME`.
+On first init you'll be asked **once** for this host's GPU vendor
+(`intel` / `amd` / `nvidia`) — see [Multi-host support](#multi-host-support).
+This writes everything under `home/` into `$HOME`.
 
 ### 4. Reboot and finish plugin setup
 Reboot → greetd → pick Hyprland. Inside the session:
 ```bash
-# Hyprland plugin (hyprsplit)
-hyprpm update
-hyprpm add https://github.com/shezdy/hyprsplit
-hyprpm enable hyprsplit
-
 # tmux plugins: open tmux, then press  <prefix>(C-a) + I
 ```
+
+## Multi-host support
+
+The same repo drives multiple machines. Per-host differences are handled by
+**chezmoi templates** driven by machine-local data.
+
+- On `chezmoi init`, you answer a small prompt (currently: **GPU vendor**). The
+  answer is stored in `~/.config/chezmoi/chezmoi.toml` under `[data]` and reused
+  by every `chezmoi apply` — you're never asked again on that host.
+- Templates (`*.tmpl`) render differently per host. Example:
+  `home/dot_config/hypr/env_nvidia.conf.tmpl` emits the NVIDIA env vars only when
+  `gpu = "nvidia"`, and nothing on Intel/AMD — so the file is safe to `source`
+  unconditionally from `hyprland.conf`.
+
+Change a host's answer later without a full re-init:
+```bash
+# edit ~/.config/chezmoi/chezmoi.toml -> [data] gpu = "nvidia", then:
+chezmoi apply
+```
+Already-initialized machine that predates this feature? Either re-run
+`chezmoi init` or just add `gpu = "…"` under `[data]` in that file.
+
+To make another file host-specific (e.g. per-machine `monitor.conf`), rename it
+to `monitor.conf.tmpl` and branch on `.gpu` or `.chezmoi.hostname`.
 
 ## Day-to-day (chezmoi workflow)
 
