@@ -1,76 +1,156 @@
-# My Developr Setup Dotfiles
+# Ali's Arch Linux Dotfiles
 
-My development setup tools and dotfiles.
+Fast, minimal, feature-packed, yet aesthetically pleasing environment optimized
+for software engineering and DevOps.
+
+Packages and system services are installed with **pacman/AUR** (`install.sh`).
+Dotfiles are managed with **[chezmoi](https://www.chezmoi.io/)** — plain,
+directly-editable config files, no Nix required.
+
+> Migrated from a full NixOS flake (see the `nixos`/`master` branches). This
+> branch is 100% Nix-free.
 
 ## Overview
 
-| **Tool / Environment** | **Description**                                |
-| ---------------------- | ---------------------------------------------- |
-| **OS**                 | [NixOS](https://nixos.org/)                    |
-| **Terminal**           | [WezTerm](https://github.com/wez/wezterm)      |
-| **Multiplexer**        | [tmux](https://github.com/tmux/tmux)           |
-| **Text Editor**        | [neovim](https://github.com/neovim/neovim)     |
-| **Shell**              | [zsh](https://github.com/ohmyzsh/ohmyzsh)      |
-| **Window Manager**     | [Hyprland](https://github.com/hyprwm/Hyprland) |
-| **Display Manager**    | [tuigreet](https://github.com/apognu/tuigreet) |
+| Tool / Environment | Choice |
+| --- | --- |
+| OS | [Arch Linux](https://archlinux.org/) |
+| Window Manager | [Hyprland](https://github.com/hyprwm/Hyprland) (Wayland) |
+| Display Manager | [greetd](https://sr.ht/~kennylevinsen/greetd/) + [tuigreet](https://github.com/apognu/tuigreet) |
+| Terminal | [WezTerm](https://github.com/wez/wezterm) / [kitty](https://sw.kovidgoyal.net/kitty/) |
+| Multiplexer | [tmux](https://github.com/tmux/tmux) (+ TPM) |
+| Editor | [Neovim](https://github.com/neovim/neovim) |
+| Shell | [zsh](https://github.com/ohmyzsh/ohmyzsh) + oh-my-zsh |
+| Status Bar | [Waybar](https://github.com/Alexays/Waybar) |
+| Notifications | [mako](https://github.com/emersion/mako) |
+| Launcher | [fuzzel](https://codeberg.org/dnkl/fuzzel) / [walker](https://github.com/abenz1267/walker) |
+| Lock / Idle | [hyprlock](https://github.com/hyprwm/hyprlock) + [hypridle](https://github.com/hyprwm/hypridle) |
+| File Manager | [yazi](https://github.com/sxyazi/yazi) / [nemo](https://github.com/linuxmint/nemo) |
+| Audio | PipeWire + WirePlumber |
+| Dotfile manager | [chezmoi](https://www.chezmoi.io/) |
 
-## Installation
+## Repository layout
 
-To replicate my setup:
+chezmoi's source directory is `home/` (set by `.chezmoiroot`). chezmoi naming
+conventions: `dot_` → `.`, `executable_` → `chmod +x`.
 
-1. **Install NixOS**: Follow the [official installation guide](https://nixos.wiki/wiki/NixOS_Installation_Guide) or [manual](https://nixos.org/manual/nixos/stable/#ch-installation).
-2. **Add a new user to configuration.nix, add `git` and `vim` to pkgs.**
-3. **Clone this repository.**
-4. **Change `hardware-configuration.nix` file for your own `host`.**
-5. **Add the new hostname to flake.nix**
-6. **Change version number if necessary**
-7. **Run the `nixos-rebuild switch --flake ./` command while in the cloned repository directory.**
-8. **Copy your Pictures folder to your home directory.**
-
-```bash
-git clone https://github.com/sa-akhavani/dotfiles.git && cd dotfiles
-Generate new pair of ssh keys `ssh-keygen -t ed25519`
-sudo nixos-rebuild switch --flake .#<hostname>
-cp -r ./Pictures ~/
+```
+.chezmoiroot                 # -> "home" (chezmoi source dir)
+install.sh                   # pacman/AUR installer + system services (run once)
+README.md
+Pictures/                    # wallpapers + lockscreen images
+home/
+  .chezmoiignore
+  dot_zshrc                  # -> ~/.zshrc
+  dot_gitconfig              # -> ~/.gitconfig
+  dot_config/                # -> ~/.config
+    hypr/  waybar/  nvim/  kitty/  wezterm/  mako/  cava/  wofi/  fuzzel/
+    fastfetch/  btop/  lsd/  wlogout/  swappy/  nwg-look/  Thunar/  fontconfig/
+    tmux/tmux.conf
+    gtk-3.0/settings.ini  gtk-4.0/settings.ini
+    hypr/scripts/executable_*.sh    # marked executable by chezmoi
 ```
 
-## NixOS
+## Installation (fresh machine)
 
-I was an Ubuntu user for a long time (7+ years) but eventually decided to migrate to Arch Linux.
-Loved Arch Linux because of the amount of control I had in it. But my os and packages broke multiple times due to updates which was really frustrating.
-That's why I decided to switch to NixOS and try the declarative approach.
+### 1. Base Arch install
+Follow the [official guide](https://wiki.archlinux.org/title/Installation_guide).
+Match the previous system settings:
+- Boot loader: **systemd-boot** (EFI)
+- Hostname: `sohrab`
+- Timezone: `America/New_York`
+- Locale: `en_US.UTF-8`
+- Console keymap: `us`
+- Create user `ali` with sudo (wheel).
 
-## ToDo
+### 2. Clone and run the installer
+```bash
+git clone https://github.com/sa-akhavani/dotfiles.git ~/dotfiles
+cd ~/dotfiles
+git checkout arch-v3          # this branch
+./install.sh                  # installs pacman + AUR packages, services, /etc configs,
+                              # oh-my-zsh, and tmux TPM
+```
+`./install.sh --no-aur` installs only official repo packages + services.
 
-#### Tmux
+### 3. Apply the dotfiles with chezmoi
+`chezmoi` is installed by `install.sh`. Point it at this repo and apply:
+```bash
+chezmoi init --apply --source ~/dotfiles
+```
+This symlinks/writes everything under `home/` into `$HOME`.
 
-- [ ] Fix tmux continuum plugin issues
-- [ ] Update tmux status bar
+### 4. Reboot and finish plugin setup
+Reboot → greetd → pick Hyprland. Inside the session:
+```bash
+# Hyprland plugin (hyprsplit)
+hyprpm update
+hyprpm add https://github.com/shezdy/hyprsplit
+hyprpm enable hyprsplit
 
-#### Misc
+# tmux plugins: open tmux, then press  <prefix>(C-a) + I
+```
 
-- Use walker app manager instead of fuzzel
-- Modularize home.nix and move most of it to `modules/programs`
+## Day-to-day (chezmoi workflow)
 
-#### Spotify (Linux)
+| Command / alias | Action |
+| --- | --- |
+| `update` | `chezmoi apply` — re-apply the source to `$HOME` |
+| `chezmoi edit ~/.zshrc` | edit a file through chezmoi (edits the source under `home/`) |
+| `chezmoi add ~/.config/foo` | start tracking a new config file |
+| `chezmoi re-add` | pull changes you made directly in `$HOME` back into the source |
+| `chezmoi cd` | drop into the source repo (`home/`) to commit/push |
+| `upgrade` | `sudo pacman -Syu && yay -Syu` — upgrade all packages |
 
-While setting up the Spotify client for Linux, I encountered a few quirks.
-If you're using NetworkManager with iwd together (don't do that:D),
-you have to stop NetworkManager service to be able to use spotify.
+Typical loop: `chezmoi edit <file>` → `chezmoi apply` → `chezmoi cd && git commit -am ... && git push`.
 
-Also, hyprland windows don't have a menu. bar. To toggle offline mode, you can press `Ctrl-Shift-o`.
+To add a **package**: put it in `install.sh` (`PACMAN_PKGS`/`AUR_PKGS`) and re-run,
+or just `sudo pacman -S <pkg>` / `yay -S <pkg>`.
 
-#### Fonts
+## Notes and troubleshooting
 
-I use `FiraCode` font mainly.
-Do not install patched nerdfonts. I install FiraCode alone, then install
-`Symbols Nerd Font Mono` separately from their releases.
-check: https://github.com/ryanoasis/nerd-fonts/releases
+### OpenVPN
+On Arch, drop your `.conf` in `~/openvpn/basic.conf` and run
+`sudo openvpn --config ~/openvpn/basic.conf`, or use
+`systemctl enable --now openvpn-client@basic` with the conf in
+`/etc/openvpn/client/basic.conf`.
 
-#### Three Finger Drag Gesture
+### SSH known hosts
+The `nuc-alpha` host used on NixOS lives in `~/.ssh/config`:
+```
+Host nuc-alpha
+    Hostname 192.168.1.162
+    Port 22
+    User ali
+```
 
-You need to install `ydotool` and `fusuma` and configure them.
+### Waybar + Cava
+The official `waybar` package ships without the cava module. This repo installs
+`waybar-cava` (+ `libcava`) from the AUR, which enables it. If cava conflicts,
+remove `cava libcava` first, then reinstall `libcava` and `waybar-cava`.
+For the cava audio source use `method = pipewire` (not alsa); it auto-picks the
+output sink. See <https://github.com/karlstav/cava>.
 
-#### Error: Path not found issue
+### Fonts
+Uses FiraCode + `Symbols Nerd Font Mono` (`ttf-firacode-nerd`), Noto, Liberation
+and Vazir (Persian, `ttf-vazir`). Avoid mixing multiple patched Nerd Font
+variants.
 
-If you are using `nix-rebuild switch` but having issues with path not found for modules that are defined in a relative path and imported in configuration.nix or flake.nix, the issue is that those files are not "commited" or "tracked" in the git repository. Commit or add them and then run the command again!
+### Wrong temperature in Waybar
+```bash
+paste <(cat /sys/class/thermal/thermal_zone*/type) <(cat /sys/class/thermal/thermal_zone*/temp) \
+  | column -s $'\t' -t | sed 's/\(.\)..$/.\1°C/'
+```
+Point the waybar temperature module at the correct `hwmon`/thermal zone.
+
+### Spotify
+Hyprland windows have no menu bar; toggle offline mode with `Ctrl-Shift-o`.
+See the [Arch wiki](https://wiki.archlinux.org/title/Spotify).
+
+### Three-finger drag gesture
+Install `ydotool` + `fusuma`, configure via `~/.config/fusuma/`. Do **not** give
+ydotool sudo. Enable with `systemctl --user enable --now ydotool.service`.
+
+### Rootless Docker
+`install.sh` sets up rootless docker. A re-login is required for the user socket
+to come up. Verify with `docker info` (should show `rootless`).

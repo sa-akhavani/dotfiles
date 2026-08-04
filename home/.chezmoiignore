@@ -1,0 +1,9 @@
+# Don't manage editor/backup cruft
+**/*.bak
+**/*.bak2
+**/*.old
+**/*.back
+**/*.new
+
+# TPM installs plugins here at runtime; not tracked
+.config/tmux/plugins
