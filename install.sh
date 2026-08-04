@@ -82,7 +82,7 @@ PACMAN_PKGS=(
   wl-clipboard cliphist
 
   # Desktop shell / utilities
-  waybar wlogout lm_sensors fuzzel mako
+  waybar lm_sensors fuzzel mako
   nwg-look qt5ct qt6ct
   yazi nemo gvfs viewnior zathura zathura-pdf-mupdf
 
@@ -107,6 +107,9 @@ PACMAN_PKGS=(
   # Session / misc (configuration.nix)
   firefox dconf flatpak gnupg mtr
 
+  # Display manager: greetd + tuigreet (all in extra repo)
+  greetd greetd-tuigreet
+
   # Apps available in official repos (packages.nix)
   telegram-desktop signal-desktop vlc discord obsidian axel
   cava socat jq gparted ntfs-3g
@@ -114,14 +117,11 @@ PACMAN_PKGS=(
 
 # --- AUR (yay) --------------------------------------------------------------
 AUR_PKGS=(
-  # Display manager (configuration.nix uses greetd + tuigreet)
-  greetd greetd-tuigreet
-
   # Fonts
   ttf-firacode-nerd ttf-vazir
 
   # Hypr ecosystem extras
-  hyprsunset hyprshot hyprpolkitagent
+  hyprsunset hyprshot hyprpolkitagent wlogout 
 
   # GTK/cursor theme referenced by ~/.config/gtk-*/settings.ini
   bibata-cursor-theme
@@ -232,11 +232,20 @@ EOF
 # Enable services
 ########################################
 info "Enabling system services"
-sudo systemctl enable greetd.service
-sudo systemctl enable NetworkManager.service
-sudo systemctl enable bluetooth.service
-sudo systemctl enable sshd.service
-sudo systemctl enable fail2ban.service
+# Resilient enable: a missing unit warns instead of aborting the whole script
+# (important under `set -e`).
+enable_service() {
+  if systemctl list-unit-files "$1" >/dev/null 2>&1 && systemctl cat "$1" >/dev/null 2>&1; then
+    sudo systemctl enable "$1" || warn "Failed to enable $1"
+  else
+    warn "Service $1 not found (package missing?); skipping enable."
+  fi
+}
+enable_service greetd.service
+enable_service NetworkManager.service
+enable_service bluetooth.service
+enable_service sshd.service
+enable_service fail2ban.service
 
 # Docker (rootless, matching virtualisation/docker.nix)
 sudo systemctl disable docker.service 2>/dev/null || true   # prefer rootless
@@ -250,25 +259,14 @@ if command -v flatpak >/dev/null 2>&1; then
   sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || true
 fi
 
-########################################
-# Hyprland plugins (hyprsplit) via hyprpm
-########################################
-info "Setting up hyprpm / hyprsplit"
-warn "hyprpm needs the running Hyprland session's headers. If this fails now,"
-warn "run it after logging into Hyprland:"
-echo "    hyprpm update"
-echo "    hyprpm add https://github.com/shezdy/hyprsplit"
-echo "    hyprpm enable hyprsplit"
-
 info "Base install done."
 cat <<'NEXT'
 
 Next steps (see README.md for detail):
   1. Apply the dotfiles with chezmoi (this repo is the chezmoi source):
        chezmoi init --apply --source ~/dotfiles
+     You'll be asked once for this host's GPU vendor (intel/amd/nvidia).
      Subsequent changes:  edit files, then `chezmoi apply` (aliased to `update`).
   2. Log out / reboot -> greetd -> Hyprland.
-  3. In the Hyprland session:
-       - finish hyprsplit via the hyprpm commands printed above
-       - open tmux and press <prefix> + I to install tmux plugins (TPM)
+  3. In the Hyprland session: open tmux and press <prefix> + I to install tmux plugins (TPM).
 NEXT

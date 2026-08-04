@@ -18,7 +18,8 @@
     "$HOME/.config/waybar/modules/mpris.jsonc"
   ],
 
-  "output": ["DP-1", "DP-2"],
+  // NOTE: no "output" restriction -> waybar shows on ALL monitors.
+  // (Was ["DP-1","DP-2"], which hid the bar on hosts whose display is eDP-1, etc.)
   "name": "main-bar",
   "id": "main-bar",
   "layer": "top",
