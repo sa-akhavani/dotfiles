@@ -73,7 +73,10 @@ jobs:
           set -euo pipefail
           for gpu in intel amd nvidia; do
             dest="$(mktemp -d)"
-            cfg="$(mktemp)"
+            # The .toml suffix is required: chezmoi picks the config parser from
+            # the file extension, and a bare mktemp name makes it bail with
+            # "unknown format" before it ever renders a template.
+            cfg="$(mktemp --suffix=.toml)"
             printf 'sourceDir = "%s"\ndestDir = "%s"\n\n[data]\n    gpu = "%s"\n' \
               "$PWD" "$dest" "$gpu" >"$cfg"
             echo "::group::gpu=$gpu"

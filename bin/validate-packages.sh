@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# Validate every name in packages/ against the real Arch and AUR indexes, for
-# ALL hosts (not just this one). Catches the three mistakes the package lists
+# Validate every package name in shared/ and hosts/*/ against the real Arch and
+# AUR indexes, for ALL hosts (not just this one). Catches the three mistakes
 # are prone to, none of which surface until a fresh install is already running:
 #
 #   1. a renamed/removed package — install.sh reports it and carries on, so it
@@ -28,7 +28,8 @@
 set -euo pipefail
 
 REPO_DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
-PKG_DIR="$REPO_DIR/packages"
+SHARED_DIR="$REPO_DIR/shared"
+HOSTS_DIR="$REPO_DIR/hosts"
 MIRROR="${ARCH_MIRROR:-https://geo.mirror.pkgbuild.com}"
 REPOS=(core extra multilib)
 PROBLEMS=()
@@ -48,11 +49,12 @@ strip_list() {
   return 0
 }
 
-# Shared list + every per-host list, so CI validates other machines' lists too.
+# Shared list + EVERY host's list, so CI validates other machines' lists too —
+# not just the one belonging to whatever host happens to be running this.
 collect() {
   local base="$1"
   shopt -s nullglob
-  strip_list "$PKG_DIR/$base.txt" "$PKG_DIR/$base."*.txt | sort -u
+  strip_list "$SHARED_DIR/$base.txt" "$HOSTS_DIR"/*/"$base.txt" | sort -u
   shopt -u nullglob
 }
 
@@ -87,7 +89,7 @@ while read -r name; do
   [[ -z "$name" ]] && continue
   if ! grep -qxF "$name" "$WORK/available"; then
     if printf '%s\n' "$AUR" | grep -qxF "$name"; then
-      bad "$name: not in core/extra/multilib, and also listed in aur.txt — drop it from the pacman list"
+      bad "$name: not in core/extra/multilib, and also listed in an aur.txt — drop it from the pacman list"
     else
       bad "$name: not in core/extra/multilib (renamed, dropped, AUR-only, or [testing]-only)"
     fi
@@ -110,7 +112,7 @@ while read -r name; do
   [[ -z "$name" ]] && continue
   if ! jq -e --arg n "$name" '.results[] | select(.Name == $n)' "$WORK/aur.json" >/dev/null; then
     if grep -qxF "$name" "$WORK/available"; then
-      bad "$name: no such AUR package, but it IS in the official repos — move it to packages/pacman.txt"
+      bad "$name: no such AUR package, but it IS in the official repos — move it to shared/pacman.txt"
     else
       bad "$name: no such AUR package (renamed or deleted from the AUR)"
     fi

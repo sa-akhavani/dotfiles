@@ -76,9 +76,13 @@ require_not_root
 # Repo paths + this host's identity
 ########################################
 REPO_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
-PKG_DIR="$REPO_DIR/packages"
-SYSTEM_DIR="$REPO_DIR/system"
 HOSTNAME_SHORT="$(hostnamectl --static 2>/dev/null || cat /etc/hostname 2>/dev/null || echo unknown)"
+# Two layers, same shape: everything shared lives in shared/, everything that is
+# true of exactly one machine lives in hosts/<hostname>/. Both directories hold
+# the same four things (pacman.txt, aur.txt, npm.txt, etc/, services.txt), and
+# the host layer is always ADDITIVE — read second, applied last, never replacing.
+SHARED_DIR="$REPO_DIR/shared"
+HOST_DIR="$REPO_DIR/hosts/$HOSTNAME_SHORT"
 
 # Read every file given that exists, stripping comments/blank lines. Used for
 # both the package lists and the service list.
@@ -148,23 +152,23 @@ install_yay() {
 [[ "$NO_AUR" -eq 0 ]] && install_yay
 
 ########################################
-# Package lists (loaded from packages/)
+# Package lists (loaded from shared/ + hosts/<hostname>/)
 ########################################
 # Package names live in plain-text files so each host can differ:
-#   packages/pacman.txt            shared official-repo packages
-#   packages/aur.txt               shared AUR packages
-#   packages/npm.txt               shared global npm packages
-#   packages/pacman.<hostname>.txt per-host official extras (optional)
-#   packages/aur.<hostname>.txt    per-host AUR extras (optional)
-#   packages/npm.<hostname>.txt    per-host npm extras (optional)
+#   shared/pacman.txt            official-repo packages for every host
+#   shared/aur.txt               AUR packages for every host
+#   shared/npm.txt               global npm packages for every host
+#   hosts/<hostname>/pacman.txt  per-host official extras (optional)
+#   hosts/<hostname>/aur.txt     per-host AUR extras (optional)
+#   hosts/<hostname>/npm.txt     per-host npm extras (optional)
 # One package per line; blank lines and #comments ignored.
 
-# Read "<base>.txt" + "<base>.<host>.txt".
+# Read the shared list, then this host's, and concatenate.
 read_pkg_list() {
-  read_list "$PKG_DIR/$1.txt" "$PKG_DIR/$1.$HOSTNAME_SHORT.txt"
+  read_list "$SHARED_DIR/$1.txt" "$HOST_DIR/$1.txt"
 }
 
-info "Loading package lists for host '$HOSTNAME_SHORT' from $PKG_DIR"
+info "Loading package lists for host '$HOSTNAME_SHORT' from $SHARED_DIR + $HOST_DIR"
 # Package names never contain spaces/globs, so word-splitting is safe here.
 # shellcheck disable=SC2207
 PACMAN_PKGS=( $(read_pkg_list pacman) )
@@ -172,28 +176,28 @@ PACMAN_PKGS=( $(read_pkg_list pacman) )
 AUR_PKGS=( $(read_pkg_list aur) )
 # shellcheck disable=SC2207
 NPM_PKGS=( $(read_pkg_list npm) )
-if [[ -f "$PKG_DIR/pacman.$HOSTNAME_SHORT.txt" ]]; then
+if [[ -f "$HOST_DIR/pacman.txt" ]]; then
   info "  + per-host pacman extras applied"
 else
   # Loud, because the per-host list is where the GPU drivers and the CPU
-  # microcode live. A hostname that does not match any file here fails
+  # microcode live. A hostname that does not match any directory here fails
   # silently: `steam` then pulls vulkan-driver / lib32-vulkan-driver, and
   # --noconfirm resolves those to whichever provider comes first — usually
   # another vendor's driver. That is the usual cause of Steam opening a black
   # window, and of a machine booting without microcode updates.
-  warn "No packages/pacman.$HOSTNAME_SHORT.txt for host '$HOSTNAME_SHORT'."
+  warn "No hosts/$HOSTNAME_SHORT/pacman.txt for host '$HOSTNAME_SHORT'."
   warn "    GPU/Vulkan drivers and CPU microcode are declared per host, so this"
-  warn "    run will install neither. Create the file (see packages/README.md),"
+  warn "    run will install neither. Create the file (see hosts/README.md),"
   warn "    or make sure this host's hostname matches an existing one:"
-  warn "      $(cd "$PKG_DIR" && ls pacman.*.txt 2>/dev/null | tr '\n' ' ')"
-  FAILED_EXTRA+=("packages/pacman.$HOSTNAME_SHORT.txt: missing (no GPU drivers or microcode declared)")
+  warn "      $(cd "$REPO_DIR/hosts" 2>/dev/null && ls -d ./*/ 2>/dev/null | tr -d './' | tr '\n' ' ')"
+  FAILED_EXTRA+=("hosts/$HOSTNAME_SHORT/pacman.txt: missing (no GPU drivers or microcode declared)")
 fi
-if [[ -f "$PKG_DIR/aur.$HOSTNAME_SHORT.txt" ]]; then
+if [[ -f "$HOST_DIR/aur.txt" ]]; then
   info "  + per-host AUR extras applied"
 fi
 
 if [[ "${#PACMAN_PKGS[@]}" -eq 0 ]]; then
-  echo "No packages found in $PKG_DIR/pacman.txt — is the repo intact?" >&2
+  echo "No packages found in $SHARED_DIR/pacman.txt — is the repo intact?" >&2
   exit 1
 fi
 info "  ${#PACMAN_PKGS[@]} pacman, ${#AUR_PKGS[@]} AUR, ${#NPM_PKGS[@]} npm package(s)"
@@ -306,9 +310,9 @@ fi
 ########################################
 # System config files (/etc)
 ########################################
-# The files themselves live in system/ as plain files (see system/README.md) so
-# they can be read, diffed and edited like any other config — chezmoi cannot
-# manage them because it only writes inside $HOME.
+# The files themselves live in shared/etc (and hosts/<hostname>/etc) as plain
+# files — see hosts/README.md — so they can be read, diffed and edited like any
+# other config; chezmoi cannot manage them because it only writes inside $HOME.
 
 # Copy the `etc/` subtree of $1, whose layout mirrors `/`, onto the real
 # filesystem:  <$1>/etc/greetd/config.toml -> /etc/greetd/config.toml.
@@ -353,22 +357,22 @@ install_system_tree() {
   done < <(find "$root/etc" -type f -print0)
 }
 
-info "Installing /etc config files from $SYSTEM_DIR"
-install_system_tree "$SYSTEM_DIR"
+info "Installing /etc config files from $SHARED_DIR/etc"
+install_system_tree "$SHARED_DIR"
 # Per-host files land last so they win over a shared file at the same path.
-if [[ -d "$SYSTEM_DIR/hosts/$HOSTNAME_SHORT/etc" ]]; then
+if [[ -d "$HOST_DIR/etc" ]]; then
   info "  + per-host /etc files for '$HOSTNAME_SHORT'"
-  install_system_tree "$SYSTEM_DIR/hosts/$HOSTNAME_SHORT"
+  install_system_tree "$HOST_DIR"
 fi
 
 ########################################
 # Enable services
 ########################################
-# Unit names come from system/services.txt (+ the per-host file), same additive
+# Unit names come from shared/services.txt (+ the per-host file), same additive
 # scheme as the package lists.
 # shellcheck disable=SC2207
-SERVICES=( $(read_list "$SYSTEM_DIR/services.txt" \
-                       "$SYSTEM_DIR/hosts/$HOSTNAME_SHORT/services.txt") )
+SERVICES=( $(read_list "$SHARED_DIR/services.txt" \
+                       "$HOST_DIR/services.txt") )
 
 info "Enabling ${#SERVICES[@]} system service(s)"
 # Resilient enable: a missing unit warns instead of aborting the whole script

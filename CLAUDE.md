@@ -29,13 +29,13 @@ bin/                    read-only maintenance helpers (safe for Claude to run)
   pkg-diff.sh           repo lists vs. what is installed here, both directions
   validate-packages.sh  every declared name resolves; no AUR/official conflicts
 .github/workflows/ci.yml  bash -n, shellcheck, the two scripts above, template render
-packages/               package lists, one name per line   (packages/README.md)
-  pacman.txt aur.txt npm.txt       shared by all hosts
-  pacman.<host>.txt …              per-host extras, ADDITIVE
-system/                 root-owned config applied with sudo  (system/README.md)
-  etc/…                 mirrors /  → system/etc/greetd/config.toml = /etc/greetd/config.toml
-  services.txt          systemd units to enable
-  hosts/<host>/         per-host etc/ + services.txt
+shared/                 applied on EVERY host              (shared/README.md)
+  pacman.txt aur.txt npm.txt       package lists, one name per line
+  etc/…                 mirrors /  → shared/etc/greetd/config.toml = /etc/greetd/config.toml
+  services.txt          systemd units to enable (root units only)
+hosts/<host>/           applied on ONE host, ADDITIVE       (hosts/README.md)
+  pacman.txt aur.txt npm.txt       appended to the shared lists
+  etc/… services.txt    applied after the shared ones, so they win
 home/                   chezmoi source → $HOME
   .chezmoi.toml.tmpl    per-host prompts (currently: gpu)
   .chezmoiignore        what NOT to manage (is itself a template)
@@ -60,8 +60,8 @@ preview; `update` is aliased to `chezmoi apply`.
 
 | Difference | Goes in |
 | --- | --- |
-| A package | `packages/pacman.<host>.txt` (GPU drivers **and** CPU microcode) |
-| An `/etc` file or a service | `system/hosts/<host>/…` |
+| A package | `hosts/<host>/pacman.txt` (GPU drivers **and** CPU microcode) |
+| An `/etc` file or a service | `hosts/<host>/…` |
 | Same file, different contents | make it `*.tmpl`, branch on `.chezmoi.hostname` or `[data]` keys |
 | File shouldn't exist at all | `.chezmoiignore` |
 
@@ -93,7 +93,8 @@ Breaking any of these has bitten before:
   `root:root 0644` only — files needing another mode must be handled explicitly.
   It skips unchanged files, backs a differing pre-existing file up **once** to
   `<path>.dotfiles-bak`, and never deletes anything.
-- `.in` files under `system/` are templates: `@USER_NAME@`, `@HOSTNAME@`.
+- `.in` files under `shared/etc` and `hosts/*/etc` are templates: `@USER_NAME@`,
+  `@HOSTNAME@`.
 - multilib is enabled before the first `-Syu`, guarded by `pacman-conf
   --repo-list`, with the sed anchored `^#\[multilib\]$` so `multilib-testing`
   stays off.
@@ -103,7 +104,7 @@ Breaking any of these has bitten before:
   dry run needs no password. A new mutating command that skips `run` silently
   breaks `--dry-run`.
 - Missing per-host *files* are tolerated, but a missing
-  `packages/pacman.<host>.txt` is a `warn` + a `FAILED_EXTRA` entry: it is the
+  `hosts/<host>/pacman.txt` is a `warn` + a `FAILED_EXTRA` entry: it is the
   only place GPU drivers and microcode are declared, and silence there was how a
   host ended up with neither.
 - Docker: `dockerd-rootless-setuptool.sh` is **not** in Arch's `docker` package
@@ -121,16 +122,18 @@ with a `! ` prefix).
 Everything in this list is runnable by Claude — none of it needs sudo:
 
 - `bash -n install.sh` after every edit; `shellcheck --severity=warning
-  install.sh bin/*.sh` (shellcheck is declared in `packages/pacman.txt`).
+  install.sh bin/*.sh` (shellcheck is declared in `shared/pacman.txt`).
 - `./install.sh --dry-run` — full walk-through of a real run, no password needed.
   Diff its output before and after a change to the installer.
-- `./bin/validate-packages.sh` after touching `packages/` — resolves every name
+- `./bin/validate-packages.sh` after touching any package list — resolves every name
   against the real `core`/`extra`/`multilib` databases and the AUR RPC, and fails
   on AUR/official conflicts.
 - `./bin/pkg-diff.sh` to see how far this machine has drifted from the lists.
 - chezmoi, without touching `$HOME` — render every template for every GPU value:
   ```bash
-  cfg=$(mktemp); dest=$(mktemp -d)
+  # .toml suffix is required — chezmoi picks its config parser from the
+  # extension and otherwise fails with "unknown format".
+  cfg=$(mktemp --suffix=.toml); dest=$(mktemp -d)
   printf 'sourceDir = "%s"\ndestDir = "%s"\n\n[data]\n    gpu = "nvidia"\n' "$PWD" "$dest" >"$cfg"
   chezmoi --config "$cfg" --source "$PWD" --destination "$dest" apply --dry-run --verbose
   ```
@@ -167,10 +170,12 @@ so hand him the command (he can run it with a `! ` prefix).
   all did; `ttf-vazir` vanished entirely, renamed upstream to `vazirmatn-fonts`).
   `yay` papers over this, so only the validator catches it.
 - A config that names a *theme* needs that theme's package declared:
-  `fuzzel.ini` → `papirus-icon-theme`, `gtk-*/settings.ini` → `bibata-cursor-theme`.
+  `fuzzel.ini` → `papirus-icon-theme`. (`gtk-*/settings.ini` used to name
+  `Bibata-Modern-Classic`; that line is commented out and `bibata-cursor-theme`
+  was dropped — re-declare it if the cursor line ever comes back.)
 - `.chezmoiignore` does **not** strip trailing `#` comments — a comment on the
   same line becomes part of the pattern. Own line only (CI checks this).
-- `pacman -Qdtq` orphans include packages declared in `packages/*.txt` that were
+- `pacman -Qdtq` orphans include packages declared in `shared/*.txt` and `hosts/*/*.txt` that were
   pulled in as dependencies (e.g. `vlc`). Cross-check before removing — that is
   `./bin/pkg-diff.sh`'s third section; see MAINTENANCE.md.
 - makepkg sources `/etc/makepkg.conf.d/*.conf` after `makepkg.conf`, and
@@ -180,10 +185,10 @@ so hand him the command (he can run it with a `! ` prefix).
   contain an `init.lua` — which is why `plugins.copilot` needs its own explicit
   import line, and why the old `plugins/discard/` was dead weight, not active
   config.
-- Host `archlinux` (this laptop): Dell, Intel CometLake i915, **ext4** root (so no
-  btrfs snapshots), systemd-boot, user `ali`. The docs now use `archlinux`
-  throughout; the aspirational `sohrab` name is gone from them, because a hostname
-  that doesn't match `packages/pacman.<host>.txt` means no GPU drivers.
+- Host `sohrab` (this machine): **Intel NUC**, Intel integrated graphics / i915,
+  **ext4** root (so no btrfs snapshots), systemd-boot, user `ali`. It was called
+  `archlinux` until 2026-08; a hostname that doesn't match a `hosts/<host>/`
+  directory means no GPU drivers and no microcode, so the two must stay in sync.
 
 ## Working agreements
 

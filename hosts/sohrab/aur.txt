@@ -1,0 +1,8 @@
+# Per-host AUR extras for the host named `sohrab` (Intel NUC).
+# Appended to shared/aur.txt — see hosts/README.md.
+
+# Apps
+postman-bin
+
+# Python tool
+arxiv-latex-cleaner

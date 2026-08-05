@@ -1,29 +1,20 @@
 # Official-repo (pacman) packages — shared across ALL hosts.
 # One package per line. Blank lines and #comments are ignored.
-# Per-host extras go in  packages/pacman.<hostname>.txt
+# Per-host extras go in  hosts/<hostname>/pacman.txt
 
-# Base system bits the Arch installation guide leaves to you. Declared here so a
-# reinstall (or `archinstall` with a minimal profile) cannot silently skip them:
-# without linux-firmware/sof-firmware this laptop has no Wi-Fi and no speakers,
-# and without efibootmgr systemd-boot cannot be installed.
-# linux-lts is a second, known-good kernel to boot from when an upgrade of
-# `linux` regresses — the cheapest insurance on Arch (see MAINTENANCE.md §1).
-# CPU microcode is vendor-specific and lives in packages/pacman.<hostname>.txt.
-linux-lts
-linux-firmware
-sof-firmware
-efibootmgr
-zram-generator
-xdg-utils
-
-# Core system tools
-linux
+# Must Have
 git
 vim
+nano
 neovim
 wget
 rsync
 btop
+
+# Essentials
+psmisc
+pacman-contrib
+keychain
 
 # Shell + terminal tools
 zsh
@@ -34,16 +25,12 @@ fzf
 tree
 lsd
 ripgrep
-fd
-luarocks
-keychain
-psmisc
 bat
-pacman-contrib
+fd
 
-# Shell/editor config stack (dotfiles managed with chezmoi)
+
+# Shell/editor config stack and syntax highlighting
 chezmoi
-tmux
 git-delta
 zsh-autosuggestions
 zsh-syntax-highlighting
@@ -51,24 +38,24 @@ zsh-syntax-highlighting
 # GTK dark theme (referenced by ~/.config/gtk-*/settings.ini)
 gnome-themes-extra
 
-# Dev toolchains
+# Dev toolchains / Version Managers
 gcc
 cmake
 nodejs
 npm
-postgresql
 python
 rustup
+luarocks
 uv
-ruff
-aws-cli
+postgresql
+
 
 # LSPs / linters / formatters
+ruff
 typescript-language-server
 lua-language-server
 clang
 codespell
-# Also moved out of the AUR into [extra].
 stylua
 # Used by .github/workflows/ci.yml; installed here so the same lint can be run
 # locally before pushing:  shellcheck --severity=warning install.sh bin/*.sh
@@ -80,9 +67,6 @@ hyprlock
 hyprpaper
 hypridle
 hyprpicker
-# These three graduated from the AUR into [extra] and were then deleted from the
-# AUR, so they have to be here — `yay` still finds them, but aur.txt would fail
-# validation and a --no-aur run would skip them for no reason.
 hyprsunset
 hyprshot
 hyprpolkitagent
@@ -168,19 +152,6 @@ xkeyboard-config
 # ~/.config/fuzzel/fuzzel.ini, so without it the launcher shows no icons.
 # (The Bibata cursor named by gtk-*/settings.ini comes from aur.txt.)
 papirus-icon-theme
-
-# Gaming — lives in the [multilib] repo, which install.sh enables for you.
-# `steam` depends on the virtual packages vulkan-driver, lib32-vulkan-driver and
-# lib32-libgl, each with several providers. Name this host's GPU drivers
-# explicitly in packages/pacman.<hostname>.txt so they are in the same pacman
-# transaction — otherwise `--noconfirm` silently picks the first provider, which
-# is usually another vendor's driver:
-#   Intel  -> vulkan-intel  lib32-mesa lib32-vulkan-intel
-#   AMD    -> vulkan-radeon lib32-mesa lib32-vulkan-radeon
-#   NVIDIA -> nvidia-utils  lib32-nvidia-utils
-steam
-vulkan-icd-loader
-lib32-vulkan-icd-loader
 
 # Session / misc
 firefox

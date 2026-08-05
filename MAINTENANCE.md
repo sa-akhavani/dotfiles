@@ -3,7 +3,7 @@
 Reference for keeping an Arch install healthy — the equivalents of `apt upgrade`,
 `apt autoremove` and `apt autoclean`, and what actually breaks Arch systems.
 
-Measurements marked *(snapshot)* were taken **2026-08-05 on host `archlinux`**
+Measurements marked *(snapshot)* were taken **2026-08-05 on host `sohrab`**
 (Dell laptop, ext4 root, Intel i915). Re-measure before acting on them.
 
 ---
@@ -64,7 +64,7 @@ Doing repos and AUR as two steps makes it obvious which half failed.
 Installing **`linux-lts`** as a second kernel gives you a working boot entry when
 a new kernel regresses — the cheapest insurance on Arch.
 *(snapshot: only `linux` was installed, no fallback kernel. `linux-lts` is now
-declared in `packages/pacman.txt`, so the next `./install.sh` adds it and
+declared in `shared/pacman.txt`, so the next `./install.sh` adds it and
 systemd-boot gets a second entry; pick it from the boot menu when a `linux`
 upgrade breaks something.)*
 
@@ -116,7 +116,7 @@ yay -Yc                           # same, including AUR packages
 > sudo pacman -D --asexplicit vlc go just mpv
 > ```
 > *(snapshot: 57 orphans, including `vlc` — which is declared in
-> `packages/pacman.txt` — plus `go`, `just`, `mpv`, `kitty-terminfo`,
+> `shared/pacman.txt` — plus `go`, `just`, `mpv`, `kitty-terminfo`,
 > `kitty-shell-integration`, `ttf-jetbrains-mono`.)*
 
 Cross-check orphans against this repo's declared packages before removing

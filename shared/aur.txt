@@ -1,0 +1,45 @@
+# AUR packages — shared across ALL hosts.
+# One package per line. Blank lines and #comments are ignored.
+# Per-host extras go in  hosts/<hostname>/aur.txt
+
+# Terminal
+# Built from git, not the official `wezterm` package
+wezterm-git
+tmux-git
+
+# Fonts
+## Persian font
+vazirmatn-fonts
+
+# Hypr ecosystem extras
+wlogout
+
+# App launcher + waybar-with-cava.
+walker-bin
+waybar-cava
+libcava
+
+# Rootless Docker. `dockerd-rootless-setuptool.sh` is NOT part of Arch's
+# `docker` package — it only ships here, and install.sh skips the whole rootless
+# setup (leaving Docker unusable) when this is missing.
+docker-rootless-extras
+
+# Editors / IDEs / agents
+# (neovim itself is official — see shared/pacman.txt.)
+claude-code
+visual-studio-code-bin
+cursor-bin
+
+# Work / social / media
+teams-for-linux
+slack-desktop
+zoom
+
+# Other Apps
+jellyfin-desktop
+spotify
+google-chrome
+
+# Editor tooling (LSP / formatters not in official repos).
+hyprls
+

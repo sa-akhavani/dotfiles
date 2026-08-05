@@ -1,6 +1,6 @@
 # Global npm packages — shared across ALL hosts.
 # One package per line. Blank lines and #comments are ignored.
-# Per-host extras go in  packages/npm.<hostname>.txt
+# Per-host extras go in  hosts/<hostname>/npm.txt
 #
 # Only for tooling that has no official-repo or AUR package worth using. Prefer
 # pacman/AUR when there is a choice: `sudo npm -g` writes root-owned files into

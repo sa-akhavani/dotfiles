@@ -17,7 +17,7 @@ directly-editable config files, no Nix required.
 | OS | [Arch Linux](https://archlinux.org/) |
 | Window Manager | [Hyprland](https://github.com/hyprwm/Hyprland) (Wayland) |
 | Display Manager | [greetd](https://sr.ht/~kennylevinsen/greetd/) + [tuigreet](https://github.com/apognu/tuigreet) |
-| Terminal | [WezTerm](https://github.com/wez/wezterm) (`wezterm-git`, see `packages/aur.txt`) |
+| Terminal | [WezTerm](https://github.com/wez/wezterm) (`wezterm-git`, see `shared/aur.txt`) |
 | Multiplexer | [tmux](https://github.com/tmux/tmux) (+ TPM) |
 | Editor | [Neovim](https://github.com/neovim/neovim) (lazy.nvim) |
 | Shell | [zsh](https://github.com/ohmyzsh/ohmyzsh) + oh-my-zsh |
@@ -42,13 +42,13 @@ bin/                         # repo maintenance helpers, all read-only
   pkg-diff.sh                #   drift: repo lists vs. what is installed here
   validate-packages.sh       #   every declared name still resolves; no conflicts
 .github/workflows/ci.yml     # bash -n + shellcheck + the two checks above
-packages/                    # package lists, shared + per-host  (packages/README.md)
-  pacman.txt  aur.txt  npm.txt
-  pacman.<hostname>.txt  aur.<hostname>.txt  npm.<hostname>.txt
-system/                      # root-owned config, applied with sudo  (system/README.md)
+shared/                      # applied on EVERY host  (shared/README.md)
+  pacman.txt  aur.txt  npm.txt   # package lists
   etc/…                      #   copied to /etc  (etc/greetd/config.toml -> /etc/greetd/config.toml)
   services.txt               #   systemd units to enable
-  hosts/<hostname>/          #   per-host etc/ + services.txt
+hosts/<hostname>/            # applied on ONE host, additive  (hosts/README.md)
+  pacman.txt  aur.txt  npm.txt   # appended to the shared lists
+  etc/…  services.txt        #   applied after the shared ones, so they win
 home/                        # chezmoi source: everything here maps into $HOME
   .chezmoiignore
   .chezmoi.toml.tmpl         # -> per-host prompts (currently: gpu)
@@ -101,11 +101,11 @@ own greeter and compositor, which then fight greetd + Hyprland. Everything
 graphical in this setup comes from `install.sh`.
 
 > **The hostname is load-bearing.** All four per-host layers key off
-> `hostnamectl --static`. This laptop is **`archlinux`**, and
-> `packages/pacman.archlinux.txt` is what gives it its Intel Vulkan drivers,
-> microcode and VA-API drivers. If you pick a different name, rename that file
-> to match — `install.sh` prints a loud warning when no per-host list matches,
-> because a host without one silently gets no GPU drivers.
+> `hostnamectl --static`. This machine is **`sohrab`**, and
+> `hosts/sohrab/pacman.txt` is what gives it its Intel Vulkan drivers,
+> microcode and VA-API drivers. If you pick a different name, rename that
+> directory to match — `install.sh` prints a loud warning when no per-host list
+> matches, because a host without one silently gets no GPU drivers.
 
 If you install by hand instead, note that `archinstall` would otherwise have
 installed the CPU microcode for you; the shared package list declares
@@ -119,7 +119,7 @@ cd ~/dotfiles
 git checkout arch-v3          # this branch
 ./install.sh --dry-run        # optional: print every change, apply nothing
 ./install.sh                  # enables [multilib], installs pacman + AUR packages,
-                              # /etc configs (system/), services, oh-my-zsh, tmux TPM
+                              # /etc configs (shared/etc), services, oh-my-zsh, tmux TPM
 ```
 
 | Flag | Effect |
@@ -153,13 +153,13 @@ data:
 
 | Layer | Mechanism | Where |
 | --- | --- | --- |
-| Packages | `pacman.<hostname>.txt`, `aur.<hostname>.txt`, `npm.<hostname>.txt` appended to the shared lists | `packages/` |
-| `/etc` + services | `hosts/<hostname>/etc/…`, `hosts/<hostname>/services.txt` | `system/` |
+| Packages | `pacman.txt`, `aur.txt`, `npm.txt` appended to the shared lists | `hosts/<hostname>/` |
+| `/etc` + services | `etc/…`, `services.txt` applied after the shared ones | `hosts/<hostname>/` |
 | Dotfile *contents* | `*.tmpl` templates branching on host data | `home/` |
 | Whole dotfiles on/off | `.chezmoiignore` (itself a template) | `home/` |
 
-Known hosts: **`archlinux`** (this Dell laptop — Intel CometLake/i915, ext4,
-systemd-boot).
+Known hosts: **`sohrab`** (this Intel NUC — Intel integrated graphics/i915,
+ext4, systemd-boot).
 
 ### Setting up a new host, start to finish
 
@@ -167,8 +167,9 @@ systemd-boot).
 hostnamectl set-hostname rostam        # pick the name FIRST: everything keys off it
 git clone https://github.com/sa-akhavani/dotfiles.git ~/dotfiles
 cd ~/dotfiles && git checkout arch-v3
-cp packages/pacman.archlinux.txt packages/pacman.rostam.txt   # then edit: GPU + microcode
-./install.sh                           # reads packages/*.rostam.txt + system/hosts/rostam/
+mkdir -p hosts/rostam
+cp hosts/sohrab/pacman.txt hosts/rostam/pacman.txt   # then edit: GPU + microcode
+./install.sh                           # reads shared/ + hosts/rostam/
 chezmoi init --apply --source ~/dotfiles
 ```
 
@@ -213,7 +214,7 @@ Per-host monitor layout, the common case:
 ```gotmpl
 {{- if eq .chezmoi.hostname "rostam" }}
 monitor = DP-1, 3440x1440@144, 0x0, 1
-{{- else if eq .chezmoi.hostname "archlinux" }}
+{{- else if eq .chezmoi.hostname "sohrab" }}
 monitor = eDP-1, 1920x1080@60, 0x0, 1
 {{- else }}
 monitor = , preferred, auto, 1      # sane fallback for an unknown host
@@ -229,7 +230,7 @@ Preview what a template renders as before applying:
 leave it unmanaged there:
 
 ```gotmpl
-{{ if ne .chezmoi.hostname "archlinux" }}
+{{ if ne .chezmoi.hostname "sohrab" }}
 # desktops have no battery — comments must be on their own line, chezmoi does
 # not strip a trailing `#` and would make it part of the pattern
 .config/waybar/modules/battery.jsonc
@@ -246,8 +247,8 @@ Keep host-specific secrets out of the repo: reference them from templates via
 
 ### Where should a difference go?
 
-- Different **package** on one host → `packages/pacman.<host>.txt`
-- Different **`/etc` file or service** → `system/hosts/<host>/…`
+- Different **package** on one host → `hosts/<host>/pacman.txt`
+- Different **`/etc` file or service** → `hosts/<host>/…`
 - Same file, different **contents** → make it a `.tmpl`
 - File that should not exist at all → `.chezmoiignore`
 
@@ -270,13 +271,13 @@ breaks Arch upgrades, orphan/cache cleanup, and how to roll a package back.
 
 Typical loop: `chezmoi edit <file>` → `chezmoi apply` → `chezmoi cd && git commit -am ... && git push`.
 
-To add a **package**: append it to `packages/pacman.txt` (or `aur.txt`, or the
+To add a **package**: append it to `shared/pacman.txt` (or `aur.txt`, or the
 per-host variant) and re-run `./install.sh` — or just `sudo pacman -S <pkg>` /
 `yay -S <pkg>` and add it to the list afterwards so the next machine gets it.
 
-To add a **`/etc` file or a service**: put the file under `system/etc/` at its
-real path, or the unit name in `system/services.txt`, then re-run `./install.sh`.
-See [`system/README.md`](system/README.md).
+To add a **`/etc` file or a service**: put the file under `shared/etc/` at its
+real path, or the unit name in `shared/services.txt`, then re-run `./install.sh`.
+See [`shared/README.md`](shared/README.md).
 
 ### Keeping the lists honest
 
@@ -291,7 +292,7 @@ past unnoticed. Both directions are reported by:
 | It reports | What to do |
 | --- | --- |
 | Declared but not installed | re-run `./install.sh`, or `yay -S <name>` without `--noconfirm` to see the real error |
-| Explicitly installed but not declared | add it to `packages/`, or `sudo pacman -Rns <name>` |
+| Explicitly installed but not declared | add it to `shared/` (or `hosts/<hostname>/`), or `sudo pacman -Rns <name>` |
 | Declared but installed as a *dependency* | `sudo pacman -D --asexplicit <names>` — otherwise `pacman -Qdt` lists them as orphans and a routine cleanup deletes packages this repo says you need |
 
 ### Verifying a change
@@ -331,7 +332,7 @@ Host nuc-alpha
 The official `waybar` package ships without the cava module, so this repo uses
 the AUR `waybar-cava` build (+ `libcava`) instead.
 
-**`waybar` is therefore not in `packages/pacman.txt`, and must not be added
+**`waybar` is therefore not in `shared/pacman.txt`, and must not be added
 back.** `waybar-cava` declares `conflicts=waybar provides=waybar`, and pacman
 refuses to remove a conflicting installed package when it is running under
 `--noconfirm` — so declaring both makes the AUR half of `install.sh` abort.
@@ -386,7 +387,7 @@ sudo pacman -Sy
 ```
 
 Your GPU's 32-bit drivers are host-specific and live in
-`packages/pacman.<hostname>.txt` — see [`packages/README.md`](packages/README.md).
+`hosts/<hostname>/pacman.txt` — see [`hosts/README.md`](hosts/README.md).
 Getting this wrong is the usual cause of Steam launching to a black window.
 
 ### Rootless Docker
@@ -397,7 +398,7 @@ Two things are easy to get wrong here, both handled by the installer now:
 
 - **`dockerd-rootless-setuptool.sh` is not part of Arch's `docker` package.** It
   ships only in `docker-rootless-extras` (AUR), which is why that package is in
-  `packages/aur.txt`. Without it there is nothing to set up, and an installer
+  `shared/aur.txt`. Without it there is nothing to set up, and an installer
   that disables `docker.service` on the assumption that rootless will replace it
   leaves the host with no working Docker at all. `install.sh` now only disables
   the root daemon once the rootless tooling is actually present, and enables the

@@ -19,8 +19,9 @@ QUIET=0
 [[ "${1:-}" == "--quiet" ]] && QUIET=1
 
 REPO_DIR="$(dirname "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")")"
-PKG_DIR="$REPO_DIR/packages"
 HOSTNAME_SHORT="$(hostnamectl --static 2>/dev/null || cat /etc/hostname 2>/dev/null || echo unknown)"
+SHARED_DIR="$REPO_DIR/shared"
+HOST_DIR="$REPO_DIR/hosts/$HOSTNAME_SHORT"
 
 # Packages that are legitimately installed without being declared: the base
 # install's meta packages and the AUR helper install.sh bootstraps itself.
@@ -39,8 +40,8 @@ strip_list() {
 }
 
 declared_pkgs() {
-  strip_list "$PKG_DIR/pacman.txt" "$PKG_DIR/pacman.$HOSTNAME_SHORT.txt" \
-             "$PKG_DIR/aur.txt"    "$PKG_DIR/aur.$HOSTNAME_SHORT.txt" \
+  strip_list "$SHARED_DIR/pacman.txt" "$HOST_DIR/pacman.txt" \
+             "$SHARED_DIR/aur.txt"    "$HOST_DIR/aur.txt" \
     | sort -u
 }
 
@@ -66,7 +67,7 @@ report() {
   dim "  fix: $fix"
 }
 
-printf 'Host: %s   lists: %s\n' "$HOSTNAME_SHORT" "$PKG_DIR"
+printf 'Host: %s   lists: %s + %s\n' "$HOSTNAME_SHORT" "$SHARED_DIR" "$HOST_DIR"
 
 # 1. Declared but missing. Usually an AUR build that failed during install.sh:
 #    the failure scrolls past in thousands of lines of build output, so this is
@@ -76,9 +77,9 @@ report "Declared in this repo but NOT installed" \
        "$(comm -23 <(printf '%s\n' "$DECLARED") <(printf '%s\n' "$INSTALLED"))"
 
 # 2. Installed on purpose but undeclared — a fresh machine would not get these.
-#    Either add them to packages/ or uninstall them here.
+#    Either declare them in shared/ or hosts/<hostname>/, or uninstall them here.
 report "Explicitly installed but NOT declared (a new host would not get these)" \
-       "add to packages/pacman.txt (or the per-host list), or 'sudo pacman -Rns <name>'" \
+       "add to shared/pacman.txt (or hosts/$HOSTNAME_SHORT/pacman.txt), or 'sudo pacman -Rns <name>'" \
        "$(comm -13 <(printf '%s\n' "$DECLARED") <(printf '%s\n' "$EXPLICIT") \
           | grep -vxF "$(printf '%s\n' "${EXPECTED_UNDECLARED[@]}")" || true)"
 
@@ -93,10 +94,10 @@ report "Declared but installed as a dependency (would show up as orphans)" \
 # 4. Global npm packages, same idea. npm is only used for tooling with no
 #    pacman/AUR equivalent, so this list should stay short.
 if command -v npm >/dev/null 2>&1; then
-  declared_npm="$(strip_list "$PKG_DIR/npm.txt" "$PKG_DIR/npm.$HOSTNAME_SHORT.txt" | sort -u)"
+  declared_npm="$(strip_list "$SHARED_DIR/npm.txt" "$HOST_DIR/npm.txt" | sort -u)"
   installed_npm="$(npm ls -g --depth=0 --parseable 2>/dev/null \
                    | sed -n 's|.*/node_modules/||p' | sort -u)"
-  report "Declared in packages/npm.txt but NOT installed globally" \
+  report "Declared in shared/npm.txt but NOT installed globally" \
          "./install.sh   (or 'sudo npm install -g <name>')" \
          "$(comm -23 <(printf '%s\n' "$declared_npm") <(printf '%s\n' "$installed_npm"))"
 fi
