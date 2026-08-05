@@ -22,9 +22,13 @@ therefore wins.
 
 ## Known hosts
 
-| Host | Hardware |
-| --- | --- |
-| `sohrab` | Intel NUC — Intel integrated graphics (i915), user `ali` |
+| Host | Hardware | Role |
+| --- | --- | --- |
+| `rostam` | Desktop PC — AMD CPU, NVIDIA RTX 2080 Super, dual-boots Windows | gaming, video calls, OBS streaming |
+| `sohrab` | Intel NUC — Intel integrated graphics (i915), ext4, systemd-boot | everyday workstation, no gaming |
+| `giv` | Dell laptop — Intel CPU, onboard Intel graphics | portable; Steam for light play only |
+
+User is `ali` on all three.
 
 ## GPU drivers, microcode and other per-host packages
 
@@ -38,7 +42,16 @@ explicitly so they land in the same pacman transaction:
 | --- | --- |
 | Intel | `vulkan-intel` `lib32-mesa` `lib32-vulkan-intel` `intel-media-driver` |
 | AMD | `vulkan-radeon` `lib32-mesa` `lib32-vulkan-radeon` |
-| NVIDIA | `nvidia-dkms` `nvidia-utils` `lib32-nvidia-utils` `egl-wayland` |
+| NVIDIA | `nvidia-open-dkms` `linux-headers` `nvidia-utils` `lib32-nvidia-utils` `egl-wayland` |
+
+The `lib32-*` rows are only needed where 32-bit clients run — in practice, where
+`steam` is declared. `sohrab` deliberately declares neither.
+
+**NVIDIA is `nvidia-open-*` now**, not `nvidia` / `nvidia-dkms`: NVIDIA dropped
+the proprietary kernel modules for Turing and newer, and Arch removed those
+packages from `[extra]` entirely. Turing (RTX 20xx) and later are supported by
+the open modules. `-dkms` needs `linux-headers` for every installed kernel;
+plain `nvidia-open` is prebuilt for the stock `linux` kernel only.
 
 CPU **microcode** belongs here for the same reason — it is vendor-specific:
 `intel-ucode` or `amd-ucode`. (`archinstall` installs it during a fresh install;
@@ -61,16 +74,9 @@ hardware — create the file before the first run.
 5. When `chezmoi init` prompts, answer `gpu` to match — it feeds
    `home/dot_config/hypr/env_nvidia.conf.tmpl`. See the top-level README.
 
-### Example: an NVIDIA desktop named `rostam`
-
-`hosts/rostam/pacman.txt`:
-```
-nvidia-dkms
-nvidia-utils
-lib32-nvidia-utils
-egl-wayland
-amd-ucode
-```
+`hosts/rostam/pacman.txt` is the worked example to copy from — an NVIDIA + AMD
+desktop, with the GPU, microcode, gaming and OBS blocks each commented with
+*why* that package is there.
 
 ## Pick the narrowest layer that works
 

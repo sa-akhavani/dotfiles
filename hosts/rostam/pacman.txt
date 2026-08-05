@@ -1,0 +1,68 @@
+# Per-host official-repo extras for the host named `rostam`
+# (desktop PC: AMD CPU, NVIDIA GeForce RTX 2080 Super, dual-boots Windows).
+# Appended to shared/pacman.txt — see hosts/README.md.
+#
+# What this machine is for: gaming, video calls, and streaming/recording (OBS).
+
+# ── GPU: RTX 2080 Super (Turing, TU104) ──────────────────────────────────────
+# There is no `nvidia` / `nvidia-dkms` to declare any more: NVIDIA dropped the
+# proprietary kernel modules for Turing and newer, so [extra] now only ships the
+# open ones. Turing IS supported by nvidia-open, so this is the correct package
+# for a 2080 Super — do not "fix" it back to nvidia-dkms, that name is gone.
+#
+# -dkms rather than plain `nvidia-open`, which is prebuilt against the stock
+# `linux` kernel only; DKMS survives switching to (or adding) linux-lts/-zen.
+nvidia-open-dkms
+# DKMS builds against the running kernel's headers. Without these the module
+# never builds and the machine boots to a black screen with no driver at all.
+# Add linux-lts-headers here too if this host ever gains the linux-lts kernel.
+linux-headers
+# Userspace half of the driver. nvidia-utils is what provides the virtual
+# `vulkan-driver`, and lib32-nvidia-utils `lib32-vulkan-driver` / `lib32-libgl`
+# — naming both explicitly is what keeps `steam` below from resolving those to
+# some other vendor's driver under --noconfirm.
+nvidia-utils
+lib32-nvidia-utils
+# EGLStream backend Xwayland and some Wayland clients still ask NVIDIA for.
+egl-wayland
+
+# CPU microcode — vendor-specific, so it belongs here rather than in the shared
+# list (an Intel host wants intel-ucode). The bootloader entry needs it as an
+# extra initrd; systemd-boot's pacman hooks handle that automatically.
+amd-ucode
+
+# ── Gaming ───────────────────────────────────────────────────────────────────
+# `steam` lives in [multilib], NOT the AUR; install.sh enables that repo before
+# the first -Syu. The 32-bit halves below matter as much as the 64-bit ones —
+# Proton and most older titles are 32-bit.
+steam
+vulkan-icd-loader
+lib32-vulkan-icd-loader
+# CPU governor / scheduling tweaks while a game runs. Opt-in per title via the
+# Steam launch option:  gamemoderun %command%
+gamemode
+lib32-gamemode
+# FPS / temperature / frametime overlay. Also opt-in per title:
+#   mangohud %command%    (or MANGOHUD=1)
+mangohud
+lib32-mangohud
+# Non-Steam games: Lutris manages the runners, wine runs Windows binaries
+# directly, protontricks pokes at a Steam title's Proton prefix (and pulls in
+# winetricks itself, so that one is not declared separately).
+lutris
+wine
+protontricks
+
+# ── Streaming / video calls ──────────────────────────────────────────────────
+# Screen capture goes through the PipeWire portal, which the shared list already
+# provides (xdg-desktop-portal-hyprland); NVENC encoding comes from nvidia-utils.
+obs-studio
+# OBS's "Start Virtual Camera" button needs the v4l2loopback kernel module to
+# have something to write into, so Zoom/Teams/Meet can pick the OBS scene as a
+# webcam. Same DKMS caveat as above: it needs linux-headers.
+v4l2loopback-dkms
+
+# Dual-boot notes, no packages required:
+#   * systemd-boot auto-discovers the Windows Boot Manager on the ESP — there is
+#     nothing to configure and os-prober is not used.
+#   * `ntfs-3g` (mounting the Windows partition) is already in shared/pacman.txt.

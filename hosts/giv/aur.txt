@@ -1,0 +1,6 @@
+# Per-host AUR extras for the host named `giv` (Dell laptop).
+# Appended to shared/aur.txt — see hosts/README.md.
+#
+# Nothing here yet. Laptop-only power management (tlp, auto-cpufreq) would be a
+# reasonable addition, but nothing in this repo configures it, so it is not
+# declared — add the package and its config together or not at all.

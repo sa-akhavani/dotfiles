@@ -158,18 +158,24 @@ data:
 | Dotfile *contents* | `*.tmpl` templates branching on host data | `home/` |
 | Whole dotfiles on/off | `.chezmoiignore` (itself a template) | `home/` |
 
-Known hosts: **`sohrab`** (this Intel NUC — Intel integrated graphics/i915,
-ext4, systemd-boot).
+Known hosts:
+
+| Host | Hardware | Role |
+| --- | --- | --- |
+| **`rostam`** | desktop PC — AMD CPU, NVIDIA RTX 2080 Super, dual-boots Windows | gaming, video calls, OBS streaming |
+| **`sohrab`** | this Intel NUC — Intel integrated graphics/i915, ext4, systemd-boot | everyday workstation, no gaming |
+| **`giv`** | Dell laptop — Intel CPU, onboard Intel graphics | portable; Steam for light play only |
 
 ### Setting up a new host, start to finish
 
 ```bash
-hostnamectl set-hostname rostam        # pick the name FIRST: everything keys off it
+hostnamectl set-hostname <host>        # pick the name FIRST: everything keys off it
 git clone https://github.com/sa-akhavani/dotfiles.git ~/dotfiles
 cd ~/dotfiles && git checkout arch-v3
-mkdir -p hosts/rostam
-cp hosts/sohrab/pacman.txt hosts/rostam/pacman.txt   # then edit: GPU + microcode
-./install.sh                           # reads shared/ + hosts/rostam/
+mkdir -p hosts/<host>
+# start from the closest existing host, then edit: GPU drivers + microcode
+cp hosts/rostam/pacman.txt hosts/<host>/pacman.txt
+./install.sh                           # reads shared/ + hosts/<host>/
 chezmoi init --apply --source ~/dotfiles
 ```
 

@@ -196,10 +196,22 @@ so hand him the command (he can run it with a `! ` prefix).
   contain an `init.lua` — which is why `plugins.copilot` needs its own explicit
   import line, and why the old `plugins/discard/` was dead weight, not active
   config.
-- Host `sohrab` (this machine): **Intel NUC**, Intel integrated graphics / i915,
-  **ext4** root (so no btrfs snapshots), systemd-boot, user `ali`. It was called
-  `archlinux` until 2026-08; a hostname that doesn't match a `hosts/<host>/`
-  directory means no GPU drivers and no microcode, so the two must stay in sync.
+- Three hosts, user `ali` on all of them; a hostname that doesn't match a
+  `hosts/<host>/` directory means no GPU drivers and no microcode, so the two
+  must stay in sync.
+  - `sohrab` (**this machine**): **Intel NUC**, Intel integrated graphics / i915,
+    **ext4** root (so no btrfs snapshots), systemd-boot. It was called
+    `archlinux` until 2026-08. Everyday workstation — **no gaming**, so no
+    `steam` and no `lib32-*` Vulkan/mesa here.
+  - `rostam`: desktop PC, **AMD CPU + NVIDIA RTX 2080 Super**, dual-boots
+    Windows. Gaming, video calls, OBS streaming — the full 32-bit stack.
+  - `giv`: **Dell laptop**, Intel CPU and onboard Intel graphics. `steam` for
+    light play only; the gaming extras (gamemode/mangohud/lutris/wine) are
+    `rostam`-only.
+- **NVIDIA is `nvidia-open-dkms` now.** Arch removed `nvidia` and `nvidia-dkms`
+  from `[extra]` when NVIDIA dropped the proprietary kernel modules for Turing
+  and newer; only `nvidia-open*` remains, and it covers the 2080 Super (Turing).
+  DKMS means `linux-headers` must be declared alongside it, per kernel.
 
 ## Working agreements
 

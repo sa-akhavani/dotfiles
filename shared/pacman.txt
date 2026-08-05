@@ -17,6 +17,7 @@ pacman-contrib
 keychain
 
 # Shell + terminal tools
+tmux
 zsh
 fastfetch
 zip

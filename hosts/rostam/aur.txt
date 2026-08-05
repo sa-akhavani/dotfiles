@@ -1,0 +1,8 @@
+# Per-host AUR extras for the host named `rostam` (gaming/streaming desktop).
+# Appended to shared/aur.txt — see hosts/README.md.
+#
+# Nothing here yet: everything this host needs for gaming and OBS is in the
+# official repos and lives in hosts/rostam/pacman.txt. Remember the conflict
+# rule when adding anything — never declare both halves of a replacement pair
+# (e.g. `obs-studio` above and an AUR package that provides/conflicts with it),
+# because pacman under --noconfirm refuses to swap them and aborts the AUR run.

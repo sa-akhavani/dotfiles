@@ -1,0 +1,35 @@
+# Per-host official-repo extras for the host named `giv`
+# (Dell laptop, Intel CPU with onboard Intel graphics — no discrete GPU).
+# Appended to shared/pacman.txt — see hosts/README.md.
+#
+# Casual machine: Steam is here for the occasional light title, not because this
+# is a gaming laptop. Anything that only makes sense on a real GPU (gamemode,
+# mangohud, lutris, wine) stays in hosts/rostam/pacman.txt.
+
+# ── GPU: Intel integrated (i915 / xe) ────────────────────────────────────────
+# Vulkan drivers for this iGPU, 64-bit and 32-bit. `steam` below depends on the
+# virtual packages vulkan-driver / lib32-vulkan-driver / lib32-libgl, each with
+# several providers; naming Intel's explicitly here puts them in the same pacman
+# transaction, so --noconfirm never picks another vendor's driver.
+vulkan-intel
+lib32-mesa
+lib32-vulkan-intel
+
+# CPU microcode — vendor-specific, so it belongs here rather than in the shared
+# list (an AMD host wants amd-ucode). The bootloader entry needs it as an extra
+# initrd; systemd-boot's pacman hooks handle that automatically.
+intel-ucode
+
+# Hardware video acceleration — the thing that keeps a laptop's fan quiet and
+# its battery alive during video playback. intel-media-driver is the modern
+# VA-API driver (Gen8+); libva-intel-driver only covers pre-Gen8 iGPUs and can
+# be dropped if this machine turns out to be new enough not to need it.
+intel-media-driver
+libva-intel-driver
+
+# ── Light gaming ─────────────────────────────────────────────────────────────
+# `steam` lives in [multilib], NOT the AUR; install.sh enables that repo before
+# the first -Syu.
+steam
+vulkan-icd-loader
+lib32-vulkan-icd-loader

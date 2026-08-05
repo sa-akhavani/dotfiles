@@ -5,7 +5,7 @@
 # Terminal
 # Built from git, not the official `wezterm` package
 wezterm-git
-tmux-git
+# tmux-git
 
 # Fonts
 ## Persian font
