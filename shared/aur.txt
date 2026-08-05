@@ -14,8 +14,28 @@ vazirmatn-fonts
 # Hypr ecosystem extras
 wlogout
 
-# App launcher + waybar-with-cava.
+# App launcher: walker + its elephant backend.
+# walker is only a frontend — every result it shows comes from the `elephant`
+# daemon, and each data source is a SEPARATE package that drops a .so into
+# /usr/lib/elephant. Installing `elephant` alone gets you a launcher that finds
+# nothing at all, which is exactly how this sat broken for a while.
+# Add a provider here to turn it on; see home/dot_config/walker/config.toml.
+#   desktopapplications  the app list itself — without it walker is empty
+#   calc                 `=` prefix and inline results; pulls in libqalculate
+#   websearch            `@` prefix
+#   runner               `>` prefix, runs anything in $PATH
+#   clipboard            `:` prefix; replaced cliphist. Pulls in imagemagick
+#   providerlist         `;` prefix, lists the above
 walker-bin
+elephant
+elephant-desktopapplications
+elephant-calc
+elephant-websearch
+elephant-runner
+elephant-clipboard
+elephant-providerlist
+
+# waybar-with-cava.
 waybar-cava
 libcava
 

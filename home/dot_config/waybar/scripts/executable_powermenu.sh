@@ -8,7 +8,7 @@ option4="󰏥 Suspend"
 
 options="$option0\n$option1\n$option2\n$option3\n$option4"
 
-chosen="$(echo -e "$options" | fuzzel --lines 5 --dmenu)"
+chosen="$(echo -e "$options" | walker --dmenu)"
 case $chosen in
     $option0)
         systemctl poweroff;;

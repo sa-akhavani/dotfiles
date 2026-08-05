@@ -169,10 +169,21 @@ so hand him the command (he can run it with a `! ` prefix).
   AUR (`hyprsunset`, `hyprshot`, `hyprpolkitagent`, `stylua`, `ttf-firacode-nerd`
   all did; `ttf-vazir` vanished entirely, renamed upstream to `vazirmatn-fonts`).
   `yay` papers over this, so only the validator catches it.
-- A config that names a *theme* needs that theme's package declared:
-  `fuzzel.ini` → `papirus-icon-theme`. (`gtk-*/settings.ini` used to name
-  `Bibata-Modern-Classic`; that line is commented out and `bibata-cursor-theme`
-  was dropped — re-declare it if the cursor line ever comes back.)
+- A config that names a *theme* needs that theme's package declared. Nothing
+  does right now: `fuzzel.ini` named `Papirus-Dark` and is gone, and
+  `gtk-*/settings.ini`'s `Bibata-Modern-Classic` line is commented out (so
+  `bibata-cursor-theme` was dropped). Re-declare either if the line comes back.
+- **Walker is only a frontend.** Every result comes from the `elephant` daemon,
+  and each data source is its own `elephant-<name>` AUR package dropping a `.so`
+  into `/usr/lib/elephant`. Installing `elephant` alone gives a launcher that
+  finds nothing — `elephant listproviders` printing empty is the tell. Elephant
+  must also already be running (`exec-once` in `hyprland.conf`).
+- Walker's `~/.config/walker/config.toml` is a **partial** override merged over
+  its built-in default (`PartialWalker` in `src/config.rs`); `providers.prefixes`
+  entries merge by prefix. But a **theme's `style.css` fully replaces** the
+  default one — `setup_css` does `load_from_file(f); return;` into a single
+  CssProvider — so `themes/gruvbox/style.css` has to be a whole copy of the
+  default stylesheet, not just the `@define-color` lines.
 - `.chezmoiignore` does **not** strip trailing `#` comments — a comment on the
   same line becomes part of the pattern. Own line only (CI checks this).
 - `pacman -Qdtq` orphans include packages declared in `shared/*.txt` and `hosts/*/*.txt` that were

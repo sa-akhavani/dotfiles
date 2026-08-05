@@ -23,7 +23,7 @@ directly-editable config files, no Nix required.
 | Shell | [zsh](https://github.com/ohmyzsh/ohmyzsh) + oh-my-zsh |
 | Status Bar | [Waybar](https://github.com/Alexays/Waybar) — the AUR `waybar-cava` build |
 | Notifications | [mako](https://github.com/emersion/mako) |
-| Launcher | [fuzzel](https://codeberg.org/dnkl/fuzzel) (bound to `$mainMod+R`); [walker](https://github.com/abenz1267/walker) also installed |
+| Launcher | [walker](https://github.com/abenz1267/walker) + [elephant](https://github.com/abenz1267/elephant) (`$mainMod+R`; clipboard history on `$mainMod+V`) |
 | Lock / Idle | [hyprlock](https://github.com/hyprwm/hyprlock) + [hypridle](https://github.com/hyprwm/hypridle) |
 | File Manager | [yazi](https://github.com/sxyazi/yazi) (TUI) / [Thunar](https://docs.xfce.org/xfce/thunar/start) (`$mainMod+E`) |
 | Audio | PipeWire + WirePlumber |
@@ -56,7 +56,7 @@ home/                        # chezmoi source: everything here maps into $HOME
   dot_gitconfig              # -> ~/.gitconfig
   Pictures/                  # -> ~/Pictures  (wallpapers + lockscreen images)
   dot_config/                # -> ~/.config
-    hypr/  waybar/  nvim/  wezterm/  mako/  cava/  fuzzel/  tmux/
+    hypr/  waybar/  nvim/  wezterm/  mako/  cava/  walker/  tmux/
     fastfetch/  btop/  lsd/  wlogout/  swappy/  nwg-look/  Thunar/
     gtk-3.0/settings.ini  gtk-4.0/settings.ini
     hypr/scripts/executable_*.sh    # marked executable by chezmoi
@@ -328,6 +328,48 @@ Host nuc-alpha
     User ali
 ```
 
+### Launcher: walker + elephant
+`$mainMod+R` opens walker; `$mainMod+V` opens the clipboard history. Both
+replaced fuzzel (and, for the clipboard, cliphist) — neither is installed now.
+
+**Walker is only a frontend.** Everything it lists comes from the `elephant`
+daemon, and every data source is a *separate* package that drops a plugin into
+`/usr/lib/elephant`. Installing `elephant` on its own gives a launcher that
+finds nothing at all. Check with:
+
+```bash
+elephant listproviders     # empty output = no providers installed
+pgrep -a elephant          # nothing = the daemon is not running
+```
+
+Elephant is started by `exec-once = elephant` in `hypr/hyprland.conf`, so it
+comes up with the session. (`elephant service enable` would instead install a
+systemd *user* unit; `shared/services.txt` only handles root units, which is why
+this repo uses `exec-once` — the same way waybar and hypridle start.)
+
+Type a prefix to restrict the search to one provider:
+
+| Prefix | Provider | Package |
+| --- | --- | --- |
+| *(none)* | applications, calculator, web search | `elephant-desktopapplications`, `elephant-calc`, `elephant-websearch` |
+| `>` | run any command in `$PATH` | `elephant-runner` |
+| `:` | clipboard history | `elephant-clipboard` |
+| `=` | calculator | `elephant-calc` |
+| `@` | web search | `elephant-websearch` |
+| `;` | list the available providers | `elephant-providerlist` |
+
+`runner` is deliberately kept off the no-prefix search: it matches every
+executable in `$PATH` and would bury the application results. Move it into
+`providers.default` in `home/dot_config/walker/config.toml` if you disagree.
+
+Config is a **partial** override merged over walker's built-in default (the
+packaged copy is at `/etc/xdg/walker/config.toml` if you want to see everything
+that is settable). The gruvbox theme is the exception: a theme's `style.css`
+*replaces* the default stylesheet rather than extending it, so
+`walker/themes/gruvbox/style.css` is a full copy of the default with only the
+`@define-color` lines changed. Re-diff it against
+`/etc/xdg/walker/themes/default/style.css` after a walker update.
+
 ### Waybar + Cava
 The official `waybar` package ships without the cava module, so this repo uses
 the AUR `waybar-cava` build (+ `libcava`) instead.
@@ -356,9 +398,11 @@ Noto, Liberation, and Vazirmatn for Persian (`vazirmatn-fonts` — the old
 `ttf-vazir` was deleted from the AUR when upstream renamed the project). Avoid
 mixing multiple patched Nerd Font variants.
 
-Icon and cursor themes are named by the configs, so they have to be installed
-too: `papirus-icon-theme` (`fuzzel.ini` sets `icon-theme=Papirus-Dark`) and
-`bibata-cursor-theme` (`gtk-3.0/settings.ini`). Both are declared.
+A theme named by a config has to be installed too, or it silently falls back.
+Nothing names one at the moment: `fuzzel.ini` set `icon-theme=Papirus-Dark` and
+is gone (walker takes its icons from the GTK icon theme instead), and the
+`Bibata-Modern-Classic` line in `gtk-3.0/settings.ini` is commented out.
+`papirus-icon-theme` is still declared; `bibata-cursor-theme` is not.
 
 ### Wrong temperature in Waybar
 ```bash

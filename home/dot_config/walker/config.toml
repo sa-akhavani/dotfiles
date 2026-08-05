@@ -1,0 +1,26 @@
+# Walker — application launcher (replaced fuzzel).
+#
+# This file is a PARTIAL override: walker loads its built-in default config
+# first (the packaged copy is readable at /etc/xdg/walker/config.toml) and
+# merges this on top, so only genuine differences belong here. Nested tables
+# merge too, and `providers.prefixes` entries are matched by prefix and updated
+# rather than replacing the whole list — so the defaults below stay live:
+#
+#   ;  providerlist     >  runner      /  files      .  symbols
+#   =  calc             @  websearch   :  clipboard  $  windows
+#
+# Walker needs the `elephant` daemon running, and one `elephant-<name>` package
+# per provider — a provider with no package installed simply returns nothing.
+# Both are declared in shared/aur.txt; elephant is started by an exec-once in
+# hypr/hyprland.conf.
+
+theme = "gruvbox"
+
+[providers]
+# Queried on every keystroke with no prefix. `runner` is deliberately NOT here:
+# it matches every executable in $PATH, which buries the application results
+# this launcher mostly exists to show. It stays one `>` away.
+default = ["desktopapplications", "calc", "websearch"]
+
+# Shown before anything is typed — just the app list, like fuzzel did.
+empty = ["desktopapplications"]

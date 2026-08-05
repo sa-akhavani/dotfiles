@@ -42,7 +42,7 @@
   "modules-left": [
     "custom/power",
     "hyprland/workspaces",
-    "custom/menu", // custom launcher (fuzzel)
+    "custom/menu", // custom launcher (walker)
     "group/usage", // temprature, cpu, memory, disk
     "cava"
   ],

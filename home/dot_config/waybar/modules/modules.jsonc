@@ -19,7 +19,7 @@
 
   "custom/menu": {
     "format": "󰣇",
-    "on-click": "fuzzel --config=$HOME/.config/fuzzel/fuzzel.ini",
+    "on-click": "walker",
     "tooltip": false
     // "on-click": "$HOME/.config/waybar/scripts/menu",
   },

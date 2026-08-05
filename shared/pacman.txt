@@ -80,7 +80,6 @@ grim
 slurp
 swappy
 wl-clipboard
-cliphist
 
 # Desktop shell / utilities
 # `waybar` is deliberately NOT here: waybar-cava (packages/aur.txt) declares
@@ -88,7 +87,6 @@ cliphist
 # remove a conflicting installed package, so installing both aborts the AUR
 # half of the run. The AUR package is the one that has the cava module.
 lm_sensors
-fuzzel
 mako
 libnotify
 nwg-look
@@ -148,9 +146,10 @@ ttf-firacode-nerd
 ttf-nerd-fonts-symbols-mono
 xkeyboard-config
 
-# Icon + cursor themes named by the configs. Papirus-Dark is set in
-# ~/.config/fuzzel/fuzzel.ini, so without it the launcher shows no icons.
-# (The Bibata cursor named by gtk-*/settings.ini comes from aur.txt.)
+# Icon theme. Was named directly by fuzzel.ini; walker replaced fuzzel and takes
+# its icons from the GTK icon theme instead (gtk-*/settings.ini, currently
+# Adwaita), so nothing in this repo points at Papirus any more — it is kept
+# because it is the nicer set to switch those files to.
 papirus-icon-theme
 
 # Session / misc
