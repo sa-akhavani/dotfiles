@@ -2,10 +2,6 @@
 # (Dell laptop, Intel CPU with onboard Intel graphics — no discrete GPU).
 # Appended to shared/pacman.txt — see hosts/README.md.
 #
-# Casual machine: Steam is here for the occasional light title, not because this
-# is a gaming laptop. Anything that only makes sense on a real GPU (gamemode,
-# mangohud, lutris, wine) stays in hosts/rostam/pacman.txt.
-
 # ── GPU: Intel integrated (i915 / xe) ────────────────────────────────────────
 # Vulkan drivers for this iGPU, 64-bit and 32-bit. `steam` below depends on the
 # virtual packages vulkan-driver / lib32-vulkan-driver / lib32-libgl, each with
@@ -33,3 +29,6 @@ libva-intel-driver
 steam
 vulkan-icd-loader
 lib32-vulkan-icd-loader
+
+# Other useful apps
+discord

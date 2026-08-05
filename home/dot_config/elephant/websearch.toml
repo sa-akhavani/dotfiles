@@ -1,0 +1,24 @@
+# Elephant — `websearch` provider (walker's `@` prefix, and part of the default
+# no-prefix result set). Elephant is configured per provider, one file each, in
+# ~/.config/elephant/ — walker's own config.toml knows nothing about any of this.
+#
+# `elephant generate doc websearch` prints every option this file accepts.
+
+# Defining entries REPLACES the built-in default (which was Google) rather than
+# adding to it, so both engines are listed explicitly. `default = true` marks the
+# one that shows up when websearch is queried without its prefix — i.e. the
+# engine you get by just typing into walker.
+[[entries]]
+default = true
+name = "DuckDuckGo"
+url = "https://duckduckgo.com/?q=%TERM%"
+
+# Still reachable per-query: type `g ` inside walker to force this one instead.
+[[entries]]
+name = "Google"
+prefix = "g"
+url = "https://www.google.com/search?q=%TERM%"
+
+# Results are handed to `xdg-open` (the provider default), so they open in
+# whatever browser is registered as the default — firefox here, per
+# shared/pacman.txt. Nothing to set.

@@ -5,7 +5,6 @@
 # Terminal
 # Built from git, not the official `wezterm` package
 wezterm-git
-# tmux-git
 
 # Fonts
 ## Persian font
@@ -18,7 +17,7 @@ wlogout
 # walker is only a frontend — every result it shows comes from the `elephant`
 # daemon, and each data source is a SEPARATE package that drops a .so into
 # /usr/lib/elephant. Installing `elephant` alone gets you a launcher that finds
-# nothing at all, which is exactly how this sat broken for a while.
+# nothing at all.
 # Add a provider here to turn it on; see home/dot_config/walker/config.toml.
 #   desktopapplications  the app list itself — without it walker is empty
 #   calc                 `=` prefix and inline results; pulls in libqalculate
@@ -35,17 +34,14 @@ elephant-runner
 elephant-clipboard
 elephant-providerlist
 
-# waybar-with-cava.
+# Waybar and modules
 waybar-cava
 libcava
 
-# Rootless Docker. `dockerd-rootless-setuptool.sh` is NOT part of Arch's
-# `docker` package — it only ships here, and install.sh skips the whole rootless
-# setup (leaving Docker unusable) when this is missing.
+# Rootless Docker.
 docker-rootless-extras
 
 # Editors / IDEs / agents
-# (neovim itself is official — see shared/pacman.txt.)
 claude-code
 visual-studio-code-bin
 cursor-bin
@@ -60,6 +56,6 @@ jellyfin-desktop
 spotify
 google-chrome
 
-# Editor tooling (LSP / formatters not in official repos).
-hyprls
 
+# Audio
+pipemixer

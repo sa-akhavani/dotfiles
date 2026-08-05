@@ -28,6 +28,7 @@ lsd
 ripgrep
 bat
 fd
+axel
 
 
 # Shell/editor config stack and syntax highlighting
@@ -53,6 +54,7 @@ postgresql
 
 # LSPs / linters / formatters
 ruff
+# maybe add ty? it's a python language server
 typescript-language-server
 lua-language-server
 clang
@@ -83,16 +85,14 @@ swappy
 wl-clipboard
 
 # Desktop shell / utilities
-# `waybar` is deliberately NOT here: waybar-cava (packages/aur.txt) declares
-# `conflicts=waybar provides=waybar`, and pacman under --noconfirm refuses to
-# remove a conflicting installed package, so installing both aborts the AUR
-# half of the run. The AUR package is the one that has the cava module.
 lm_sensors
 mako
 libnotify
 nwg-look
 qt5ct
 qt6ct
+
+# File manager / PDF / Photo viewer
 yazi
 # GUI file manager bound to $mainMod+E in hypr/bindings.conf; its config lives in
 # home/dot_config/Thunar. gvfs gives it trash, mounting and network browsing.
@@ -109,12 +109,10 @@ pipewire-alsa
 pipewire-pulse
 pipewire-jack
 wireplumber
-rtkit
-pamixer
 pavucontrol
 easyeffects
 playerctl
-pulsemixer
+rtkit
 
 # Bluetooth
 bluez
@@ -139,7 +137,6 @@ noto-fonts-cjk
 noto-fonts-emoji
 ttf-fira-code
 ttf-liberation
-# The patched FiraCode Nerd Font. Was an AUR package; now in [extra].
 ttf-firacode-nerd
 # The standalone Nerd Font glyph set (README calls it "Symbols Nerd Font Mono").
 # It is what yazi and the waybar modules fall back to for icons; the patched
@@ -147,35 +144,19 @@ ttf-firacode-nerd
 ttf-nerd-fonts-symbols-mono
 xkeyboard-config
 
-# Icon theme. Was named directly by fuzzel.ini; walker replaced fuzzel and takes
-# its icons from the GTK icon theme instead (gtk-*/settings.ini, currently
-# Adwaita), so nothing in this repo points at Papirus any more — it is kept
-# because it is the nicer set to switch those files to.
-papirus-icon-theme
-
 # Session / misc
-firefox
 dconf
 flatpak
 gnupg
 mtr
-# Virtual input device, used by the fusuma gesture setup (see README). Never
-# give it sudo — the `input` group membership install.sh adds is enough.
-ydotool
+
 
 # Display manager
-greetd
 greetd-tuigreet
 
 # Apps
+firefox
 telegram-desktop
 signal-desktop
 vlc
-discord
 obsidian
-axel
-cava
-socat
-jq
-gparted
-ntfs-3g

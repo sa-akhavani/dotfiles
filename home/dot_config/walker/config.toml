@@ -11,8 +11,14 @@
 #
 # Walker needs the `elephant` daemon running, and one `elephant-<name>` package
 # per provider — a provider with no package installed simply returns nothing.
-# Both are declared in shared/aur.txt; elephant is started by an exec-once in
+# Both are declared in shared/aur.txt; elephant and `walker
+# --gapplication-service` are both started by exec-once lines in
 # hypr/hyprland.conf.
+#
+# What a provider RETURNS is not configured here — that lives in elephant's own
+# per-provider files in ~/.config/elephant/ (source: home/dot_config/elephant/).
+# The search engines behind `@` and the .desktop `Actions=` entries (Firefox's
+# "New Private Window") are set there, not in this file.
 
 theme = "gruvbox"
 

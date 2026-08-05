@@ -2,11 +2,6 @@
 # (Intel NUC, Intel integrated graphics / i915).
 # Appended to shared/pacman.txt — see hosts/README.md.
 #
-# No gaming on this box: `steam` and the 32-bit Vulkan/mesa stack it drags in
-# live in hosts/rostam/pacman.txt and hosts/giv/pacman.txt instead. Dropping
-# them here does not uninstall anything — ./bin/pkg-diff.sh will report them as
-# installed-but-undeclared until they are removed by hand (see MAINTENANCE.md).
-
 # ── GPU: Intel integrated (i915) ─────────────────────────────────────────────
 # 64-bit Vulkan only; nothing on this host needs the lib32 halves. Declared
 # explicitly rather than left to a virtual `vulkan-driver` dependency so
@@ -24,3 +19,9 @@ intel-ucode
 # applications still request.
 intel-media-driver
 libva-intel-driver
+
+
+# Coding
+
+# Tools
+jq

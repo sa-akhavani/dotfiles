@@ -66,3 +66,6 @@ v4l2loopback-dkms
 #   * systemd-boot auto-discovers the Windows Boot Manager on the ESP — there is
 #     nothing to configure and os-prober is not used.
 #   * `ntfs-3g` (mounting the Windows partition) is already in shared/pacman.txt.
+
+# Other usefull Apps
+discord

@@ -1,0 +1,20 @@
+# Elephant — `desktopapplications` provider (the app list walker shows by
+# default). One file per provider in ~/.config/elephant/; see websearch.toml.
+#
+# `elephant generate doc desktopapplications` prints every option.
+
+# Include the `Actions=` entries from each .desktop file as results of their own.
+# Off by default, which is why only plain "Firefox" showed up even though
+# /usr/share/applications/firefox.desktop declares new-window,
+# new-private-window and open-profile-manager — fuzzel listed these, walker
+# needs this flag to. Typing `priv` now finds "Firefox New Private Window".
+show_actions = true
+
+# ...but only once something has been typed. Without this the pre-typing list
+# (walker's `empty` provider set) grows by every action of every installed app.
+show_actions_without_query = false
+
+# How loosely an action name may match before it is offered. This is elephant's
+# default, spelled out because it is the knob to turn if the action rows feel too
+# eager or too hard to summon.
+action_min_score = 20
