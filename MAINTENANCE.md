@@ -55,6 +55,11 @@ sudo DIFFPROG="nvim -d" pacdiff               # walk and merge them
 *(snapshot: `/etc/locale.gen.pacnew`, `/etc/pacman.d/mirrorlist.pacnew`,
 `/etc/makepkg.conf.d/fortran.conf.pacnew` pending.)*
 
+`/etc/security/faillock.conf` is the one config this repo installs that pacman
+also owns, so a `pam` upgrade will offer a `.pacnew` for it. Keeping the repo's
+version is the right answer; if you take the `.pacnew` by mistake, the next
+`./install.sh` puts the policy back.
+
 **Stale AUR builds.** When a repo upgrade bumps a library soname (qt5, electron,
 ffmpeg…), AUR packages linked against the old one stay broken until rebuilt.
 Doing repos and AUR as two steps makes it obvious which half failed.

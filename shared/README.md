@@ -99,7 +99,11 @@ Example: `shared/etc/ssh/sshd_config.d/10-dotfiles.conf.in` →
 | --- | --- |
 | `etc/greetd/config.toml` | greetd → tuigreet → `start-hyprland` |
 | `etc/bluetooth/main.conf` | experimental + fast-connect + auto-enable |
+| `etc/security/faillock.conf` | 5 failed password attempts before a 10-minute lock-out |
 | `etc/ssh/sshd_config.d/10-dotfiles.conf.in` | no password auth, no root login, single allowed user |
+
+`security/faillock.conf` is the only file here that pacman also owns (`pam`), so a
+`pam` upgrade will drop a `faillock.conf.pacnew` beside it — see MAINTENANCE.md.
 
 ## Adding something
 
