@@ -34,8 +34,13 @@ alias td='tmux detach'
 alias update='chezmoi apply'
 # Edit a dotfile through chezmoi (edits the source, then apply)
 alias dots='chezmoi'
-# Full system + AUR package upgrade
-alias upgrade='sudo pacman -Syu && yay -Syu'
+# Full system + AUR upgrade, repos first. The AUR half is `-Sua`, not `-Syu`:
+# -Syu there would re-sync and redo the repo half pacman just did. See
+# MAINTENANCE.md §1.
+alias upgrade='sudo pacman -Syu && yay -Sua'
+# Preview both halves without changing anything. checkupdates exits 2 when there
+# is nothing to do, so the halves are chained with `;` rather than `&&`.
+alias upcheck='checkupdates; yay -Qua'
 
 # ---- keychain (ssh-agent) ----
 # keychain 3.x uses verbs (`add`) and dropped `--agents` (the agent type is

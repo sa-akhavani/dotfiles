@@ -1,0 +1,13 @@
+# Global npm packages — shared across ALL hosts.
+# One package per line. Blank lines and #comments are ignored.
+# Per-host extras go in  packages/npm.<hostname>.txt
+#
+# Only for tooling that has no official-repo or AUR package worth using. Prefer
+# pacman/AUR when there is a choice: `sudo npm -g` writes root-owned files into
+# /usr/lib/node_modules that pacman does not know about, so they survive
+# uninstalls and never show up in a package audit.
+
+# Formatters / linters used by Neovim (conform.nvim, nvim-lint)
+eslint_d
+prettier
+js-beautify

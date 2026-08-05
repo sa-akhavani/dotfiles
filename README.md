@@ -17,15 +17,15 @@ directly-editable config files, no Nix required.
 | OS | [Arch Linux](https://archlinux.org/) |
 | Window Manager | [Hyprland](https://github.com/hyprwm/Hyprland) (Wayland) |
 | Display Manager | [greetd](https://sr.ht/~kennylevinsen/greetd/) + [tuigreet](https://github.com/apognu/tuigreet) |
-| Terminal | [WezTerm](https://github.com/wez/wezterm) / [kitty](https://sw.kovidgoyal.net/kitty/) |
+| Terminal | [WezTerm](https://github.com/wez/wezterm) (`wezterm-git`, see `packages/aur.txt`) |
 | Multiplexer | [tmux](https://github.com/tmux/tmux) (+ TPM) |
-| Editor | [Neovim](https://github.com/neovim/neovim) |
+| Editor | [Neovim](https://github.com/neovim/neovim) (lazy.nvim) |
 | Shell | [zsh](https://github.com/ohmyzsh/ohmyzsh) + oh-my-zsh |
-| Status Bar | [Waybar](https://github.com/Alexays/Waybar) |
+| Status Bar | [Waybar](https://github.com/Alexays/Waybar) — the AUR `waybar-cava` build |
 | Notifications | [mako](https://github.com/emersion/mako) |
-| Launcher | [fuzzel](https://codeberg.org/dnkl/fuzzel) / [walker](https://github.com/abenz1267/walker) |
+| Launcher | [fuzzel](https://codeberg.org/dnkl/fuzzel) (bound to `$mainMod+R`); [walker](https://github.com/abenz1267/walker) also installed |
 | Lock / Idle | [hyprlock](https://github.com/hyprwm/hyprlock) + [hypridle](https://github.com/hyprwm/hypridle) |
-| File Manager | [yazi](https://github.com/sxyazi/yazi) / [nemo](https://github.com/linuxmint/nemo) |
+| File Manager | [yazi](https://github.com/sxyazi/yazi) (TUI) / [Thunar](https://docs.xfce.org/xfce/thunar/start) (`$mainMod+E`) |
 | Audio | PipeWire + WirePlumber |
 | Dotfile manager | [chezmoi](https://www.chezmoi.io/) |
 
@@ -36,49 +36,98 @@ conventions: `dot_` → `.`, `executable_` → `chmod +x`.
 
 ```
 .chezmoiroot                 # -> "home" (chezmoi source dir)
-install.sh                   # pacman/AUR installer + system services (run once)
-README.md
-Pictures/                    # wallpapers + lockscreen images
+install.sh                   # pacman/AUR installer + system services (idempotent)
+README.md  MAINTENANCE.md  todo.md
+bin/                         # repo maintenance helpers, all read-only
+  pkg-diff.sh                #   drift: repo lists vs. what is installed here
+  validate-packages.sh       #   every declared name still resolves; no conflicts
+.github/workflows/ci.yml     # bash -n + shellcheck + the two checks above
 packages/                    # package lists, shared + per-host  (packages/README.md)
-  pacman.txt  aur.txt
-  pacman.<hostname>.txt  aur.<hostname>.txt
+  pacman.txt  aur.txt  npm.txt
+  pacman.<hostname>.txt  aur.<hostname>.txt  npm.<hostname>.txt
 system/                      # root-owned config, applied with sudo  (system/README.md)
   etc/…                      #   copied to /etc  (etc/greetd/config.toml -> /etc/greetd/config.toml)
   services.txt               #   systemd units to enable
   hosts/<hostname>/          #   per-host etc/ + services.txt
-home/
+home/                        # chezmoi source: everything here maps into $HOME
   .chezmoiignore
+  .chezmoi.toml.tmpl         # -> per-host prompts (currently: gpu)
   dot_zshrc                  # -> ~/.zshrc
   dot_gitconfig              # -> ~/.gitconfig
+  Pictures/                  # -> ~/Pictures  (wallpapers + lockscreen images)
   dot_config/                # -> ~/.config
-    hypr/  waybar/  nvim/  kitty/  wezterm/  mako/  cava/  wofi/  fuzzel/
-    fastfetch/  btop/  lsd/  wlogout/  swappy/  nwg-look/  Thunar/  fontconfig/
-    tmux/tmux.conf
+    hypr/  waybar/  nvim/  wezterm/  mako/  cava/  fuzzel/  tmux/
+    fastfetch/  btop/  lsd/  wlogout/  swappy/  nwg-look/  Thunar/
     gtk-3.0/settings.ini  gtk-4.0/settings.ini
     hypr/scripts/executable_*.sh    # marked executable by chezmoi
 ```
 
+The wallpapers live **inside** `home/` on purpose: `hypr/hyprpaper.conf` and the
+lockscreen script read `~/Pictures/Wallpapers` and `~/Pictures/Lockscreen`, and
+chezmoi can only deploy what is under its source root. A top-level `Pictures/`
+was invisible to both chezmoi and `install.sh`, so those paths never existed on a
+fresh machine and hyprpaper preloaded a missing file.
+
 ## Installation (fresh machine)
 
-### 1. Base Arch install
-Follow the [official guide](https://wiki.archlinux.org/title/Installation_guide).
-Match the previous system settings:
-- Boot loader: **systemd-boot** (EFI)
-- Hostname: `sohrab`
-- Timezone: `America/New_York`
-- Locale: `en_US.UTF-8`
-- Console keymap: `us`
-- Create user `ali` with sudo (wheel).
+### 1. Base Arch install — use `archinstall`
+
+Boot the official ISO and run the guided installer that ships with it:
+
+```bash
+archinstall
+```
+
+It is much faster than the [manual
+guide](https://wiki.archlinux.org/title/Installation_guide) and gets partitioning,
+`fstab`, the bootloader, the initramfs and CPU microcode right on its own. The
+answers that matter for this repo:
+
+| archinstall screen | Answer |
+| --- | --- |
+| Bootloader | **systemd-boot** |
+| Disk configuration → filesystem | **ext4** (btrfs if you want snapshots — see MAINTENANCE.md) |
+| Profile | **Minimal** — no desktop |
+| Audio | **Pipewire** |
+| Network configuration | **NetworkManager** |
+| Kernels | `linux` (`install.sh` adds `linux-lts` as a fallback) |
+| Additional packages | `git` — enough to clone this repo |
+| User account | `ali`, **in the `wheel` group** (sudo) |
+| Hostname | see the box below — everything per-host keys off it |
+| Timezone / locale / keymap | `America/New_York`, `en_US.UTF-8`, `us` |
+
+Pick the **Minimal** profile, not a desktop one: a desktop profile installs its
+own greeter and compositor, which then fight greetd + Hyprland. Everything
+graphical in this setup comes from `install.sh`.
+
+> **The hostname is load-bearing.** All four per-host layers key off
+> `hostnamectl --static`. This laptop is **`archlinux`**, and
+> `packages/pacman.archlinux.txt` is what gives it its Intel Vulkan drivers,
+> microcode and VA-API drivers. If you pick a different name, rename that file
+> to match — `install.sh` prints a loud warning when no per-host list matches,
+> because a host without one silently gets no GPU drivers.
+
+If you install by hand instead, note that `archinstall` would otherwise have
+installed the CPU microcode for you; the shared package list declares
+`linux-firmware`, `sof-firmware`, `efibootmgr` and `linux-lts`, and the per-host
+list declares the microcode, so a re-run of `./install.sh` fills those gaps.
 
 ### 2. Clone and run the installer
 ```bash
 git clone https://github.com/sa-akhavani/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 git checkout arch-v3          # this branch
+./install.sh --dry-run        # optional: print every change, apply nothing
 ./install.sh                  # enables [multilib], installs pacman + AUR packages,
                               # /etc configs (system/), services, oh-my-zsh, tmux TPM
 ```
-`./install.sh --no-aur` installs only official repo packages + services.
+
+| Flag | Effect |
+| --- | --- |
+| *(none)* | everything: packages, `/etc`, services, oh-my-zsh, TPM |
+| `--no-aur` | official repo packages + services only; skips `yay` and the AUR |
+| `--dry-run` | prints every command it *would* run and changes nothing (needs no sudo password) |
+| `--help` | usage |
 
 ### 3. Apply the dotfiles with chezmoi
 `chezmoi` is installed by `install.sh`. Point it at this repo and apply:
@@ -104,10 +153,13 @@ data:
 
 | Layer | Mechanism | Where |
 | --- | --- | --- |
-| Packages | `pacman.<hostname>.txt`, `aur.<hostname>.txt` appended to the shared lists | `packages/` |
+| Packages | `pacman.<hostname>.txt`, `aur.<hostname>.txt`, `npm.<hostname>.txt` appended to the shared lists | `packages/` |
 | `/etc` + services | `hosts/<hostname>/etc/…`, `hosts/<hostname>/services.txt` | `system/` |
 | Dotfile *contents* | `*.tmpl` templates branching on host data | `home/` |
 | Whole dotfiles on/off | `.chezmoiignore` (itself a template) | `home/` |
+
+Known hosts: **`archlinux`** (this Dell laptop — Intel CometLake/i915, ext4,
+systemd-boot).
 
 ### Setting up a new host, start to finish
 
@@ -115,9 +167,15 @@ data:
 hostnamectl set-hostname rostam        # pick the name FIRST: everything keys off it
 git clone https://github.com/sa-akhavani/dotfiles.git ~/dotfiles
 cd ~/dotfiles && git checkout arch-v3
+cp packages/pacman.archlinux.txt packages/pacman.rostam.txt   # then edit: GPU + microcode
 ./install.sh                           # reads packages/*.rostam.txt + system/hosts/rostam/
 chezmoi init --apply --source ~/dotfiles
 ```
+
+Create the per-host package list **before** the first `./install.sh`, not after:
+it is the only place the GPU/Vulkan drivers and the CPU microcode are declared.
+`install.sh` warns when no list matches the hostname, and lists the ones that do
+exist, but it cannot guess which GPU the machine has.
 
 `chezmoi init` prompts once for this host's data (currently **GPU vendor**),
 stores it in `~/.config/chezmoi/chezmoi.toml` under `[data]`, and reuses it for
@@ -155,7 +213,7 @@ Per-host monitor layout, the common case:
 ```gotmpl
 {{- if eq .chezmoi.hostname "rostam" }}
 monitor = DP-1, 3440x1440@144, 0x0, 1
-{{- else if eq .chezmoi.hostname "sohrab" }}
+{{- else if eq .chezmoi.hostname "archlinux" }}
 monitor = eDP-1, 1920x1080@60, 0x0, 1
 {{- else }}
 monitor = , preferred, auto, 1      # sane fallback for an unknown host
@@ -171,12 +229,14 @@ Preview what a template renders as before applying:
 leave it unmanaged there:
 
 ```gotmpl
-{{ if ne .chezmoi.hostname "sohrab" }}
+{{ if ne .chezmoi.hostname "archlinux" }}
 # desktops have no battery — comments must be on their own line, chezmoi does
 # not strip a trailing `#` and would make it part of the pattern
 .config/waybar/modules/battery.jsonc
 {{ end }}
 ```
+
+(CI enforces that own-line rule; see [Verifying a change](#verifying-a-change).)
 
 ### 4. Secrets / anything not committed
 
@@ -200,7 +260,13 @@ Keep host-specific secrets out of the repo: reference them from templates via
 | `chezmoi add ~/.config/foo` | start tracking a new config file |
 | `chezmoi re-add` | pull changes you made directly in `$HOME` back into the source |
 | `chezmoi cd` | drop into the source repo (`home/`) to commit/push |
-| `upgrade` | `sudo pacman -Syu && yay -Syu` — upgrade all packages |
+| `upcheck` | `checkupdates; yay -Qua` — preview both halves of an upgrade, change nothing |
+| `upgrade` | `sudo pacman -Syu && yay -Sua` — upgrade repos first, then the AUR |
+
+The AUR half of `upgrade` is `yay -Sua`, **not** `-Syu`: `-Syu` there re-syncs and
+redoes the repo half pacman just did. Doing them as two steps also makes it
+obvious which half broke. See [MAINTENANCE.md](MAINTENANCE.md) for what actually
+breaks Arch upgrades, orphan/cache cleanup, and how to roll a package back.
 
 Typical loop: `chezmoi edit <file>` → `chezmoi apply` → `chezmoi cd && git commit -am ... && git push`.
 
@@ -211,6 +277,38 @@ per-host variant) and re-run `./install.sh` — or just `sudo pacman -S <pkg>` /
 To add a **`/etc` file or a service**: put the file under `system/etc/` at its
 real path, or the unit name in `system/services.txt`, then re-run `./install.sh`.
 See [`system/README.md`](system/README.md).
+
+### Keeping the lists honest
+
+Nothing stops the machine and the repo from drifting apart: a package installed
+by hand is not declared, and an AUR build that failed during `install.sh` scrolls
+past unnoticed. Both directions are reported by:
+
+```bash
+./bin/pkg-diff.sh          # read-only; exits 1 when there is drift
+```
+
+| It reports | What to do |
+| --- | --- |
+| Declared but not installed | re-run `./install.sh`, or `yay -S <name>` without `--noconfirm` to see the real error |
+| Explicitly installed but not declared | add it to `packages/`, or `sudo pacman -Rns <name>` |
+| Declared but installed as a *dependency* | `sudo pacman -D --asexplicit <names>` — otherwise `pacman -Qdt` lists them as orphans and a routine cleanup deletes packages this repo says you need |
+
+### Verifying a change
+
+There is no test suite, so:
+
+```bash
+bash -n install.sh                 # after every edit to it
+./install.sh --dry-run             # what a real run would do; needs no password
+./bin/validate-packages.sh         # every declared name still resolves, no conflicts
+shellcheck --severity=warning install.sh bin/*.sh
+chezmoi diff                       # what an apply would change in $HOME
+```
+
+`.github/workflows/ci.yml` runs the same checks on every push (and weekly, since
+package names rot on their own — that is how five packages in this repo were
+found to have moved from the AUR into `[extra]`).
 
 ## Notes and troubleshooting
 
@@ -230,16 +328,36 @@ Host nuc-alpha
 ```
 
 ### Waybar + Cava
-The official `waybar` package ships without the cava module. This repo installs
-`waybar-cava` (+ `libcava`) from the AUR, which enables it. If cava conflicts,
-remove `cava libcava` first, then reinstall `libcava` and `waybar-cava`.
+The official `waybar` package ships without the cava module, so this repo uses
+the AUR `waybar-cava` build (+ `libcava`) instead.
+
+**`waybar` is therefore not in `packages/pacman.txt`, and must not be added
+back.** `waybar-cava` declares `conflicts=waybar provides=waybar`, and pacman
+refuses to remove a conflicting installed package when it is running under
+`--noconfirm` — so declaring both makes the AUR half of `install.sh` abort.
+`./bin/validate-packages.sh` fails the build if the pair ever comes back.
+
+On a machine that already has the official package, the swap needs one
+interactive command (answer *yes* to replacing `waybar`):
+
+```bash
+yay -S waybar-cava        # deliberately NOT --noconfirm
+```
+
 For the cava audio source use `method = pipewire` (not alsa); it auto-picks the
 output sink. See <https://github.com/karlstav/cava>.
 
 ### Fonts
-Uses FiraCode + `Symbols Nerd Font Mono` (`ttf-firacode-nerd`), Noto, Liberation
-and Vazir (Persian, `ttf-vazir`). Avoid mixing multiple patched Nerd Font
-variants.
+Uses FiraCode (`ttf-fira-code`) with its patched Nerd Font build
+(`ttf-firacode-nerd`), the standalone glyph set `Symbols Nerd Font Mono`
+(`ttf-nerd-fonts-symbols-mono`, what yazi and the Waybar modules fall back to),
+Noto, Liberation, and Vazirmatn for Persian (`vazirmatn-fonts` — the old
+`ttf-vazir` was deleted from the AUR when upstream renamed the project). Avoid
+mixing multiple patched Nerd Font variants.
+
+Icon and cursor themes are named by the configs, so they have to be installed
+too: `papirus-icon-theme` (`fuzzel.ini` sets `icon-theme=Papirus-Dark`) and
+`bibata-cursor-theme` (`gtk-3.0/settings.ini`). Both are declared.
 
 ### Wrong temperature in Waybar
 ```bash
@@ -274,3 +392,17 @@ Getting this wrong is the usual cause of Steam launching to a black window.
 ### Rootless Docker
 `install.sh` sets up rootless docker. A re-login is required for the user socket
 to come up. Verify with `docker info` (should show `rootless`).
+
+Two things are easy to get wrong here, both handled by the installer now:
+
+- **`dockerd-rootless-setuptool.sh` is not part of Arch's `docker` package.** It
+  ships only in `docker-rootless-extras` (AUR), which is why that package is in
+  `packages/aur.txt`. Without it there is nothing to set up, and an installer
+  that disables `docker.service` on the assumption that rootless will replace it
+  leaves the host with no working Docker at all. `install.sh` now only disables
+  the root daemon once the rootless tooling is actually present, and enables the
+  root `docker.service` otherwise (including on `--no-aur` runs).
+- **Arch ships no `/etc/subuid` / `/etc/subgid`.** Rootless Docker needs a
+  sub-uid/sub-gid range for your user and the setup tool's own preflight check
+  fails without one, so `install.sh` adds `100000-165535` via
+  `usermod --add-subuids/--add-subgids` first.

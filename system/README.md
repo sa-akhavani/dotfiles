@@ -31,6 +31,13 @@ The `etc/` directory mirrors the real filesystem: `system/etc/greetd/config.toml
 Nothing is ever deleted: removing a file from this directory does **not** remove
 it from `/etc`. Do that by hand.
 
+Preview the whole thing without touching the system — and without a sudo
+password, since the dry run skips even the read-only `sudo` used for comparing:
+
+```bash
+./install.sh --dry-run
+```
+
 ## Templates (`.in`)
 
 A file whose name ends in `.in` is a template. The suffix is dropped and these
@@ -59,3 +66,14 @@ Example: `system/etc/ssh/sshd_config.d/10-dotfiles.conf.in` →
 | `etc/greetd/config.toml` | greetd → tuigreet → `start-hyprland` |
 | `etc/bluetooth/main.conf` | experimental + fast-connect + auto-enable |
 | `etc/ssh/sshd_config.d/10-dotfiles.conf.in` | no password auth, no root login, single allowed user |
+
+## Services that are *not* listed in `services.txt`
+
+`docker.service` is handled in code rather than declared here, because whether it
+should be enabled depends on what got installed. `install.sh` prefers rootless
+Docker, which replaces the system daemon — but the tool that sets it up
+(`dockerd-rootless-setuptool.sh`) is not part of Arch's `docker` package; it only
+ships in `docker-rootless-extras` (AUR). So the installer enables the root
+`docker.service` when that package is absent (a `--no-aur` run, say) and disables
+it only once rootless can actually take over. Listing it in `services.txt` would
+enable it unconditionally.

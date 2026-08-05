@@ -10,16 +10,59 @@
 # Usage:
 #   ./install.sh            # everything
 #   ./install.sh --no-aur   # skip AUR packages (pacman + services only)
+#   ./install.sh --dry-run  # print what would change, touch nothing
 #
 
 set -euo pipefail
 
 USER_NAME="${SUDO_USER:-$USER}"
 NO_AUR=0
-[[ "${1:-}" == "--no-aur" ]] && NO_AUR=1
+DRY_RUN=0
+
+usage() {
+  cat <<'USAGE'
+Arch Linux post-install setup. Run as your normal user; it calls sudo itself.
+
+  ./install.sh            packages, /etc files, services — everything
+  ./install.sh --no-aur   official-repo packages only (skips yay and the AUR)
+  ./install.sh --dry-run  print every change that would be made, apply none
+  ./install.sh --help     this text
+
+Dotfiles are separate: apply them with chezmoi (see README.md).
+USAGE
+}
+
+for arg in "$@"; do
+  case "$arg" in
+    --no-aur)      NO_AUR=1 ;;
+    --dry-run|-n)  DRY_RUN=1 ;;
+    -h|--help)     usage; exit 0 ;;
+    *) echo "Unknown option: $arg (try --help)" >&2; exit 1 ;;
+  esac
+done
 
 info() { printf '\n\033[1;32m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m[!]\033[0m %s\n' "$*"; }
+
+# Every command that changes system state goes through `run`, so --dry-run can
+# print it instead of executing it. Read-only probes (pacman-conf, getent,
+# `systemctl cat`, …) are left un-wrapped on purpose: they must still run for
+# the dry-run output to describe *this* host rather than a hypothetical one.
+run() {
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    printf '      \033[1;34m[dry-run]\033[0m %s\n' "$*"
+    return 0
+  fi
+  "$@"
+}
+
+# Read-only `sudo`, used for comparing against files under /etc that the user
+# may not be able to read. Skipped entirely in dry-run mode so the whole script
+# can be previewed without a password; an unreadable file then simply shows up
+# as one that would be written.
+sudo_ro() {
+  if [[ "$DRY_RUN" -eq 1 ]]; then "$@"; else sudo "$@"; fi
+}
 
 require_not_root() {
   if [[ "$EUID" -eq 0 ]]; then
@@ -63,10 +106,16 @@ enable_multilib() {
     return
   fi
   info "Enabling the [multilib] repo in /etc/pacman.conf"
-  sudo cp -n /etc/pacman.conf /etc/pacman.conf.dotfiles-bak
+  run sudo cp -n /etc/pacman.conf /etc/pacman.conf.dotfiles-bak
   # Uncomment the two lines of the [multilib] section. The `^#\[multilib\]$`
   # anchor deliberately does not match `#[multilib-testing]`, which stays off.
-  sudo sed -i '/^#\[multilib\]$/,/^#Include/ s/^#//' /etc/pacman.conf
+  run sudo sed -i '/^#\[multilib\]$/,/^#Include/ s/^#//' /etc/pacman.conf
+  # Nothing was edited in dry-run mode, so re-checking would always "fail".
+  # An explicit `if` rather than `[[ … ]] && return`: under `set -e` a false
+  # test as the function's last command would make the function return 1.
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    return 0
+  fi
   if ! pacman-conf --repo-list 2>/dev/null | grep -qx multilib; then
     warn "Could not enable multilib automatically — uncomment the [multilib]"
     warn "section of /etc/pacman.conf by hand, then re-run this script."
@@ -81,11 +130,15 @@ enable_multilib
 info "Updating system and installing base tooling"
 # Plain -Syu is enough right after enabling multilib: pacman syncs every
 # configured repo's db, including the newly added one.
-sudo pacman -Syu --needed --noconfirm base-devel git
+run sudo pacman -Syu --needed --noconfirm base-devel git
 
 install_yay() {
   if command -v yay >/dev/null 2>&1; then return; fi
   info "Building yay (AUR helper)"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    run "git clone https://aur.archlinux.org/yay.git && makepkg -si (in a temp dir)"
+    return 0
+  fi
   local tmp
   tmp="$(mktemp -d)"
   git clone https://aur.archlinux.org/yay.git "$tmp/yay"
@@ -100,8 +153,10 @@ install_yay() {
 # Package names live in plain-text files so each host can differ:
 #   packages/pacman.txt            shared official-repo packages
 #   packages/aur.txt               shared AUR packages
+#   packages/npm.txt               shared global npm packages
 #   packages/pacman.<hostname>.txt per-host official extras (optional)
 #   packages/aur.<hostname>.txt    per-host AUR extras (optional)
+#   packages/npm.<hostname>.txt    per-host npm extras (optional)
 # One package per line; blank lines and #comments ignored.
 
 # Read "<base>.txt" + "<base>.<host>.txt".
@@ -115,8 +170,23 @@ info "Loading package lists for host '$HOSTNAME_SHORT' from $PKG_DIR"
 PACMAN_PKGS=( $(read_pkg_list pacman) )
 # shellcheck disable=SC2207
 AUR_PKGS=( $(read_pkg_list aur) )
+# shellcheck disable=SC2207
+NPM_PKGS=( $(read_pkg_list npm) )
 if [[ -f "$PKG_DIR/pacman.$HOSTNAME_SHORT.txt" ]]; then
   info "  + per-host pacman extras applied"
+else
+  # Loud, because the per-host list is where the GPU drivers and the CPU
+  # microcode live. A hostname that does not match any file here fails
+  # silently: `steam` then pulls vulkan-driver / lib32-vulkan-driver, and
+  # --noconfirm resolves those to whichever provider comes first — usually
+  # another vendor's driver. That is the usual cause of Steam opening a black
+  # window, and of a machine booting without microcode updates.
+  warn "No packages/pacman.$HOSTNAME_SHORT.txt for host '$HOSTNAME_SHORT'."
+  warn "    GPU/Vulkan drivers and CPU microcode are declared per host, so this"
+  warn "    run will install neither. Create the file (see packages/README.md),"
+  warn "    or make sure this host's hostname matches an existing one:"
+  warn "      $(cd "$PKG_DIR" && ls pacman.*.txt 2>/dev/null | tr '\n' ' ')"
+  FAILED_EXTRA+=("packages/pacman.$HOSTNAME_SHORT.txt: missing (no GPU drivers or microcode declared)")
 fi
 if [[ -f "$PKG_DIR/aur.$HOSTNAME_SHORT.txt" ]]; then
   info "  + per-host AUR extras applied"
@@ -126,12 +196,7 @@ if [[ "${#PACMAN_PKGS[@]}" -eq 0 ]]; then
   echo "No packages found in $PKG_DIR/pacman.txt — is the repo intact?" >&2
   exit 1
 fi
-info "  ${#PACMAN_PKGS[@]} pacman package(s), ${#AUR_PKGS[@]} AUR package(s)"
-
-# --- npm globals (formatters/linters that live in npm) ----------------------
-NPM_PKGS=(
-  eslint_d prettier js-beautify
-)
+info "  ${#PACMAN_PKGS[@]} pacman, ${#AUR_PKGS[@]} AUR, ${#NPM_PKGS[@]} npm package(s)"
 
 ########################################
 # 4b/4c. Install packages
@@ -147,6 +212,10 @@ NPM_PKGS=(
 FAILED=()
 
 pac_install() {
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    run "sudo pacman -S --needed --noconfirm $*"
+    return 0
+  fi
   sudo pacman -S --needed --noconfirm "$@" && return
   warn "Batch pacman install failed; retrying individually…"
   local p
@@ -161,6 +230,10 @@ pac_install() {
 aur_install() {
   local p
   for p in "$@"; do
+    if [[ "$DRY_RUN" -eq 1 ]]; then
+      run "yay -S --needed --noconfirm $p"
+      continue
+    fi
     yay -S --needed --noconfirm "$p" \
       || { warn "AUR: could not install '$p' (skipped)"; FAILED+=("aur:$p"); }
   done
@@ -176,15 +249,17 @@ else
   warn "Skipping AUR packages (--no-aur)."
 fi
 
-info "Installing global npm tooling"
-sudo npm install -g "${NPM_PKGS[@]}" || {
-  warn "npm global install had issues (is nodejs installed?)."
-  FAILED+=("npm:${NPM_PKGS[*]}")
-}
+if [[ "${#NPM_PKGS[@]}" -gt 0 ]]; then
+  info "Installing global npm tooling"
+  run sudo npm install -g "${NPM_PKGS[@]}" || {
+    warn "npm global install had issues (is nodejs installed?)."
+    FAILED+=("npm:${NPM_PKGS[*]}")
+  }
+fi
 
 info "Adding rustup components"
-rustup default stable || true
-rustup component add rust-analyzer rustfmt clippy || true
+run rustup default stable || true
+run rustup component add rust-analyzer rustfmt clippy || true
 
 ########################################
 # Groups, shell
@@ -202,11 +277,11 @@ for g in "${GROUPS_WANTED[@]}"; do
   fi
 done
 if [[ "${#GROUPS_ADD[@]}" -gt 0 ]]; then
-  sudo usermod -aG "$(IFS=,; echo "${GROUPS_ADD[*]}")" "$USER_NAME" \
+  run sudo usermod -aG "$(IFS=,; echo "${GROUPS_ADD[*]}")" "$USER_NAME" \
     || warn "Could not update groups for $USER_NAME"
 fi
 if [[ "$(getent passwd "$USER_NAME" | cut -d: -f7)" != "/usr/bin/zsh" ]]; then
-  sudo chsh -s /usr/bin/zsh "$USER_NAME"
+  run sudo chsh -s /usr/bin/zsh "$USER_NAME"
 fi
 
 ########################################
@@ -214,14 +289,18 @@ fi
 ########################################
 info "Installing oh-my-zsh (unattended)"
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
-  RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    run "curl … ohmyzsh/tools/install.sh | sh   (KEEP_ZSHRC=yes, chezmoi owns .zshrc)"
+  else
+    RUNZSH=no CHSH=no KEEP_ZSHRC=yes \
+      sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+  fi
 fi
 
 info "Installing tmux plugin manager (TPM)"
 TPM_DIR="$HOME/.config/tmux/plugins/tpm"
 if [[ ! -d "$TPM_DIR" ]]; then
-  git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
+  run git clone https://github.com/tmux-plugins/tpm "$TPM_DIR"
 fi
 
 ########################################
@@ -252,7 +331,7 @@ install_system_tree() {
     else
       cat "$src" >"$tmp"
     fi
-    if sudo cmp -s "$tmp" "$dest" 2>/dev/null; then
+    if sudo_ro cmp -s "$tmp" "$dest" 2>/dev/null; then
       printf '      %s (unchanged)\n' "$dest"
       rm -f "$tmp"
       continue
@@ -260,11 +339,11 @@ install_system_tree() {
     # Keep the *first* backup only: on a later run the ".dotfiles-bak" would
     # otherwise be overwritten with a copy of what this script itself wrote,
     # losing the original.
-    if sudo test -e "$dest" && ! sudo test -e "$dest.dotfiles-bak"; then
-      sudo cp -a "$dest" "$dest.dotfiles-bak" \
+    if sudo_ro test -e "$dest" && ! sudo_ro test -e "$dest.dotfiles-bak"; then
+      run sudo cp -a "$dest" "$dest.dotfiles-bak" \
         && warn "backed up existing $dest -> $dest.dotfiles-bak"
     fi
-    if sudo install -D -o root -g root -m 0644 "$tmp" "$dest"; then
+    if run sudo install -D -o root -g root -m 0644 "$tmp" "$dest"; then
       printf '      %s\n' "$dest"
     else
       warn "Could not write $dest"
@@ -296,7 +375,7 @@ info "Enabling ${#SERVICES[@]} system service(s)"
 # (important under `set -e`).
 enable_service() {
   if systemctl list-unit-files "$1" >/dev/null 2>&1 && systemctl cat "$1" >/dev/null 2>&1; then
-    sudo systemctl enable "$1" || warn "Failed to enable $1"
+    run sudo systemctl enable "$1" || warn "Failed to enable $1"
   else
     warn "Service $1 not found (package missing?); skipping enable."
   fi
@@ -305,16 +384,53 @@ for s in "${SERVICES[@]}"; do
   enable_service "$s"
 done
 
+########################################
 # Docker (rootless, matching virtualisation/docker.nix)
-sudo systemctl disable docker.service 2>/dev/null || true   # prefer rootless
-if command -v dockerd-rootless-setuptool.sh >/dev/null 2>&1; then
-  systemctl --user enable docker.service 2>/dev/null || true
-  dockerd-rootless-setuptool.sh install || warn "rootless docker setup needs a re-login to finish."
-fi
+########################################
+# `dockerd-rootless-setuptool.sh` is NOT part of Arch's `docker` package — it
+# only ships in docker-rootless-extras (AUR). The old version of this block
+# disabled docker.service *before* testing for that script, so on a plain Arch
+# box (where the test always failed, and on any --no-aur run) it left the host
+# with no usable Docker at all: root daemon disabled, rootless never set up.
+# Now the root daemon is only disabled once rootless can actually replace it.
+setup_docker() {
+  if ! command -v docker >/dev/null 2>&1; then
+    return 0
+  fi
+  if ! command -v dockerd-rootless-setuptool.sh >/dev/null 2>&1; then
+    warn "docker-rootless-extras (AUR) missing — keeping the root docker.service."
+    enable_service docker.service
+    return 0
+  fi
+
+  # Rootless needs a sub-uid/sub-gid range for the user. Arch ships neither
+  # /etc/subuid nor /etc/subgid, and the setuptool's own preflight check fails
+  # without them, so create the range first (65536 ids, the docker default).
+  if ! grep -q "^$USER_NAME:" /etc/subuid 2>/dev/null; then
+    run sudo usermod --add-subuids 100000-165535 "$USER_NAME" \
+      || warn "Could not add subuids for $USER_NAME (rootless docker may fail)."
+  fi
+  if ! grep -q "^$USER_NAME:" /etc/subgid 2>/dev/null; then
+    run sudo usermod --add-subgids 100000-165535 "$USER_NAME" \
+      || warn "Could not add subgids for $USER_NAME (rootless docker may fail)."
+  fi
+
+  # Rootless and the system daemon are mutually exclusive; prefer rootless.
+  run sudo systemctl disable docker.service 2>/dev/null || true
+  # The user unit does not exist until the setuptool writes it, so install
+  # first and enable afterwards (the old order silently did nothing).
+  if run dockerd-rootless-setuptool.sh install; then
+    run systemctl --user enable docker.service || true
+  else
+    warn "rootless docker setup needs a re-login to finish; re-run afterwards."
+    FAILED+=("docker:rootless setup incomplete")
+  fi
+}
+setup_docker
 
 # Flatpak + flathub
 if command -v flatpak >/dev/null 2>&1; then
-  sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || true
+  run sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || true
 fi
 
 ########################################
@@ -332,6 +448,11 @@ else
   info "All packages installed."
 fi
 
+if [[ "$DRY_RUN" -eq 1 ]]; then
+  info "Dry run: nothing above was actually applied. Re-run without --dry-run."
+  exit 0
+fi
+
 info "Base install done."
 cat <<'NEXT'
 
@@ -342,4 +463,5 @@ Next steps (see README.md for detail):
      Subsequent changes:  edit files, then `chezmoi apply` (aliased to `update`).
   2. Log out / reboot -> greetd -> Hyprland.
   3. In the Hyprland session: open tmux and press <prefix> + I to install tmux plugins (TPM).
+  4. Check for drift between this repo and the machine:  ./bin/pkg-diff.sh
 NEXT

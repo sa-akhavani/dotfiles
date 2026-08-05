@@ -9,3 +9,14 @@
 vulkan-intel
 lib32-mesa
 lib32-vulkan-intel
+
+# CPU microcode — vendor-specific, so it belongs here rather than in the shared
+# list (an AMD host wants amd-ucode). The bootloader entry needs it as an extra
+# initrd; systemd-boot's pacman hooks handle that automatically.
+intel-ucode
+
+# Hardware video acceleration for this i915 GPU. intel-media-driver is the
+# modern VA-API driver (Gen8+); libva-intel-driver covers older codepaths some
+# applications still request.
+intel-media-driver
+libva-intel-driver

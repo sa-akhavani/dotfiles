@@ -17,11 +17,14 @@ so the "smaller", more cautious-looking update is the dangerous one. Upgrades
 break for the reasons below, not because `-Syu` is too blunt.
 
 ```bash
-checkupdates; yay -Qua        # preview both halves, changes nothing
+checkupdates; yay -Qua        # preview both halves, changes nothing   (alias: upcheck)
 sudo pacman -Syu              # repos first
 yay -Sua                      # then AUR only (-Sua, not -Syu: don't redo the repo half)
 sudo pacdiff                  # merge any .pacnew files the upgrade left behind
 ```
+
+The middle two steps are the `upgrade` alias in `~/.zshrc`; `upcheck` is the
+preview. Both come from `home/dot_zshrc`.
 
 `checkupdates` (pacman-contrib) compares against a *throwaway* copy of the sync
 db, so unlike `pacman -Sy` it cannot leave the system half-upgraded. It exits `2`
@@ -60,7 +63,10 @@ Doing repos and AUR as two steps makes it obvious which half failed.
 (USB devices, filesystems, DKMS drivers). Reboot after any `linux*` upgrade.
 Installing **`linux-lts`** as a second kernel gives you a working boot entry when
 a new kernel regresses — the cheapest insurance on Arch.
-*(snapshot: only `linux` is installed, no fallback kernel.)*
+*(snapshot: only `linux` was installed, no fallback kernel. `linux-lts` is now
+declared in `packages/pacman.txt`, so the next `./install.sh` adds it and
+systemd-boot gets a second entry; pick it from the boot menu when a `linux`
+upgrade breaks something.)*
 
 **Long gaps between updates.** `archlinux-keyring` expires and every signature
 starts failing. If that happens: `sudo pacman -Sy archlinux-keyring` first, then
@@ -114,14 +120,20 @@ yay -Yc                           # same, including AUR packages
 > `kitty-shell-integration`, `ttf-jetbrains-mono`.)*
 
 Cross-check orphans against this repo's declared packages before removing
-anything — anything in both lists should be marked `--asexplicit`, not deleted:
+anything — anything in both lists should be marked `--asexplicit`, not deleted.
+That check (and its two mirror images) is now a script:
+
 ```bash
-cd ~/dotfiles
-strip() { sed -e 's/#.*//' -e '/^[[:space:]]*$/d' "$@"; }
-comm -12 <(pacman -Qdtq | sort) \
-         <(cat <(strip packages/pacman.txt) <(strip packages/aur.txt) \
-               <(strip packages/pacman.$(hostnamectl --static).txt) | sort -u)
+cd ~/dotfiles && ./bin/pkg-diff.sh
 ```
+
+Its third section, *"Declared but installed as a dependency"*, is exactly this
+trap: those packages are declared by this repo, so they must not be removed, but
+pacman will keep listing them under `-Qdt` until they are reclassified. Run it
+**before** any orphan cleanup. The other two sections catch drift in the other
+direction — declared-but-missing (usually an AUR build that failed silently
+during `install.sh`) and installed-but-undeclared (a fresh machine would not get
+it).
 
 **`-debug` orphans.** `/etc/makepkg.conf` ships `debug` in `OPTIONS`, so every
 AUR build also produces and installs a `<pkg>-debug` package.

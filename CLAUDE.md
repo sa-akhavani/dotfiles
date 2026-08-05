@@ -21,12 +21,17 @@ Remote: `git@github.com:sa-akhavani/dotfiles.git`
 
 ```
 install.sh              idempotent post-install script (packages, /etc, services)
+                        flags: --no-aur, --dry-run, --help
 README.md               user-facing setup + day-to-day docs
 MAINTENANCE.md          updating/cleaning/rollback reference (pacman, orphans, cache)
 todo.md                 Ali's running todo — plain lines, he edits it himself
+bin/                    read-only maintenance helpers (safe for Claude to run)
+  pkg-diff.sh           repo lists vs. what is installed here, both directions
+  validate-packages.sh  every declared name resolves; no AUR/official conflicts
+.github/workflows/ci.yml  bash -n, shellcheck, the two scripts above, template render
 packages/               package lists, one name per line   (packages/README.md)
-  pacman.txt aur.txt              shared by all hosts
-  pacman.<host>.txt aur.<host>.txt  per-host extras, ADDITIVE
+  pacman.txt aur.txt npm.txt       shared by all hosts
+  pacman.<host>.txt …              per-host extras, ADDITIVE
 system/                 root-owned config applied with sudo  (system/README.md)
   etc/…                 mirrors /  → system/etc/greetd/config.toml = /etc/greetd/config.toml
   services.txt          systemd units to enable
@@ -34,9 +39,13 @@ system/                 root-owned config applied with sudo  (system/README.md)
 home/                   chezmoi source → $HOME
   .chezmoi.toml.tmpl    per-host prompts (currently: gpu)
   .chezmoiignore        what NOT to manage (is itself a template)
+  Pictures/             → ~/Pictures; wallpapers + lockscreen images
   dot_zshrc dot_gitconfig dot_config/…
-Pictures/               wallpapers + lockscreen images
 ```
+
+`Pictures/` used to be a top-level directory — outside `.chezmoiroot`, so nothing
+deployed it while `hyprpaper.conf` read `~/Pictures/Wallpapers`. Anything the
+configs expect in `$HOME` has to live under `home/`.
 
 `<host>` is always `hostnamectl --static`.
 
@@ -51,7 +60,7 @@ preview; `update` is aliased to `chezmoi apply`.
 
 | Difference | Goes in |
 | --- | --- |
-| A package | `packages/pacman.<host>.txt` |
+| A package | `packages/pacman.<host>.txt` (GPU drivers **and** CPU microcode) |
 | An `/etc` file or a service | `system/hosts/<host>/…` |
 | Same file, different contents | make it `*.tmpl`, branch on `.chezmoi.hostname` or `[data]` keys |
 | File shouldn't exist at all | `.chezmoiignore` |
@@ -88,6 +97,20 @@ Breaking any of these has bitten before:
 - multilib is enabled before the first `-Syu`, guarded by `pacman-conf
   --repo-list`, with the sed anchored `^#\[multilib\]$` so `multilib-testing`
   stays off.
+- Every state-changing command goes through `run` so `--dry-run` can print it
+  instead. Read-only probes stay un-wrapped (the dry run must describe *this*
+  host), and `sudo_ro` drops the `sudo` from read-only `/etc` comparisons so a
+  dry run needs no password. A new mutating command that skips `run` silently
+  breaks `--dry-run`.
+- Missing per-host *files* are tolerated, but a missing
+  `packages/pacman.<host>.txt` is a `warn` + a `FAILED_EXTRA` entry: it is the
+  only place GPU drivers and microcode are declared, and silence there was how a
+  host ended up with neither.
+- Docker: `dockerd-rootless-setuptool.sh` is **not** in Arch's `docker` package
+  (only in `docker-rootless-extras`, AUR), so `setup_docker` enables the root
+  `docker.service` when rootless is unavailable and disables it only once
+  rootless can replace it — never the other way round. It also creates the
+  `/etc/subuid`/`/etc/subgid` ranges Arch omits, which the setup tool requires.
 
 ## How to verify changes here
 
@@ -95,7 +118,23 @@ There is no test suite. `sudo` **requires a password**, so Claude cannot run
 anything that modifies the system — hand Ali the command instead (he can run it
 with a `! ` prefix).
 
-- `bash -n install.sh` after every edit.
+Everything in this list is runnable by Claude — none of it needs sudo:
+
+- `bash -n install.sh` after every edit; `shellcheck --severity=warning
+  install.sh bin/*.sh` (shellcheck is declared in `packages/pacman.txt`).
+- `./install.sh --dry-run` — full walk-through of a real run, no password needed.
+  Diff its output before and after a change to the installer.
+- `./bin/validate-packages.sh` after touching `packages/` — resolves every name
+  against the real `core`/`extra`/`multilib` databases and the AUR RPC, and fails
+  on AUR/official conflicts.
+- `./bin/pkg-diff.sh` to see how far this machine has drifted from the lists.
+- chezmoi, without touching `$HOME` — render every template for every GPU value:
+  ```bash
+  cfg=$(mktemp); dest=$(mktemp -d)
+  printf 'sourceDir = "%s"\ndestDir = "%s"\n\n[data]\n    gpu = "nvidia"\n' "$PWD" "$dest" >"$cfg"
+  chezmoi --config "$cfg" --source "$PWD" --destination "$dest" apply --dry-run --verbose
+  ```
+  `chezmoi --config … managed` also shows exactly which paths would be deployed.
 - For `/etc` logic, extract the function and run it against a fake root with a
   `sudo` stub — this caught a real bug where files would have landed in
   `/greetd/config.toml` instead of `/etc/greetd/config.toml`. Test fresh run,
@@ -103,7 +142,13 @@ with a `! ` prefix).
   clobber the backup).
 - For `sed` on system files, run it against a copy in the scratchpad and `diff`.
 - Verify package facts against `https://archlinux.org/packages/search/json/?name=<pkg>`
-  rather than from memory (repo, version, deps).
+  or the AUR RPC rather than from memory (repo, version, deps, conflicts). The
+  web API rate-limits parallel requests and answers with empty results when it
+  does, which reads as a screen of false "not found" errors — that is why
+  `validate-packages.sh` uses the repo databases instead.
+
+Anything that *modifies* the system still needs Ali: `sudo` requires a password,
+so hand him the command (he can run it with a `! ` prefix).
 
 ## Gotchas already discovered
 
@@ -112,17 +157,33 @@ with a `! ` prefix).
   `lib32-libgl`) make `pacman --noconfirm` pick the *first* provider — often the
   wrong vendor's driver. Name the host's GPU drivers explicitly in the per-host
   package file so they're in the same transaction.
+- **Never declare both halves of a replacement pair.** `waybar-cava` (AUR)
+  declares `conflicts=waybar provides=waybar`; pacman won't remove a conflicting
+  installed package under `--noconfirm`, so declaring `waybar` too aborts the AUR
+  half mid-run. Same shape for `wezterm-git`/`wezterm` and `walker-bin`/`walker`.
+  `validate-packages.sh` enforces this.
+- Packages migrate **out of the AUR into `[extra]`** and are then deleted from the
+  AUR (`hyprsunset`, `hyprshot`, `hyprpolkitagent`, `stylua`, `ttf-firacode-nerd`
+  all did; `ttf-vazir` vanished entirely, renamed upstream to `vazirmatn-fonts`).
+  `yay` papers over this, so only the validator catches it.
+- A config that names a *theme* needs that theme's package declared:
+  `fuzzel.ini` → `papirus-icon-theme`, `gtk-*/settings.ini` → `bibata-cursor-theme`.
 - `.chezmoiignore` does **not** strip trailing `#` comments — a comment on the
-  same line becomes part of the pattern. Own line only.
+  same line becomes part of the pattern. Own line only (CI checks this).
 - `pacman -Qdtq` orphans include packages declared in `packages/*.txt` that were
-  pulled in as dependencies (e.g. `vlc`). Cross-check before removing; see
-  MAINTENANCE.md.
+  pulled in as dependencies (e.g. `vlc`). Cross-check before removing — that is
+  `./bin/pkg-diff.sh`'s third section; see MAINTENANCE.md.
 - makepkg sources `/etc/makepkg.conf.d/*.conf` after `makepkg.conf`, and
   `in_opt_array` scans **backwards**, so a later `OPTIONS+=(!debug)` wins.
 - Launch Hyprland via `start-hyprland`, not the `Hyprland` binary.
+- lazy.nvim's `{ import = "plugins" }` only recurses into subdirectories that
+  contain an `init.lua` — which is why `plugins.copilot` needs its own explicit
+  import line, and why the old `plugins/discard/` was dead weight, not active
+  config.
 - Host `archlinux` (this laptop): Dell, Intel CometLake i915, **ext4** root (so no
-  btrfs snapshots), systemd-boot, user `ali`. README's setup example says hostname
-  `sohrab` — that's the intended name, not the current one.
+  btrfs snapshots), systemd-boot, user `ali`. The docs now use `archlinux`
+  throughout; the aspirational `sohrab` name is gone from them, because a hostname
+  that doesn't match `packages/pacman.<host>.txt` means no GPU drivers.
 
 ## Working agreements
 

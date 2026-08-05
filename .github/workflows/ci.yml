@@ -1,0 +1,92 @@
+name: ci
+
+# There is no test suite for this repo and no way to run install.sh in anger
+# without a real Arch box, so CI checks the three things that have actually gone
+# wrong here: shell scripts that don't parse, package names that no longer
+# resolve (or conflict with each other), and chezmoi templates that fail to
+# render on a host whose GPU differs from this laptop's.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  # The package lists rot on their own: packages get renamed, moved between the
+  # AUR and [extra], or dropped. Re-check them weekly even when nothing changed.
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  shell:
+    name: shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: bash -n (every script must parse)
+        run: |
+          set -euo pipefail
+          fail=0
+          while IFS= read -r -d '' f; do
+            bash -n "$f" || { echo "::error file=$f::bash -n failed"; fail=1; }
+          done < <(find . -name '*.sh' -not -path './.git/*' -print0)
+          bash -n install.sh || fail=1
+          exit "$fail"
+
+      # install.sh and bin/ are held to shellcheck's default level. The Hyprland
+      # and Waybar helper scripts predate this repo and are full of intentional
+      # word-splitting, so they are only checked for outright errors.
+      - name: shellcheck (install.sh + bin/)
+        run: shellcheck --severity=warning install.sh bin/*.sh
+
+      - name: shellcheck (config scripts, errors only)
+        run: |
+          set -euo pipefail
+          mapfile -d '' scripts < <(find home -name 'executable_*.sh' -print0)
+          if [ "${#scripts[@]}" -gt 0 ]; then
+            shellcheck --severity=error --shell=bash "${scripts[@]}"
+          fi
+
+  packages:
+    name: package lists resolve
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Talks to a mirror + the AUR RPC only; needs no Arch machine and no sudo.
+      - run: ./bin/validate-packages.sh
+
+  chezmoi:
+    name: templates render
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install chezmoi
+        # Not into ./bin: that is this repo's own scripts directory.
+        run: sudo sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
+
+      # Every host answers the `gpu` prompt differently, and that answer feeds
+      # home/dot_config/hypr/env_nvidia.conf.tmpl. Render the whole tree once
+      # per possible answer so a template that only breaks on someone else's
+      # machine still breaks here.
+      - name: Render for each GPU vendor
+        run: |
+          set -euo pipefail
+          for gpu in intel amd nvidia; do
+            dest="$(mktemp -d)"
+            cfg="$(mktemp)"
+            printf 'sourceDir = "%s"\ndestDir = "%s"\n\n[data]\n    gpu = "%s"\n' \
+              "$PWD" "$dest" "$gpu" >"$cfg"
+            echo "::group::gpu=$gpu"
+            chezmoi --config "$cfg" --source "$PWD" --destination "$dest" \
+              apply --dry-run --verbose
+            echo "::endgroup::"
+          done
+
+      # `.chezmoiignore` does not strip trailing `#` comments — a comment on the
+      # same line as a pattern silently becomes part of the pattern.
+      - name: No inline comments in .chezmoiignore
+        run: |
+          if grep -nE '^[^#[:space:]].*#' home/.chezmoiignore; then
+            echo "::error::comment on the same line as a pattern; put it on its own line"
+            exit 1
+          fi

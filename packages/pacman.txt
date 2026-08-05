@@ -2,15 +2,28 @@
 # One package per line. Blank lines and #comments are ignored.
 # Per-host extras go in  packages/pacman.<hostname>.txt
 
+# Base system bits the Arch installation guide leaves to you. Declared here so a
+# reinstall (or `archinstall` with a minimal profile) cannot silently skip them:
+# without linux-firmware/sof-firmware this laptop has no Wi-Fi and no speakers,
+# and without efibootmgr systemd-boot cannot be installed.
+# linux-lts is a second, known-good kernel to boot from when an upgrade of
+# `linux` regresses — the cheapest insurance on Arch (see MAINTENANCE.md §1).
+# CPU microcode is vendor-specific and lives in packages/pacman.<hostname>.txt.
+linux-lts
+linux-firmware
+sof-firmware
+efibootmgr
+zram-generator
+xdg-utils
+
 # Core system tools
+linux
+git
 vim
 neovim
 wget
 rsync
 btop
-
-# Terminal — wezterm comes from the AUR (see packages/aur.txt); the official
-# 20240203 build never maps a window on current Hyprland.
 
 # Shell + terminal tools
 zsh
@@ -40,6 +53,7 @@ gnome-themes-extra
 
 # Dev toolchains
 gcc
+cmake
 nodejs
 npm
 postgresql
@@ -47,12 +61,18 @@ python
 rustup
 uv
 ruff
+aws-cli
 
 # LSPs / linters / formatters
 typescript-language-server
 lua-language-server
 clang
 codespell
+# Also moved out of the AUR into [extra].
+stylua
+# Used by .github/workflows/ci.yml; installed here so the same lint can be run
+# locally before pushing:  shellcheck --severity=warning install.sh bin/*.sh
+shellcheck
 
 # Wayland / Hyprland core
 hyprland
@@ -60,6 +80,12 @@ hyprlock
 hyprpaper
 hypridle
 hyprpicker
+# These three graduated from the AUR into [extra] and were then deleted from the
+# AUR, so they have to be here — `yay` still finds them, but aur.txt would fail
+# validation and a --no-aur run would skip them for no reason.
+hyprsunset
+hyprshot
+hyprpolkitagent
 xdg-desktop-portal-hyprland
 xdg-desktop-portal-gtk
 qt5-wayland
@@ -73,15 +99,22 @@ wl-clipboard
 cliphist
 
 # Desktop shell / utilities
-waybar
+# `waybar` is deliberately NOT here: waybar-cava (packages/aur.txt) declares
+# `conflicts=waybar provides=waybar`, and pacman under --noconfirm refuses to
+# remove a conflicting installed package, so installing both aborts the AUR
+# half of the run. The AUR package is the one that has the cava module.
 lm_sensors
 fuzzel
 mako
+libnotify
 nwg-look
 qt5ct
 qt6ct
 yazi
-nemo
+# GUI file manager bound to $mainMod+E in hypr/bindings.conf; its config lives in
+# home/dot_config/Thunar. gvfs gives it trash, mounting and network browsing.
+thunar
+thunar-archive-plugin
 gvfs
 viewnior
 zathura
@@ -123,7 +156,18 @@ noto-fonts-cjk
 noto-fonts-emoji
 ttf-fira-code
 ttf-liberation
+# The patched FiraCode Nerd Font. Was an AUR package; now in [extra].
+ttf-firacode-nerd
+# The standalone Nerd Font glyph set (README calls it "Symbols Nerd Font Mono").
+# It is what yazi and the waybar modules fall back to for icons; the patched
+# ttf-firacode-nerd in aur.txt only covers the FiraCode family.
+ttf-nerd-fonts-symbols-mono
 xkeyboard-config
+
+# Icon + cursor themes named by the configs. Papirus-Dark is set in
+# ~/.config/fuzzel/fuzzel.ini, so without it the launcher shows no icons.
+# (The Bibata cursor named by gtk-*/settings.ini comes from aur.txt.)
+papirus-icon-theme
 
 # Gaming — lives in the [multilib] repo, which install.sh enables for you.
 # `steam` depends on the virtual packages vulkan-driver, lib32-vulkan-driver and
@@ -144,6 +188,9 @@ dconf
 flatpak
 gnupg
 mtr
+# Virtual input device, used by the fusuma gesture setup (see README). Never
+# give it sudo — the `input` group membership install.sh adds is enough.
+ydotool
 
 # Display manager
 greetd

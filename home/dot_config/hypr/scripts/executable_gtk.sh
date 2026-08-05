@@ -30,8 +30,12 @@ gsettings set "$gnome_schema" cursor-theme "$cursor_theme"
 gsettings set "$gnome_schema" font-name "$font_name"
 gsettings set "$gnome_schema" color-scheme "prefer-dark"
 
-if [ -f ~/dotfiles/hypr/conf/cursor.conf ] ;then
-    echo "exec-once = hyprctl setcursor $cursor_theme $cursor_size" > ~/dotfiles/hypr/conf/cursor.conf
-    hyprctl setcursor $cursor_theme $cursor_size
+# Apply the cursor to Hyprland itself (XCURSOR_* only reach clients started
+# afterwards). This used to be guarded on writing ~/dotfiles/hypr/conf/cursor.conf
+# — a path from the pre-chezmoi layout that no longer exists, so the guard was
+# always false and the cursor was never set. Nothing sources a cursor.conf, so
+# call hyprctl directly instead of persisting a generated file.
+if command -v hyprctl >/dev/null 2>&1; then
+    hyprctl setcursor "$cursor_theme" "$cursor_size"
 fi
 

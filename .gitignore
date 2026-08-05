@@ -1,27 +1,24 @@
-github-copilot
-kde.org
-pulse
-rncbc.org
-spotify
-systemd
-vlc
-xfce4
-.config/cava/shaders
-RaySession
-.config/spotify
-.config/ncspot
-.config/Thunar
-.config/btop/btop.log
-.config/easyeffects
-.config/Slack
-.config/Microsoft
-.config/autostart
-.config/teams
-.config/mimeapps.list
-.config/discord
-.config/GIMP
-.config/Code
-.config/Signal
-.config/chromium
-.config/obsidian
+# Patterns here are relative to the REPO ROOT, not to $HOME.
+#
+# chezmoi's source directory is `home/` (see .chezmoiroot), so a managed file's
+# path inside this repo looks like `home/dot_config/foo/bar` — NOT
+# `.config/foo/bar`. Every pattern in the previous version of this file was
+# $HOME-relative, inherited from when the repo root *was* ~/.config, so none of
+# them matched anything: that is how home/dot_config/btop/btop.log ended up
+# committed despite being listed.
+#
+# To stop chezmoi from *managing* something, use home/.chezmoiignore instead.
+# This file only hides things from git.
 
+# Backups install.sh leaves behind when it replaces a pre-existing /etc file
+*.dotfiles-bak
+
+# Runtime state that lands inside managed config directories
+home/dot_config/**/*.log
+
+# Editor / merge cruft
+*.swp
+*.swo
+*~
+*.orig
+*.rej

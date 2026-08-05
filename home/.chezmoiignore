@@ -5,5 +5,10 @@
 **/*.back
 **/*.new
 
+# Runtime state that lives inside an otherwise-managed config directory. btop
+# rewrites its log on every run, so tracking it produced endless diffs; listing
+# it here also stops `chezmoi add`/`re-add` from pulling it back in.
+.config/btop/btop.log
+
 # TPM installs plugins here at runtime; not tracked
 .config/tmux/plugins
