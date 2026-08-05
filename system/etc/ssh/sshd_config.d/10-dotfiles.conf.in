@@ -1,0 +1,7 @@
+# SSH hardening (was services/ssh.nix)
+# `.in` file: install.sh substitutes the placeholder below, drops the .in and
+# copies this to /etc/ssh/sshd_config.d/10-dotfiles.conf
+Port 22
+PasswordAuthentication no
+PermitRootLogin no
+AllowUsers @USER_NAME@

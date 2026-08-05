@@ -1,0 +1,11 @@
+# Per-host official-repo extras for the host named `archlinux`
+# (Dell laptop, Intel CometLake-U UHD Graphics / i915).
+# Appended to packages/pacman.txt — see packages/README.md.
+
+# Vulkan drivers for this GPU, 64-bit and 32-bit. `steam` depends on the
+# virtual packages vulkan-driver / lib32-vulkan-driver / lib32-libgl, each of
+# which has several providers; naming Intel's explicitly here puts them in the
+# same pacman transaction, so --noconfirm never picks another vendor's driver.
+vulkan-intel
+lib32-mesa
+lib32-vulkan-intel

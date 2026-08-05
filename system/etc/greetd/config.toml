@@ -1,0 +1,12 @@
+# greetd -> tuigreet -> Hyprland   (was configuration.nix's greetd block)
+#
+# Launch via `start-hyprland`, not the `Hyprland` binary. Current Hyprland
+# (0.56) warns at startup when launched directly, since the wrapper owns the
+# watchdog fd and session setup. Matches Arch's own hyprland.desktop, whose
+# Exec= is /usr/bin/start-hyprland.
+[terminal]
+vt = 1
+
+[default_session]
+command = "tuigreet --time --cmd start-hyprland"
+user = "greeter"

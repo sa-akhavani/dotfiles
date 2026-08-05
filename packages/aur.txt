@@ -2,6 +2,12 @@
 # One package per line. Blank lines and #comments are ignored.
 # Per-host extras go in  packages/aur.<hostname>.txt
 
+# Terminal
+# Built from git, not the official `wezterm` package: the 20240203 stable
+# release starts but never maps a Wayland window under Hyprland 0.56 (the
+# process stays alive, no window, no error logged). Master fixed it.
+wezterm-git
+
 # Fonts
 ttf-firacode-nerd
 ttf-vazir

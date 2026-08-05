@@ -39,6 +39,13 @@ conventions: `dot_` → `.`, `executable_` → `chmod +x`.
 install.sh                   # pacman/AUR installer + system services (run once)
 README.md
 Pictures/                    # wallpapers + lockscreen images
+packages/                    # package lists, shared + per-host  (packages/README.md)
+  pacman.txt  aur.txt
+  pacman.<hostname>.txt  aur.<hostname>.txt
+system/                      # root-owned config, applied with sudo  (system/README.md)
+  etc/…                      #   copied to /etc  (etc/greetd/config.toml -> /etc/greetd/config.toml)
+  services.txt               #   systemd units to enable
+  hosts/<hostname>/          #   per-host etc/ + services.txt
 home/
   .chezmoiignore
   dot_zshrc                  # -> ~/.zshrc
@@ -68,8 +75,8 @@ Match the previous system settings:
 git clone https://github.com/sa-akhavani/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 git checkout arch-v3          # this branch
-./install.sh                  # installs pacman + AUR packages, services, /etc configs,
-                              # oh-my-zsh, and tmux TPM
+./install.sh                  # enables [multilib], installs pacman + AUR packages,
+                              # /etc configs (system/), services, oh-my-zsh, tmux TPM
 ```
 `./install.sh --no-aur` installs only official repo packages + services.
 
@@ -90,27 +97,99 @@ Reboot → greetd → pick Hyprland. Inside the session:
 
 ## Multi-host support
 
-The same repo drives multiple machines. Per-host differences are handled by
-**chezmoi templates** driven by machine-local data.
+One repo, one branch, many machines. Nothing is duplicated per host; each host
+only overrides what actually differs. There are four independent layers, all
+keyed off the hostname (`hostnamectl --static`) or off machine-local chezmoi
+data:
 
-- On `chezmoi init`, you answer a small prompt (currently: **GPU vendor**). The
-  answer is stored in `~/.config/chezmoi/chezmoi.toml` under `[data]` and reused
-  by every `chezmoi apply` — you're never asked again on that host.
-- Templates (`*.tmpl`) render differently per host. Example:
-  `home/dot_config/hypr/env_nvidia.conf.tmpl` emits the NVIDIA env vars only when
-  `gpu = "nvidia"`, and nothing on Intel/AMD — so the file is safe to `source`
-  unconditionally from `hyprland.conf`.
+| Layer | Mechanism | Where |
+| --- | --- | --- |
+| Packages | `pacman.<hostname>.txt`, `aur.<hostname>.txt` appended to the shared lists | `packages/` |
+| `/etc` + services | `hosts/<hostname>/etc/…`, `hosts/<hostname>/services.txt` | `system/` |
+| Dotfile *contents* | `*.tmpl` templates branching on host data | `home/` |
+| Whole dotfiles on/off | `.chezmoiignore` (itself a template) | `home/` |
 
-Change a host's answer later without a full re-init:
+### Setting up a new host, start to finish
+
 ```bash
-# edit ~/.config/chezmoi/chezmoi.toml -> [data] gpu = "nvidia", then:
-chezmoi apply
+hostnamectl set-hostname rostam        # pick the name FIRST: everything keys off it
+git clone https://github.com/sa-akhavani/dotfiles.git ~/dotfiles
+cd ~/dotfiles && git checkout arch-v3
+./install.sh                           # reads packages/*.rostam.txt + system/hosts/rostam/
+chezmoi init --apply --source ~/dotfiles
 ```
-Already-initialized machine that predates this feature? Either re-run
-`chezmoi init` or just add `gpu = "…"` under `[data]` in that file.
 
-To make another file host-specific (e.g. per-machine `monitor.conf`), rename it
-to `monitor.conf.tmpl` and branch on `.gpu` or `.chezmoi.hostname`.
+`chezmoi init` prompts once for this host's data (currently **GPU vendor**),
+stores it in `~/.config/chezmoi/chezmoi.toml` under `[data]`, and reuses it for
+every later `chezmoi apply` — you are never asked again on that machine.
+
+### 1. Machine-local data (the prompts)
+
+`home/.chezmoi.toml.tmpl` defines what each host is asked. Add a variable by
+adding another `promptStringOnce`:
+
+```gotmpl
+{{- $gpu    := promptStringOnce . "gpu"    "GPU vendor (intel / amd / nvidia)" "intel" }}
+{{- $laptop := promptBoolOnce   . "laptop" "Is this a laptop?" true }}
+
+[data]
+    gpu    = {{ $gpu | quote }}
+    laptop = {{ $laptop }}
+```
+
+Change an answer later without re-initializing: edit
+`~/.config/chezmoi/chezmoi.toml` and run `chezmoi apply`. (An older machine that
+predates a new variable just needs the key added there by hand.)
+
+### 2. Per-host file contents (templates)
+
+Rename a file to `*.tmpl` and branch. Available: your own `[data]` keys plus
+built-ins like `.chezmoi.hostname`, `.chezmoi.os`, `.chezmoi.arch`.
+
+Existing example — `home/dot_config/hypr/env_nvidia.conf.tmpl` emits the NVIDIA
+env vars only when `gpu = "nvidia"` and a comment otherwise, so `hyprland.conf`
+can `source` it unconditionally on every host.
+
+Per-host monitor layout, the common case:
+
+```gotmpl
+{{- if eq .chezmoi.hostname "rostam" }}
+monitor = DP-1, 3440x1440@144, 0x0, 1
+{{- else if eq .chezmoi.hostname "sohrab" }}
+monitor = eDP-1, 1920x1080@60, 0x0, 1
+{{- else }}
+monitor = , preferred, auto, 1      # sane fallback for an unknown host
+{{- end }}
+```
+
+Preview what a template renders as before applying:
+`chezmoi cat ~/.config/hypr/monitor.conf`, or `chezmoi diff` for everything.
+
+### 3. Skipping whole files on some hosts
+
+`home/.chezmoiignore` is itself a template, evaluated per host — list a path to
+leave it unmanaged there:
+
+```gotmpl
+{{ if ne .chezmoi.hostname "sohrab" }}
+# desktops have no battery — comments must be on their own line, chezmoi does
+# not strip a trailing `#` and would make it part of the pattern
+.config/waybar/modules/battery.jsonc
+{{ end }}
+```
+
+### 4. Secrets / anything not committed
+
+Keep host-specific secrets out of the repo: reference them from templates via
+`{{ (bitwarden ... ) }}`/`{{ env "…" }}`, or keep them in
+`~/.config/chezmoi/chezmoi.toml`, which is machine-local and never committed.
+
+### Where should a difference go?
+
+- Different **package** on one host → `packages/pacman.<host>.txt`
+- Different **`/etc` file or service** → `system/hosts/<host>/…`
+- Same file, different **contents** → make it a `.tmpl`
+- File that should not exist at all → `.chezmoiignore`
 
 ## Day-to-day (chezmoi workflow)
 
@@ -125,8 +204,13 @@ to `monitor.conf.tmpl` and branch on `.gpu` or `.chezmoi.hostname`.
 
 Typical loop: `chezmoi edit <file>` → `chezmoi apply` → `chezmoi cd && git commit -am ... && git push`.
 
-To add a **package**: put it in `install.sh` (`PACMAN_PKGS`/`AUR_PKGS`) and re-run,
-or just `sudo pacman -S <pkg>` / `yay -S <pkg>`.
+To add a **package**: append it to `packages/pacman.txt` (or `aur.txt`, or the
+per-host variant) and re-run `./install.sh` — or just `sudo pacman -S <pkg>` /
+`yay -S <pkg>` and add it to the list afterwards so the next machine gets it.
+
+To add a **`/etc` file or a service**: put the file under `system/etc/` at its
+real path, or the unit name in `system/services.txt`, then re-run `./install.sh`.
+See [`system/README.md`](system/README.md).
 
 ## Notes and troubleshooting
 
@@ -171,6 +255,21 @@ See the [Arch wiki](https://wiki.archlinux.org/title/Spotify).
 ### Three-finger drag gesture
 Install `ydotool` + `fusuma`, configure via `~/.config/fusuma/`. Do **not** give
 ydotool sudo. Enable with `systemctl --user enable --now ydotool.service`.
+
+### Steam / 32-bit packages
+`steam` lives in the official **`multilib`** repo (not the AUR). `install.sh`
+enables `multilib` for you — it uncomments the `[multilib]` section of
+`/etc/pacman.conf` (backing the file up to `/etc/pacman.conf.dotfiles-bak` the
+first time) and leaves `multilib-testing` off. To do it by hand instead:
+
+```bash
+sudo sed -i '/^#\[multilib\]$/,/^#Include/ s/^#//' /etc/pacman.conf
+sudo pacman -Sy
+```
+
+Your GPU's 32-bit drivers are host-specific and live in
+`packages/pacman.<hostname>.txt` — see [`packages/README.md`](packages/README.md).
+Getting this wrong is the usual cause of Steam launching to a black window.
 
 ### Rootless Docker
 `install.sh` sets up rootless docker. A re-login is required for the user socket

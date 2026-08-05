@@ -1,0 +1,12 @@
+# System (root) systemd units enabled by install.sh — shared by ALL hosts.
+# One unit per line. Blank lines and #comments are ignored.
+# Per-host extras go in  system/hosts/<hostname>/services.txt
+#
+# A unit that does not exist (its package failed to install, or is not in this
+# host's package list) is warned about and skipped, never fatal.
+
+greetd.service
+NetworkManager.service
+bluetooth.service
+sshd.service
+fail2ban.service

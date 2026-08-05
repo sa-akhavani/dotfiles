@@ -1,4 +1,6 @@
-{{- if eq (.gpu | default "intel") "nvidia" -}}
+{{- $gpu := "intel" -}}
+{{- if hasKey . "gpu" -}}{{- $gpu = .gpu -}}{{- end -}}
+{{- if eq $gpu "nvidia" -}}
 # ─── NVIDIA host ────────────────────────────────────────────────
 # Rendered by chezmoi only when this host's `gpu` = "nvidia".
 # Ref: https://wiki.hypr.land/Nvidia/
@@ -15,5 +17,5 @@ env = __GLX_VENDOR_LIBRARY_NAME,nvidia
 # If cursors still glitch on nvidia, set in graphics.conf instead:
 #   cursor { no_hardware_cursors = true }
 {{- else -}}
-# Non-nvidia host (gpu = {{ .gpu | default "intel" }}): no GPU-specific env needed.
+# Non-nvidia host (gpu = {{ $gpu }}): no GPU-specific env needed.
 {{- end -}}
