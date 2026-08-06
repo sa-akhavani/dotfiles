@@ -30,6 +30,6 @@ libpulse
 # Pulled in as a makedepend-turned-depend of waybar-cava (AUR).
 glib2-devel
 
-# xdg-open and friends. Required by cursor-bin, flatpak, google-chrome,
-# qt5-base, qt6-base, slack-desktop and visual-studio-code-bin.
+# xdg-open and friends. Required by cursor-bin, google-chrome, qt5-base,
+# qt6-base, slack-desktop and visual-studio-code-bin.
 xdg-utils

@@ -432,11 +432,6 @@ setup_docker() {
 }
 setup_docker
 
-# Flatpak + flathub
-if command -v flatpak >/dev/null 2>&1; then
-  run sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || true
-fi
-
 ########################################
 # Summary
 ########################################

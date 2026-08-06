@@ -204,7 +204,6 @@ cups
 
 # Session / misc
 dconf
-flatpak
 gnupg
 mtr
 
