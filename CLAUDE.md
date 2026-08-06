@@ -227,6 +227,28 @@ so hand him the command (he can run it with a `! ` prefix).
 - makepkg sources `/etc/makepkg.conf.d/*.conf` after `makepkg.conf`, and
   `in_opt_array` scans **backwards**, so a later `OPTIONS+=(!debug)` wins.
 - Launch Hyprland via `start-hyprland`, not the `Hyprland` binary.
+- **yazi shows no image previews inside tmux — this is a tmux 3.7b bug, not a
+  config error, and `tmux.conf`'s `allow-passthrough on` cannot fix it.** tmux
+  natively understands only *sixel*; every other graphics protocol has to be
+  wrapped in the `\ePtmux;…\e\\` passthrough, and 3.7b redraws over whatever
+  passthrough emitted. yazi picks `Iip` (the iTerm2 inline-image protocol) for
+  WezTerm, so previews come out blank. Verified on `giv`: identical yazi renders
+  fine outside tmux, blank inside, blank with a 3-line minimal tmux.conf, blank
+  for a 499-byte 40×40 PNG (so it is the redraw, not a length limit) — while
+  `magick x.png sixel:-`, which needs no passthrough, renders perfectly.
+  Detection is *not* the problem: `yazi --debug` in a real pane correctly
+  reports `Brand: WezTerm` / `Adapter.matches: Iip` / cell size `(11, 23)`.
+  Both sides have already fixed it upstream — yazi 2026-08-01 (sxyazi/yazi#4195,
+  send sixel natively when the multiplexer supports it) and tmux for 3.8 — so
+  the plan is to wait; `yazi 26.5.6` predates the workaround and offers no way
+  to force the adapter (`Adapter::matches` hardcodes `WezTerm => [Iip, Sixel]`
+  and always takes the first). Keep the passthrough lines: they are still
+  required, just not sufficient. Re-test after either package updates.
+  Note `yazi --debug` is **useless without a real tty** — run outside a pane it
+  reports `Unknown` and `Adapter: Wayland`, which looks like a ueberzugpp
+  problem and is not. Spawn a throwaway window instead:
+  `wezterm cli spawn --new-window -- sh -c '…'`, and use `tmux -L <socket>` so
+  the probe cannot disturb the real sessions or trigger continuum restore.
 - **Boot messages printing over the tuigreet login screen is a `/boot` problem,
   not an `/etc` one.** greetd claims VT 1 at ~5.8s while systemd keeps writing
   `[ OK ]` lines to `/dev/console` (= VT 1) until ~7s. The fix is `quiet

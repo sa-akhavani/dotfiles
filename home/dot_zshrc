@@ -25,8 +25,22 @@ plugins=(git sudo)
 export EDITOR=vim
 
 # ---- aliases ----
+# Modern replacements for the coreutils originals. Aliases are only expanded by
+# interactive shells, so scripts and anything run through `sh -c` still get the
+# real binaries — these can't break a Makefile or a package hook.
 alias ls='lsd'
 alias ll='ls -l'
+alias la='ls -lA'
+# lsd's tree view; --depth keeps a stray `lt ~` from walking the whole home dir.
+alias lt='ls --tree --depth 2'
+# --paging=never because this replaces `cat`: bat's default (`auto`) sends
+# anything longer than the window through less, which then WIPES it off the
+# screen on quit — the exact opposite of what you ran cat for. Piped output is
+# unaffected either way; bat drops to plain text when stdout isn't a terminal.
+alias cat='bat --paging=never'
+# The real cat, for when the decoration is in the way (`\cat` works too).
+alias ccat='command cat'
+alias top='btop'
 alias t='tmux'
 alias ta='tmux attach'
 alias td='tmux detach'
