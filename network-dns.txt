@@ -1,0 +1,49 @@
+# Per-network DNS servers.  Format:   <SSID or connection name> = <servers>
+#
+# Consumed by ./bin/dns-apply.sh — NOT by install.sh, which only ever reads
+# pacman.txt / aur.txt / npm.txt / services.txt.
+#
+#   ./bin/dns-apply.sh            # preview, no sudo
+#   ./bin/dns-apply.sh --apply
+#
+# Why a file instead of clicking through nm-connection-editor: NetworkManager
+# keeps its profiles in /etc/NetworkManager/system-connections, which is
+# machine-local state that contains wifi PSKs — it can never live in this repo.
+# So the DNS *policy* lives here, in the repo and shared by all three hosts, and
+# dns-apply.sh reconciles each host's local profiles to it. Reinstall a machine,
+# rejoin the networks, run the script, and the DNS choices come back.
+#
+# Matching:
+#   * wifi profiles match on the real 802-11-wireless.ssid, not the profile name
+#     (NetworkManager defaults the name to the SSID, but you can rename it and
+#     the SSID is what actually identifies the network)
+#   * everything else — ethernet, VPN, a phone's USB tether — matches on the
+#     connection name shown by `nmcli connection show`
+#
+# Both sides are trimmed. Servers are separated by spaces and/or commas, and may
+# mix families: anything containing a ':' is treated as IPv6, everything else as
+# IPv4. Whichever families you list get ignore-auto-dns=yes, so the network's
+# own DHCP/RA servers are dropped rather than appended — that is the whole point,
+# but it does mean a listed network must have working servers here or it has no
+# DNS at all.
+#
+# Two format limits, both from splitting on the first '=' and stripping trailing
+# comments: an SSID containing '=' cannot be expressed, and one containing ' #'
+# gets truncated. '#' elsewhere in an SSID is fine.
+#
+# A profile that does not exist on this host yet is reported and skipped — the
+# script only ever edits saved profiles, it never creates one (that would need
+# the PSK). Join the network once, then re-run.
+#
+# ── Entries ──────────────────────────────────────────────────────────────────
+# Nothing is active yet. Uncomment and edit; every line below is an example.
+#
+# Cloudflare on the home network:
+# MyHomeWifi = 1.1.1.1 1.0.0.1 2606:4700:4700::1111
+#
+# Quad9 on a phone hotspot:
+# Pixel Hotspot = 9.9.9.9, 149.112.112.112
+#
+# Leave campus networks (neu.edu) alone and OUT of this file: they hand out
+# 155.33.2.1/.2 over DHCP, and overriding those breaks resolution of internal
+# .neu.edu names and anything else served split-horizon.

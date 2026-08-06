@@ -39,8 +39,11 @@ conventions: `dot_` → `.`, `executable_` → `chmod +x`.
 install.sh                   # pacman/AUR installer + system services (idempotent)
 README.md  MAINTENANCE.md  todo.md
 bin/                         # repo maintenance helpers, all read-only
+  doctor.sh                  #   system state: cmdline, kernel, dkms, /etc, chezmoi
   pkg-diff.sh                #   drift: repo lists vs. what is installed here
   validate-packages.sh       #   every declared name still resolves; no conflicts
+  dns-apply.sh               #   apply network-dns.txt to this host's NM profiles
+network-dns.txt              # per-SSID DNS servers (NM profiles cannot be tracked)
 .github/workflows/ci.yml     # bash -n + shellcheck + the two checks above
 shared/                      # applied on EVERY host  (shared/README.md)
   pacman.txt  aur.txt  npm.txt   # package lists

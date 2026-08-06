@@ -28,10 +28,15 @@ todo.md                 Ali's running todo — plain lines, he edits it himself
 bin/                    maintenance helpers — every one is read-only BY DEFAULT
                         (so Claude can run them); the two that can mutate do
                         nothing without an explicit --apply
+  doctor.sh             system state, NOT packages: kernel cmdline, pending
+                        reboot, dkms per kernel, swap, /boot space, services
+                        enabled AND active, /etc vs repo, chezmoi config+drift.
+                        Deliberately out of CI — every check is host-specific.
   pkg-diff.sh           repo lists vs. what is installed here, both directions
   validate-packages.sh  every declared name resolves; no AUR/official conflicts
   pkg-promote.sh        pacman -D --asexplicit, reading pkg-promote.txt
   pkg-demote.sh         pacman -D --asdeps,     reading pkg-demote.txt
+  dns-apply.sh          reconcile NetworkManager profiles to network-dns.txt
   dotsync.sh            `chezmoi re-add`: pull $HOME hand-edits back into the repo
                         (there is deliberately NO update/cleanup script — those
                         are plain zsh aliases: upgrade, upcheck, orphans,
@@ -39,6 +44,10 @@ bin/                    maintenance helpers — every one is read-only BY DEFAUL
 pkg-promote.txt         declared by this repo, but pacman calls them deps — the
                         state that makes an orphan cleanup delete them
 pkg-demote.txt          marked explicit but really just dependencies (libpulse)
+network-dns.txt         per-network DNS policy, "<SSID> = <servers>". NM keeps
+                        its profiles (with the PSKs) in /etc, so they can never
+                        be tracked here — only the policy can, and dns-apply.sh
+                        reconciles each host's local profiles to it
 .github/workflows/ci.yml  bash -n, shellcheck, validate-packages.sh, template render
 shared/                 applied on EVERY host              (shared/README.md)
   pacman.txt aur.txt npm.txt       package lists, one name per line
@@ -140,6 +149,10 @@ Everything in this list is runnable by Claude — none of it needs sudo:
   against the real `core`/`extra`/`multilib` databases and the AUR RPC, and fails
   on AUR/official conflicts.
 - `./bin/pkg-diff.sh` to see how far this machine has drifted from the lists.
+- `./bin/doctor.sh` for everything install.sh sets up but never checks again,
+  plus the manual `/boot` steps the repo cannot reach. `--quiet` for findings
+  only, `--strict` to make warnings fatal. Read-only and sudo-free, so it is
+  always safe to run; unreadable `/etc` files degrade to a warning.
 - `./bin/pkg-promote.sh` and `./bin/pkg-demote.sh` with no arguments — they only
   print what they *would* change. `--apply` is the one thing Claude must not
   run: it calls `sudo pacman -D`. Both fix install *reasons* only; nothing is
