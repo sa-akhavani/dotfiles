@@ -1,0 +1,11 @@
+# Shadows /usr/share/applications/bvnc.desktop — see avahi-discover.desktop in
+# this directory for why the package itself cannot simply be uninstalled.
+#
+# bvnc is bssh's twin for _rfb._tcp (VNC). There is no VNC server on any of
+# these hosts and no VNC client declared in shared/pacman.txt, so it is dead
+# weight twice over.
+[Desktop Entry]
+Type=Application
+Name=Avahi VNC Server Browser
+NoDisplay=true
+Hidden=true

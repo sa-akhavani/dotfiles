@@ -61,6 +61,10 @@ home/                        # chezmoi source: everything here maps into $HOME
   dot_config/                # -> ~/.config
     hypr/  waybar/  nvim/  wezterm/  mako/  cava/  walker/  tmux/
     fastfetch/  btop/  lsd/  wlogout/  swappy/  nwg-look/  Thunar/
+  dot_local/share/applications/  # -> ~/.local/share/applications
+                             #   Hidden=true stubs that shadow (and so delete)
+                             #   launcher entries shipped by a package that
+                             #   cannot itself be removed — see avahi below
     gtk-3.0/settings.ini  gtk-4.0/settings.ini
     hypr/scripts/executable_*.sh    # marked executable by chezmoi
 ```

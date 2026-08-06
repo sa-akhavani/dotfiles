@@ -1,0 +1,21 @@
+# Shadows /usr/share/applications/avahi-discover.desktop.
+#
+# $XDG_DATA_HOME/applications outranks /usr/share/applications for the same
+# desktop-file ID, and the spec defines Hidden=true as "strictly equivalent to
+# the .desktop file not existing at all". So this deletes the launcher entry
+# without touching the avahi package — which cannot be removed at all: it is a
+# HARD dependency of cups, libcups (-> gtk3 -> blueman, nemo, discord, obsidian,
+# chrome …) and pipewire-pulse, which links libavahi-client.so directly.
+#
+# NoDisplay is set as well as Hidden purely for launchers that honour only the
+# former; either one alone would do the job in a spec-compliant one.
+#
+# This entry could not start even if you wanted it: /usr/bin/avahi-discover is a
+# python script that imports dbus, and python-dbus is not installed here (it is
+# an optdepend of avahi that nothing pulled in). The terminal equivalent, which
+# does work once avahi-daemon is running, is:  avahi-browse -a -r
+[Desktop Entry]
+Type=Application
+Name=Avahi Zeroconf Browser
+NoDisplay=true
+Hidden=true

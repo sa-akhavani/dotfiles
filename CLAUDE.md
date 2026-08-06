@@ -61,6 +61,13 @@ home/                   chezmoi source → $HOME
   .chezmoiignore        what NOT to manage (is itself a template)
   Pictures/             → ~/Pictures; wallpapers + lockscreen images
   dot_zshrc dot_gitconfig dot_config/…
+  dot_local/share/applications/
+                        Hidden=true stubs shadowing /usr/share/applications
+                        entries. $XDG_DATA_HOME wins for the same desktop-file
+                        ID, and the spec makes Hidden=true equivalent to the
+                        file not existing — the only way to drop a launcher
+                        entry whose package is an undeletable dependency
+                        (avahi: hard dep of cups, libcups→gtk3, pipewire-pulse)
 ```
 
 `Pictures/` used to be a top-level directory — outside `.chezmoiroot`, so nothing
