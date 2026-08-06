@@ -1,0 +1,11 @@
+# Paths chezmoi should DELETE from $HOME on every apply.
+#
+# Removing a file from the source directory does not remove it from $HOME —
+# chezmoi simply stops managing it. This file is how a path is actually retired
+# across all three hosts.
+
+# Hand-copied nvim-lspconfig server configs. Replaced by the nvim-lspconfig
+# plugin plus vim.lsp.config() overrides in lua/core/lsp.lua; left in place they
+# would still be merged onto the runtimepath and shadow the plugin's versions
+# with a stale copy.
+.config/nvim/lsp

@@ -54,6 +54,12 @@ cmake
 nodejs
 npm
 python
+# Also the source of rust-analyzer (and rustfmt, which conform.nvim calls):
+# rustup `provides` both and ships shims under /usr/lib/rustup/bin that
+# dispatch to the active toolchain. install.sh adds the components.
+# Deliberately NOT declaring the standalone `rust-analyzer` package — /usr/bin
+# precedes /usr/lib/rustup/bin in PATH, so it would shadow the shim and pin a
+# version independent of the toolchain.
 rustup
 luarocks
 uv
@@ -68,8 +74,8 @@ python-pip
 ruff
 # Astral's Python type checker and language server. Paired with ruff above, not
 # a replacement for it: `ruff server` is lint/format only, so ty is what gives
-# Python hover, go-to-definition and completion. Config in
-# home/dot_config/nvim/lsp/ty.lua, enabled in lua/core/lsp.lua.
+# Python hover, go-to-definition and completion. Config comes from the
+# nvim-lspconfig plugin; enabled in home/dot_config/nvim/lua/core/lsp.lua.
 # Still 0.0.x/preview — inference is incomplete, so trust a clean run less than
 # you would pyright's. Fine for an editor, not something to gate CI on.
 ty
@@ -78,6 +84,11 @@ lua-language-server
 clang
 codespell
 stylua
+# Required by nvim-treesitter's `main` branch to build parsers (>= 0.26.1).
+# Upstream is explicit that it must come from a package manager, not npm.
+# Without it :TSInstall/:TSUpdate fail and only Neovim's six bundled parsers
+# (c, lua, markdown, markdown_inline, query, vim, vimdoc) are available.
+tree-sitter-cli
 # Used by .github/workflows/ci.yml; installed here so the same lint can be run
 # locally before pushing:  shellcheck --severity=warning install.sh bin/*.sh
 shellcheck

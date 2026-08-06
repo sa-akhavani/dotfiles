@@ -98,14 +98,19 @@ jobs:
                 echo "::error file=${f#"$dest"/}::renders to invalid Lua (gpu=$gpu)"
                 exit 1
               }
-            done < <(find "$dest/.config/hypr" -name '*.lua' -print0)
+            done < <(find "$dest/.config/hypr" "$dest/.config/nvim" -name '*.lua' -print0)
           done
 
-      # `.chezmoiignore` does not strip trailing `#` comments — a comment on the
-      # same line as a pattern silently becomes part of the pattern.
-      - name: No inline comments in .chezmoiignore
+      # `.chezmoiignore`/`.chezmoiremove` do not strip trailing `#` comments — a
+      # comment on the same line as a pattern silently becomes part of the
+      # pattern. `.chezmoiremove` matters more: there the pattern names a path
+      # to DELETE from $HOME.
+      - name: No inline comments in .chezmoiignore/.chezmoiremove
         run: |
-          if grep -nE '^[^#[:space:]].*#' home/.chezmoiignore; then
-            echo "::error::comment on the same line as a pattern; put it on its own line"
-            exit 1
-          fi
+          for f in home/.chezmoiignore home/.chezmoiremove; do
+            [ -e "$f" ] || continue
+            if grep -nE '^[^#[:space:]].*#' "$f"; then
+              echo "::error file=$f::comment on the same line as a pattern; put it on its own line"
+              exit 1
+            fi
+          done

@@ -14,7 +14,7 @@ opt.ignorecase = true -- ignore case in search patterns
 -- line numbers
 opt.relativenumber = true -- set relative numbered lines
 opt.number = true         -- set numbered lines (hybrid line numbers)
-opt.numberwidth = 4       -- set number column width to 2 {default 4}
+opt.numberwidth = 4       -- width of the number column {default 4}
 opt.signcolumn = "yes"    -- always show the sign column, otherwise it would shift the text each time
 
 -- tabs & indentation
@@ -61,13 +61,16 @@ opt.colorcolumn = "80"
 -- vim.cmd([[hi ColorColumn guibg=#FFE08C]])
 -- vim.cmd([[hi ColorColumn guibg=Red]])
 
--- Enable Spell Check
+-- Spell check
 -- https://johncodes.com/posts/2023/02-25-nvim-spell/
+-- 'spell' itself is switched on per-filetype in core/autocmds.lua — globally on
+-- it flags every identifier in every source file, which buries the real prose
+-- typos it is there to catch.
 opt.spelllang = "en_us"
-opt.spell = true
 
-opt.completeopt = { "menuone", "noselect" } -- mostly just for cmp
-opt.conceallevel = 0                        -- so that `` is visible in markdown files
+opt.completeopt = { "menuone", "noselect" } -- blink.cmp drives completion; this
+-- only affects the built-in <C-x><C-o> menu
+opt.conceallevel = 0 -- so that `` is visible in markdown files
 
 -- Border for floating windows
 opt.winborder = 'rounded'

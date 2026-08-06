@@ -10,4 +10,3 @@
 # Formatters / linters used by Neovim (conform.nvim, nvim-lint)
 eslint_d
 prettier
-js-beautify

@@ -1,17 +1,15 @@
 return {
 	"saghen/blink.cmp",
-	-- optional: provides snippets for the snippet source
 	dependencies = {
+		-- provides snippets for the snippet source
 		"rafamadriz/friendly-snippets",
-		"giuxtaposition/blink-cmp-copilot",
+		-- Copilot source. Replaces giuxtaposition/blink-cmp-copilot, which has
+		-- had no upstream commit since Feb 2025.
+		"fang2hou/blink-copilot",
 	},
 
 	-- use a release tag to download pre-built binaries
 	version = "1.*",
-	-- AND/OR build from source, requires nightly: https://rust-lang.github.io/rustup/concepts/channels.html#working-with-nightly-rust
-	-- build = 'cargo build --release',
-	-- If you use nix, you can build from source using latest nightly rust with:
-	-- build = 'nix run .#build-plugin',
 
 	---@module 'blink.cmp'
 	---@type blink.cmp.Config
@@ -36,8 +34,9 @@ return {
 			nerd_font_variant = "mono",
 		},
 
-		-- (Default) Only show the documentation popup when manually triggered
-		completion = { documentation = { auto_show = true } },
+		completion = {
+			documentation = { auto_show = true },
+		},
 
 		-- Enable Signature Help
 		signature = { enabled = true },
@@ -49,8 +48,7 @@ return {
 			providers = {
 				copilot = {
 					name = "copilot",
-					module = "blink-cmp-copilot",
-					-- kind = "Copilot",
+					module = "blink-copilot",
 					score_offset = 100,
 					async = true,
 				},

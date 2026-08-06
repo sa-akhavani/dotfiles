@@ -15,22 +15,29 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
-
--- Load plugins
-local plugins = {
-	{ import = "plugins" },
-	{ import = "plugins.copilot" },
-}
-require("lazy").setup({ plugins }, {
-	install = {
-		-- colorscheme = { "nightfly" },
+-- Load plugins.
+-- `plugins.copilot` needs its own import line because lazy.nvim's `import` only
+-- recurses into subdirectories that contain an init.lua.
+require("lazy").setup({
+	spec = {
+		{ import = "plugins" },
+		{ import = "plugins.copilot" },
 	},
+	-- lazy-lock.json is tracked by chezmoi, so all three hosts resolve to the
+	-- same plugin commits. The update path is deliberately manual:
+	--   :Lazy sync      then    ./bin/dotsync.sh
+	-- to pull the regenerated lock back into the repo. An automatic update
+	-- checker would let each host drift on its own schedule, which is exactly
+	-- what tracking the lockfile is meant to prevent.
 	checker = {
-		enabled = true,
-		notify = false,
+		enabled = false,
 	},
 	change_detection = {
 		notify = false,
 	},
+	performance = {
+		rtp = {
+			disabled_plugins = { "netrwPlugin", "tohtml", "tutor" },
+		},
+	},
 })
-

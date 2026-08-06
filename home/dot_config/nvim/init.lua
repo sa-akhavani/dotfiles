@@ -3,7 +3,10 @@
 
 -- https://github.com/LunarVim/Neovim-from-scratch/
 
-require("core.keymaps")
+-- globals first: plugin specs and options both read vim.g values set here.
+require("core.globals")
 require("core.options")
+require("core.keymaps")
+require("core.autocmds")
 require("core.lsp")
 require("config.lazy")

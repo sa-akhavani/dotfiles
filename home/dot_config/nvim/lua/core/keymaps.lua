@@ -19,11 +19,10 @@ vim.g.maplocalleader = " "
 --   command_mode = "c",
 
 -- Normal --
--- Better window navigation
-keymap("n", "<C-h>", "<C-w>h", opts)
-keymap("n", "<C-j>", "<C-w>j", opts)
-keymap("n", "<C-k>", "<C-w>k", opts)
-keymap("n", "<C-l>", "<C-w>l", opts)
+-- Window navigation is <C-h/j/k/l>, but it is NOT mapped here: those four used
+-- to be bound to <C-w>h etc. and were then silently overwritten by
+-- vim-tmux-navigator, which loads later and maps the same keys. Its versions
+-- are the ones that work, because they cross the nvim/tmux boundary.
 
 -- Resize with arrows
 keymap("n", "<C-Up>", ":resize -2<CR>", opts)
@@ -67,8 +66,20 @@ keymap("n", "<C-u>", "<C-u>zz", opts)
 keymap("n", "n", "nzz", opts)
 keymap("n", "N", "Nzz", opts)
 
--- Telescope --
+-- Diagnostics --
+-- The `gr*` LSP maps (grn rename, gra code-action, grr references, gri
+-- implementation, grt type-definition, K hover) are Neovim 0.11 built-ins and
+-- need no mapping here — see lua/plugins/init.lua for what had to move out of
+-- their way. Diagnostics have no built-in float/jump maps, so:
+keymap("n", "<leader>d", vim.diagnostic.open_float, { noremap = true, silent = true, desc = "Line [d]iagnostics" })
+keymap("n", "<leader>q", vim.diagnostic.setloclist, { noremap = true, silent = true, desc = "Diagnostics to loclist" })
 
+-- Clear search highlight
+keymap("n", "<leader>nh", ":nohl<CR>", opts)
+
+-- Telescope --
+-- Defined as lazy `keys` in lua/plugins/telescope.lua so the plugin only loads
+-- when one is pressed.
 
 -- Terminal --
 -- Better terminal navigation

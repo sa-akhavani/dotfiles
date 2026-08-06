@@ -163,18 +163,10 @@ Everything in this list is runnable by Claude — none of it needs sudo:
   against the real `core`/`extra`/`multilib` databases and the AUR RPC, and fails
   on AUR/official conflicts.
 - `./bin/pkg-diff.sh` to see how far this machine has drifted from the lists.
-<<<<<<< HEAD
-- `./bin/hypr-check.sh` after touching anything under `home/dot_config/hypr/` —
-  renders the tree per GPU value and runs `Hyprland --verify-config` on each.
-  Safe from inside a live session: it starts no compositor and writes only to
-  `mktemp` dirs. See the Lua gotcha below for what it can and cannot catch.
-||||||| 59d7c18
-=======
 - `./bin/doctor.sh` for everything install.sh sets up but never checks again,
   plus the manual `/boot` steps the repo cannot reach. `--quiet` for findings
   only, `--strict` to make warnings fatal. Read-only and sudo-free, so it is
   always safe to run; unreadable `/etc` files degrade to a warning.
->>>>>>> 0f2998756d6bcd279eac22c575e2066cb554619c
 - `./bin/pkg-promote.sh` and `./bin/pkg-demote.sh` with no arguments — they only
   print what they *would* change. `--apply` is the one thing Claude must not
   run: it calls `sudo pacman -D`. Both fix install *reasons* only; nothing is
@@ -334,3 +326,11 @@ so hand him the command (he can run it with a `! ` prefix).
 - `todo.md` is his file and he edits it during sessions — re-read before touching,
   and only remove lines that are genuinely done.
 - Don't add packages, tools or config he didn't ask for.
+
+
+## known hosts
+| Host | Hardware | Role |
+| --- | --- | --- |
+| **`rostam`** | desktop PC — AMD CPU, NVIDIA RTX 2080 Super, dual-boots Windows | gaming, video calls, OBS streaming |
+| **`sohrab`** | this Intel NUC — Intel integrated graphics/i915, ext4, systemd-boot booting a UKI | everyday workstation, no gaming |
+| **`giv`** | Dell laptop — Intel CPU, onboard Intel graphics | portable; Steam for light play only |

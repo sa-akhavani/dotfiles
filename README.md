@@ -1,14 +1,10 @@
 # Ali's Arch Linux Dotfiles
 
-Fast, minimal, feature-packed, yet aesthetically pleasing environment optimized
-for software engineering and DevOps.
+Fast, minimal, feature-packed.
 
 Packages and system services are installed with **pacman/AUR** (`install.sh`).
-Dotfiles are managed with **[chezmoi](https://www.chezmoi.io/)** — plain,
-directly-editable config files, no Nix required.
+Dotfiles are managed with **[chezmoi](https://www.chezmoi.io/)**.
 
-> Migrated from a full NixOS flake (see the `nixos`/`master` branches). This
-> branch is 100% Nix-free.
 
 ## Overview
 
@@ -17,11 +13,11 @@ directly-editable config files, no Nix required.
 | OS | [Arch Linux](https://archlinux.org/) |
 | Window Manager | [Hyprland](https://github.com/hyprwm/Hyprland) (Wayland) |
 | Display Manager | [greetd](https://sr.ht/~kennylevinsen/greetd/) + [tuigreet](https://github.com/apognu/tuigreet) |
-| Terminal | [WezTerm](https://github.com/wez/wezterm) (`wezterm-git`, see `shared/aur.txt`) |
-| Multiplexer | [tmux](https://github.com/tmux/tmux) (+ TPM) |
+| Terminal | [WezTerm](https://github.com/wez/wezterm) |
+| Multiplexer | [tmux](https://github.com/tmux/tmux) |
 | Editor | [Neovim](https://github.com/neovim/neovim) (lazy.nvim) |
 | Shell | [zsh](https://github.com/ohmyzsh/ohmyzsh) + oh-my-zsh |
-| Status Bar | [Waybar](https://github.com/Alexays/Waybar) — the AUR `waybar-cava` build |
+| Status Bar | [Waybar](https://github.com/Alexays/Waybar) |
 | Notifications | [mako](https://github.com/emersion/mako) |
 | Launcher | [walker](https://github.com/abenz1267/walker) + [elephant](https://github.com/abenz1267/elephant) (`$mainMod+R`; clipboard history on `$mainMod+V`) |
 | Lock / Idle | [hyprlock](https://github.com/hyprwm/hyprlock) + [hypridle](https://github.com/hyprwm/hypridle) |
@@ -69,12 +65,6 @@ home/                        # chezmoi source: everything here maps into $HOME
     hypr/scripts/executable_*.sh    # marked executable by chezmoi
 ```
 
-The wallpapers live **inside** `home/` on purpose: `hypr/hyprpaper.conf` and the
-lockscreen script read `~/Pictures/Wallpapers` and `~/Pictures/Lockscreen`, and
-chezmoi can only deploy what is under its source root. A top-level `Pictures/`
-was invisible to both chezmoi and `install.sh`, so those paths never existed on a
-fresh machine and hyprpaper preloaded a missing file.
-
 ## Installation (fresh machine)
 
 ### 1. Base Arch install — use `archinstall`
@@ -100,18 +90,14 @@ answers that matter for this repo:
 | Kernels | `linux` (`install.sh` adds `linux-lts` as a fallback) |
 | Additional packages | `git` — enough to clone this repo |
 | User account | `ali`, **in the `wheel` group** (sudo) |
-| Hostname | see the box below — everything per-host keys off it |
-| Timezone / locale / keymap | `America/New_York`, `en_US.UTF-8`, `us` |
 
 Pick the **Minimal** profile, not a desktop one: a desktop profile installs its
 own greeter and compositor, which then fight greetd + Hyprland. Everything
 graphical in this setup comes from `install.sh`.
 
 > **The hostname is load-bearing.** All four per-host layers key off
-> `hostnamectl --static`. This machine is **`sohrab`**, and
-> `hosts/sohrab/pacman.txt` is what gives it its Intel Vulkan drivers,
-> microcode and VA-API drivers. If you pick a different name, rename that
-> directory to match — `install.sh` prints a loud warning when no per-host list
+> `hostnamectl --static`. If you pick a name, make sure that there is a dedicated entry in the hosts in thir repo.
+> `install.sh` prints a loud warning when no per-host list
 > matches, because a host without one silently gets no GPU drivers.
 
 If you install by hand instead, note that `archinstall` would otherwise have
@@ -123,10 +109,9 @@ list declares the microcode, so a re-run of `./install.sh` fills those gaps.
 ```bash
 git clone https://github.com/sa-akhavani/dotfiles.git ~/dotfiles
 cd ~/dotfiles
-git checkout arch-v3          # this branch
 ./install.sh --dry-run        # optional: print every change, apply nothing
-./install.sh                  # enables [multilib], installs pacman + AUR packages,
-                              # /etc configs (shared/etc), services, oh-my-zsh, tmux TPM
+./install.sh                  # installs pacman + AUR packages, enables [multilib] if needed, 
+                              # /etc configs (shared/etc), services, etc.
 ```
 
 | Flag | Effect |
@@ -148,15 +133,6 @@ This writes everything under `home/` into `$HOME`.
 ### 4. Quiet the boot messages — manual, one-time, per machine
 
 Without this, boot output is printed **on top of the tuigreet login screen**.
-`greetd` takes over VT 1 about 5.8s into boot, but systemd is still starting
-services and printing `[ OK ] Started …` to `/dev/console` — which *is* VT 1 —
-for well over a second after tuigreet has drawn its UI there. Neither knows the
-other is on that screen.
-
-This is not automated, and it is not in `shared/etc/` even on the hosts where the
-file it touches *does* live under `/etc`: the command line is generated per
-machine by `archinstall` and carries that machine's own root `PARTUUID`, so there
-is nothing here that could safely be copied over it.
 
 **Where you edit it depends on how the host boots.** Both shapes below are
 systemd-boot; the difference is whether the kernel command line sits in a loader
@@ -165,12 +141,12 @@ entry or is baked *inside* a unified kernel image (UKI):
 ```bash
 bootctl status | grep 'Current Entry'
 #   …_linux.conf    → type-1 loader entry, edit /boot        → (A)
-#   arch-linux.efi  → UKI, edit /etc/kernel/cmdline          → (B)   ← sohrab
+#   arch-linux.efi  → UKI, edit /etc/kernel/cmdline          → (B)
 grep -l default_uki /etc/mkinitcpio.d/*.preset    # same answer, from the other end
 ```
 
 In both cases you append the same two words to the existing command line and keep
-everything already on it, especially `root=PARTUUID=…`. `quiet` is what silences
+everything already on it. `quiet` is what silences
 systemd (it treats it as `systemd.show_status=false`) and handles most of the
 noise; `loglevel=3` covers the kernel's own messages.
 
@@ -192,9 +168,9 @@ options root=PARTUUID=4c5e22a8-… zswap.enabled=0 rw rootfstype=ext4 quiet logl
 - It survives kernel upgrades: these `.conf` files are static, and pacman replaces
   `vmlinuz-linux` and the initramfs but never rewrites them.
 
-#### (B) UKI — `/etc/kernel/cmdline` + `mkinitcpio -P`  (this host)
+#### (B) UKI — `/etc/kernel/cmdline` + `mkinitcpio -P`
 
-`sohrab` has no `/boot/loader/entries/*.conf` at all. `/etc/mkinitcpio.d/linux.preset`
+`/etc/mkinitcpio.d/linux.preset`
 sets `default_uki="/boot/EFI/Linux/arch-linux.efi"`, and mkinitcpio embeds
 `/etc/kernel/cmdline` into that `.efi` when it builds it.
 
@@ -225,17 +201,12 @@ root=PARTUUID=43f5dd7c-… zswap.enabled=0 rw rootfstype=ext4 quiet loglevel=3
 #### Either way
 
 - Nothing is lost, only hidden: `journalctl -b` still has the full boot.
-- On a host booting **GRUB** instead, this is `GRUB_CMDLINE_LINUX_DEFAULT` in
-  `/etc/default/grub` followed by `sudo grub-mkconfig -o /boot/grub/grub.cfg`.
 
 Check it took effect after rebooting:
 ```bash
 cat /proc/cmdline                 # should now end in: quiet loglevel=3
 ```
 
-If output *still* lands on the greeter, the bigger hammer is to move the greeter
-off VT 1 entirely: `vt = 1` → `vt = 7` in `shared/etc/greetd/config.toml`. Then
-boot messages and the greeter cannot collide regardless of timing.
 
 ### 5. Reboot and finish plugin setup
 Reboot → greetd → pick Hyprland. Inside the session:
@@ -257,41 +228,6 @@ data:
 | Dotfile *contents* | `*.tmpl` templates branching on host data | `home/` |
 | Whole dotfiles on/off | `.chezmoiignore` (itself a template) | `home/` |
 
-Known hosts:
-
-| Host | Hardware | Role |
-| --- | --- | --- |
-| **`rostam`** | desktop PC — AMD CPU, NVIDIA RTX 2080 Super, dual-boots Windows | gaming, video calls, OBS streaming |
-| **`sohrab`** | this Intel NUC — Intel integrated graphics/i915, ext4, systemd-boot booting a UKI | everyday workstation, no gaming |
-| **`giv`** | Dell laptop — Intel CPU, onboard Intel graphics | portable; Steam for light play only |
-
-### Setting up a new host, start to finish
-
-```bash
-hostnamectl set-hostname <host>        # pick the name FIRST: everything keys off it
-git clone https://github.com/sa-akhavani/dotfiles.git ~/dotfiles
-cd ~/dotfiles && git checkout arch-v3
-mkdir -p hosts/<host>
-# start from the closest existing host, then edit: GPU drivers + microcode
-cp hosts/rostam/pacman.txt hosts/<host>/pacman.txt
-./install.sh                           # reads shared/ + hosts/<host>/
-chezmoi init --apply --source ~/dotfiles
-```
-
-Then the one step nothing here can do for you: append `quiet loglevel=3` to the
-kernel command line — in the loader entry or in `/etc/kernel/cmdline` followed by
-`mkinitcpio -P`, depending on how that host boots — or boot messages will print
-over the login screen — see
-[step 4 of the installation](#4-quiet-the-boot-messages--manual-one-time-per-machine).
-
-Create the per-host package list **before** the first `./install.sh`, not after:
-it is the only place the GPU/Vulkan drivers and the CPU microcode are declared.
-`install.sh` warns when no list matches the hostname, and lists the ones that do
-exist, but it cannot guess which GPU the machine has.
-
-`chezmoi init` prompts once for this host's data (currently **GPU vendor**),
-stores it in `~/.config/chezmoi/chezmoi.toml` under `[data]`, and reuses it for
-every later `chezmoi apply` — you are never asked again on that machine.
 
 ### 1. Machine-local data (the prompts)
 
@@ -575,3 +511,10 @@ Two things are easy to get wrong here, both handled by the installer now:
   sub-uid/sub-gid range for your user and the setup tool's own preflight check
   fails without one, so `install.sh` adds `100000-165535` via
   `usermod --add-subuids/--add-subgids` first.
+
+
+### Decisions and Notes
+
+The wallpapers live **inside** `home/` on purpose: `hypr/hyprpaper.conf` and the
+lockscreen script read `~/Pictures/Wallpapers` and `~/Pictures/Lockscreen`, and
+chezmoi can only deploy what is under its source root.
