@@ -129,5 +129,5 @@ it only once rootless can actually take over. Listing it in `services.txt` would
 enable it unconditionally.
 
 Elephant (walker's data backend) is also not here: it runs as a **user** service,
-started by `exec-once` in `hypr/hyprland.conf`, while `services.txt` only handles
-root units.
+autostarted from `hypr/hyprland.lua`, while `services.txt` only handles root
+units.

@@ -137,7 +137,7 @@ qt6ct
 
 # File manager / PDF / Photo viewer
 yazi
-# GUI file manager bound to $mainMod+E in hypr/bindings.conf; its config lives in
+# GUI file manager bound to SUPER+E in hypr/bindings.lua; its config lives in
 # home/dot_config/Thunar. gvfs gives it trash, mounting and network browsing.
 thunar
 thunar-archive-plugin

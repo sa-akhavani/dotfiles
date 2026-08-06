@@ -64,8 +64,15 @@ jobs:
         # Not into ./bin: that is this repo's own scripts directory.
         run: sudo sh -c "$(curl -fsLS get.chezmoi.io)" -- -b /usr/local/bin
 
+      # Hyprland's config is Lua now, so a template can render into something
+      # that is not valid Lua. luac -p is the only half of that check runnable
+      # here; the other half (unknown config keys, bad binds) needs the Hyprland
+      # binary and lives in ./bin/hypr-check.sh, on an Arch box.
+      - name: Install lua
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lua5.4
+
       # Every host answers the `gpu` prompt differently, and that answer feeds
-      # home/dot_config/hypr/env_nvidia.conf.tmpl. Render the whole tree once
+      # home/dot_config/hypr/env_nvidia.lua.tmpl. Render the whole tree once
       # per possible answer so a template that only breaks on someone else's
       # machine still breaks here.
       - name: Render for each GPU vendor
@@ -83,6 +90,15 @@ jobs:
             chezmoi --config "$cfg" --source "$PWD" --destination "$dest" \
               apply --dry-run --verbose
             echo "::endgroup::"
+
+            # Render for real this time, and parse every Lua file that came out.
+            chezmoi --config "$cfg" --source "$PWD" --destination "$dest" apply
+            while IFS= read -r -d '' f; do
+              luac -p "$f" || {
+                echo "::error file=${f#"$dest"/}::renders to invalid Lua (gpu=$gpu)"
+                exit 1
+              }
+            done < <(find "$dest/.config/hypr" -name '*.lua' -print0)
           done
 
       # `.chezmoiignore` does not strip trailing `#` comments — a comment on the

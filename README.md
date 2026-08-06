@@ -146,33 +146,78 @@ services and printing `[ OK ] Started …` to `/dev/console` — which *is* VT 1
 for well over a second after tuigreet has drawn its UI there. Neither knows the
 other is on that screen.
 
-This is not automated because `install.sh` only mirrors `/etc`, and the fix lives
-in `/boot`. The entries are also generated per machine by `archinstall` and carry
-that machine's own root `PARTUUID`, so there is nothing here that could safely be
-copied over them.
+This is not automated, and it is not in `shared/etc/` even on the hosts where the
+file it touches *does* live under `/etc`: the command line is generated per
+machine by `archinstall` and carries that machine's own root `PARTUUID`, so there
+is nothing here that could safely be copied over it.
+
+**Where you edit it depends on how the host boots.** Both shapes below are
+systemd-boot; the difference is whether the kernel command line sits in a loader
+entry or is baked *inside* a unified kernel image (UKI):
+
+```bash
+bootctl status | grep 'Current Entry'
+#   …_linux.conf    → type-1 loader entry, edit /boot        → (A)
+#   arch-linux.efi  → UKI, edit /etc/kernel/cmdline          → (B)   ← sohrab
+grep -l default_uki /etc/mkinitcpio.d/*.preset    # same answer, from the other end
+```
+
+In both cases you append the same two words to the existing command line and keep
+everything already on it, especially `root=PARTUUID=…`. `quiet` is what silences
+systemd (it treats it as `systemd.show_status=false`) and handles most of the
+noise; `loglevel=3` covers the kernel's own messages.
+
+#### (A) Type-1 loader entries
 
 ```bash
 ls /boot/loader/entries/          # e.g. 2025-02-03_21-29-45_linux.conf
 sudo nvim /boot/loader/entries/<timestamp>_linux.conf
 ```
 
-Append `quiet loglevel=3` to the existing `options` line — keep everything
-already on it, especially `root=PARTUUID=…`:
+Append to the existing `options` line:
 
 ```
 options root=PARTUUID=4c5e22a8-… zswap.enabled=0 rw rootfstype=ext4 quiet loglevel=3
 ```
 
-`quiet` is what silences systemd (it treats it as `systemd.show_status=false`)
-and handles most of the noise; `loglevel=3` covers the kernel's own messages.
-
 - **Leave the `*_linux-fallback.conf` entry alone.** Verbose output is the entire
   point of a fallback entry — that is the one you boot when something is broken.
+- It survives kernel upgrades: these `.conf` files are static, and pacman replaces
+  `vmlinuz-linux` and the initramfs but never rewrites them.
+
+#### (B) UKI — `/etc/kernel/cmdline` + `mkinitcpio -P`  (this host)
+
+`sohrab` has no `/boot/loader/entries/*.conf` at all. `/etc/mkinitcpio.d/linux.preset`
+sets `default_uki="/boot/EFI/Linux/arch-linux.efi"`, and mkinitcpio embeds
+`/etc/kernel/cmdline` into that `.efi` when it builds it.
+
+```bash
+sudo cp /etc/kernel/cmdline /etc/kernel/cmdline.bak    # one line, no PARTUUID retyping
+sudo nvim /etc/kernel/cmdline
+sudo mkinitcpio -P                                     # rebakes arch-linux.efi
+```
+
+```
+root=PARTUUID=43f5dd7c-… zswap.enabled=0 rw rootfstype=ext4 quiet loglevel=3
+```
+
+- **Editing the file changes nothing on its own** — the command line lives inside
+  the `.efi`, so `mkinitcpio -P` is the step that actually applies it. Reboot
+  without it and `/proc/cmdline` is unchanged.
+- It survives kernel upgrades for the same reason it needs that command now:
+  pacman's mkinitcpio hook re-runs the presets and re-reads `/etc/kernel/cmdline`
+  on every kernel update, so the edit is picked up again each time.
+- **The fallback UKI goes quiet too**, unlike (A): `arch-linux-fallback.efi` is
+  built from the same `/etc/kernel/cmdline`. To keep a verbose rescue image, give
+  the fallback preset its own file in `/etc/mkinitcpio.d/linux.preset` —
+  `fallback_options="--cmdline /etc/kernel/fallback-cmdline"` — remembering that
+  the preset is pacman-owned and will throw `.pacnew` files at you.
+- `/etc/cmdline.d/*.conf` drop-ins are read **only when `/etc/kernel/cmdline` does
+  not exist**, so don't split the command line across both.
+
+#### Either way
+
 - Nothing is lost, only hidden: `journalctl -b` still has the full boot.
-- It survives kernel upgrades. These `.conf` files are static; pacman replaces
-  `vmlinuz-linux` and the initramfs but never rewrites them. Confirm a host isn't
-  doing something else first — `bootctl status`, and no `/etc/kernel/cmdline`,
-  means plain systemd-boot entries and a one-time edit.
 - On a host booting **GRUB** instead, this is `GRUB_CMDLINE_LINUX_DEFAULT` in
   `/etc/default/grub` followed by `sudo grub-mkconfig -o /boot/grub/grub.cfg`.
 
@@ -210,7 +255,7 @@ Known hosts:
 | Host | Hardware | Role |
 | --- | --- | --- |
 | **`rostam`** | desktop PC — AMD CPU, NVIDIA RTX 2080 Super, dual-boots Windows | gaming, video calls, OBS streaming |
-| **`sohrab`** | this Intel NUC — Intel integrated graphics/i915, ext4, systemd-boot | everyday workstation, no gaming |
+| **`sohrab`** | this Intel NUC — Intel integrated graphics/i915, ext4, systemd-boot booting a UKI | everyday workstation, no gaming |
 | **`giv`** | Dell laptop — Intel CPU, onboard Intel graphics | portable; Steam for light play only |
 
 ### Setting up a new host, start to finish
@@ -227,7 +272,9 @@ chezmoi init --apply --source ~/dotfiles
 ```
 
 Then the one step nothing here can do for you: append `quiet loglevel=3` to the
-kernel command line, or boot messages will print over the login screen — see
+kernel command line — in the loader entry or in `/etc/kernel/cmdline` followed by
+`mkinitcpio -P`, depending on how that host boots — or boot messages will print
+over the login screen — see
 [step 4 of the installation](#4-quiet-the-boot-messages--manual-one-time-per-machine).
 
 Create the per-host package list **before** the first `./install.sh`, not after:
@@ -262,24 +309,25 @@ predates a new variable just needs the key added there by hand.)
 Rename a file to `*.tmpl` and branch. Available: your own `[data]` keys plus
 built-ins like `.chezmoi.hostname`, `.chezmoi.os`, `.chezmoi.arch`.
 
-Existing example — `home/dot_config/hypr/env_nvidia.conf.tmpl` emits the NVIDIA
-env vars only when `gpu = "nvidia"` and a comment otherwise, so `hyprland.conf`
-can `source` it unconditionally on every host.
+Existing example — `home/dot_config/hypr/env_nvidia.lua.tmpl` emits the NVIDIA
+env vars only when `gpu = "nvidia"` and a comment otherwise, so `hyprland.lua`
+can `require` it unconditionally on every host.
 
 Per-host monitor layout, the common case:
 
 ```gotmpl
 {{- if eq .chezmoi.hostname "rostam" }}
-monitor = DP-1, 3440x1440@144, 0x0, 1
+hl.monitor({ output = "DP-1", mode = "3440x1440@144", position = "0x0", scale = 1 })
 {{- else if eq .chezmoi.hostname "sohrab" }}
-monitor = eDP-1, 1920x1080@60, 0x0, 1
+hl.monitor({ output = "eDP-1", mode = "1920x1080@60", position = "0x0", scale = 1 })
 {{- else }}
-monitor = , preferred, auto, 1      # sane fallback for an unknown host
+-- sane fallback for an unknown host
+hl.monitor({ output = "", mode = "preferred", position = "auto", scale = 1 })
 {{- end }}
 ```
 
 Preview what a template renders as before applying:
-`chezmoi cat ~/.config/hypr/monitor.conf`, or `chezmoi diff` for everything.
+`chezmoi cat ~/.config/hypr/monitor.lua`, or `chezmoi diff` for everything.
 
 ### 3. Skipping whole files on some hosts
 
@@ -410,10 +458,11 @@ elephant listproviders     # empty output = no providers installed
 pgrep -a elephant          # nothing = the daemon is not running
 ```
 
-Elephant is started by `exec-once = elephant` in `hypr/hyprland.conf`, so it
-comes up with the session. (`elephant service enable` would instead install a
-systemd *user* unit; `shared/services.txt` only handles root units, which is why
-this repo uses `exec-once` — the same way waybar and hypridle start.)
+Elephant is started from the `hyprland.start` autostart block in
+`hypr/hyprland.lua`, so it comes up with the session. (`elephant service enable`
+would instead install a systemd *user* unit; `shared/services.txt` only handles
+root units, which is why this repo autostarts it from the compositor — the same
+way waybar and hypridle start.)
 
 Type a prefix to restrict the search to one provider:
 

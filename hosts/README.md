@@ -72,7 +72,7 @@ hardware — create the file before the first run.
 4. `./bin/validate-packages.sh` (checks every host's lists, not just this one),
    then `./install.sh --dry-run`.
 5. When `chezmoi init` prompts, answer `gpu` to match — it feeds
-   `home/dot_config/hypr/env_nvidia.conf.tmpl`. See the top-level README.
+   `home/dot_config/hypr/env_nvidia.lua.tmpl`. See the top-level README.
 
 `hosts/rostam/pacman.txt` is the worked example to copy from — an NVIDIA + AMD
 desktop, with the GPU, microcode, gaming and OBS blocks each commented with

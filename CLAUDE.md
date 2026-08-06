@@ -36,10 +36,14 @@ bin/                    maintenance helpers — every one is read-only BY DEFAUL
                         (there is deliberately NO update/cleanup script — those
                         are plain zsh aliases: upgrade, upcheck, orphans,
                         orphanclean, cleanup, pacmerge)
+  hypr-check.sh         renders the hypr config for every GPU value and runs
+                        `Hyprland --verify-config` on each; needs no sudo and
+                        does not touch the running session
 pkg-promote.txt         declared by this repo, but pacman calls them deps — the
                         state that makes an orphan cleanup delete them
 pkg-demote.txt          marked explicit but really just dependencies (libpulse)
-.github/workflows/ci.yml  bash -n, shellcheck, validate-packages.sh, template render
+.github/workflows/ci.yml  bash -n, shellcheck, validate-packages.sh, template
+                        render + `luac -p` on the Lua the templates render to
 shared/                 applied on EVERY host              (shared/README.md)
   pacman.txt aur.txt npm.txt       package lists, one name per line
   etc/…                 mirrors /  → shared/etc/greetd/config.toml = /etc/greetd/config.toml
@@ -51,6 +55,9 @@ home/                   chezmoi source → $HOME
   .chezmoi.toml.tmpl    per-host prompts (currently: gpu)
   .chezmoiignore        what NOT to manage (is itself a template)
   Pictures/             → ~/Pictures; wallpapers + lockscreen images
+  dot_config/hypr/      hyprland.lua + the files it require()s. Lua, not
+                        hyprlang — but hypridle/hyprlock/hyprpaper/hyprsunset
+                        are separate programs and keep their own .conf files
   dot_zshrc dot_gitconfig dot_config/…
 ```
 
@@ -140,6 +147,10 @@ Everything in this list is runnable by Claude — none of it needs sudo:
   against the real `core`/`extra`/`multilib` databases and the AUR RPC, and fails
   on AUR/official conflicts.
 - `./bin/pkg-diff.sh` to see how far this machine has drifted from the lists.
+- `./bin/hypr-check.sh` after touching anything under `home/dot_config/hypr/` —
+  renders the tree per GPU value and runs `Hyprland --verify-config` on each.
+  Safe from inside a live session: it starts no compositor and writes only to
+  `mktemp` dirs. See the Lua gotcha below for what it can and cannot catch.
 - `./bin/pkg-promote.sh` and `./bin/pkg-demote.sh` with no arguments — they only
   print what they *would* change. `--apply` is the one thing Claude must not
   run: it calls `sudo pacman -D`. Both fix install *reasons* only; nothing is
@@ -192,7 +203,29 @@ so hand him the command (he can run it with a `! ` prefix).
   and each data source is its own `elephant-<name>` AUR package dropping a `.so`
   into `/usr/lib/elephant`. Installing `elephant` alone gives a launcher that
   finds nothing — `elephant listproviders` printing empty is the tell. Elephant
-  must also already be running (`exec-once` in `hyprland.conf`).
+  must also already be running (autostarted from `hyprland.lua`).
+- **Hyprland's config is Lua, not hyprlang.** hyprlang was deprecated in 0.55
+  and is due to be dropped a release or two later. `hyprland.lua` wins whenever
+  both it and `hyprland.conf` exist, which is also the rollback: rename the
+  `.lua`. Only the compositor changed — hypridle, hyprlock, hyprpaper and
+  hyprsunset ship no Lua support at all and keep their `.conf` files.
+  - The two references are already on disk, so never guess the API:
+    `/usr/share/hypr/hyprland.lua` (upstream example) and
+    `/usr/share/hypr/stubs/hl.meta.lua` (LSP stub of every function, config key
+    and event name).
+  - `Hyprland --verify-config -c FILE` **catches** syntax errors, unknown `hl.*`
+    functions, unknown config keys, wrong value types, unknown event names,
+    invalid window-rule fields, and bad *modifier* names in binds. It **misses**
+    unknown keys inside a dispatcher's option table (silently ignored) and a
+    mistyped final keysym (`leftt` passes). Those need a real session.
+  - It exits nonzero correctly — but `Hyprland --verify-config -c f | tail -1`
+    returns *tail's* status and looks like a pass. Don't pipe it.
+  - Every modifier needs its own `+`: `"SUPER + SHIFT + r"`, never
+    `"SUPER SHIFT + r"` (that one is rejected as an unknown keysym).
+  - Two silent-behaviour-change traps, neither caught by verify-config:
+    `movetoworkspacesilent` is `window.move({ workspace = n, follow = false })`,
+    and `resizeactive`'s deltas need `relative = true` or the numbers are read
+    as an absolute target size.
 - Walker's `~/.config/walker/config.toml` is a **partial** override merged over
   its built-in default (`PartialWalker` in `src/config.rs`); `providers.prefixes`
   entries merge by prefix. But a **theme's `style.css` fully replaces** the
@@ -210,9 +243,13 @@ so hand him the command (he can run it with a `! ` prefix).
 - **Boot messages printing over the tuigreet login screen is a `/boot` problem,
   not an `/etc` one.** greetd claims VT 1 at ~5.8s while systemd keeps writing
   `[ OK ]` lines to `/dev/console` (= VT 1) until ~7s. The fix is `quiet
-  loglevel=3` on the kernel command line, which lives in
-  `/boot/loader/entries/*_linux.conf` — outside anything this repo mirrors, and
-  per-machine (each carries its own root `PARTUUID`). It is therefore a
+  loglevel=3` on the kernel command line, and **where that lives depends on the
+  host** — `/boot/loader/entries/*_linux.conf` for type-1 entries, but
+  `/etc/kernel/cmdline` + `sudo mkinitcpio -P` on a host booting a UKI
+  (`sohrab`: `default_uki=` in `/etc/mkinitcpio.d/linux.preset`; check
+  `bootctl status | grep 'Current Entry'` — a `.efi` means UKI). Either way it is
+  per-machine (each carries its own root `PARTUUID`), so nothing here can mirror
+  it even in the `/etc` case. It is therefore a
   documented **manual** setup step (README installation step 4), deliberately
   not automated. `ShowStatus=no` + `kernel.printk` under `/etc` would work too,
   but two files to half-solve what one word on the cmdline does was the wrong
