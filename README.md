@@ -379,7 +379,7 @@ On Arch, drop your `.conf` in `~/openvpn/basic.conf` and run
 `/etc/openvpn/client/basic.conf`.
 
 ### SSH known hosts
-The `nuc-alpha` host used on NixOS lives in `~/.ssh/config`:
+The `nuc-alpha` host lives in `~/.ssh/config`:
 ```
 Host nuc-alpha
     Hostname 192.168.1.162
@@ -388,8 +388,7 @@ Host nuc-alpha
 ```
 
 ### Launcher: walker + elephant
-`$mainMod+R` opens walker; `$mainMod+V` opens the clipboard history. Both
-replaced fuzzel (and, for the clipboard, cliphist) — neither is installed now.
+`$mainMod+R` opens walker; `$mainMod+V` opens the clipboard history.
 
 **Walker is only a frontend.** Everything it lists comes from the `elephant`
 daemon, and every data source is a *separate* package that drops a plugin into
@@ -404,8 +403,7 @@ pgrep -a elephant          # nothing = the daemon is not running
 Elephant is started from the `hyprland.start` autostart block in
 `hypr/hyprland.lua`, so it comes up with the session. (`elephant service enable`
 would instead install a systemd *user* unit; `shared/services.txt` only handles
-root units, which is why this repo autostarts it from the compositor — the same
-way waybar and hypridle start.)
+root units, which is why this repo autostarts it from the compositor.)
 
 Type a prefix to restrict the search to one provider:
 
@@ -434,21 +432,6 @@ that is settable). The gruvbox theme is the exception: a theme's `style.css`
 The official `waybar` package ships without the cava module, so this repo uses
 the AUR `waybar-cava` build (+ `libcava`) instead.
 
-**`waybar` is therefore not in `shared/pacman.txt`, and must not be added
-back.** `waybar-cava` declares `conflicts=waybar provides=waybar`, and pacman
-refuses to remove a conflicting installed package when it is running under
-`--noconfirm` — so declaring both makes the AUR half of `install.sh` abort.
-`./bin/validate-packages.sh` fails the build if the pair ever comes back.
-
-On a machine that already has the official package, the swap needs one
-interactive command (answer *yes* to replacing `waybar`):
-
-```bash
-yay -S waybar-cava        # deliberately NOT --noconfirm
-```
-
-For the cava audio source use `method = pipewire` (not alsa); it auto-picks the
-output sink. See <https://github.com/karlstav/cava>.
 
 ### Fonts
 Uses FiraCode (`ttf-fira-code`) with its patched Nerd Font build
