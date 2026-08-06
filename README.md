@@ -39,8 +39,11 @@ conventions: `dot_` → `.`, `executable_` → `chmod +x`.
 install.sh                   # pacman/AUR installer + system services (idempotent)
 README.md  MAINTENANCE.md  todo.md
 bin/                         # repo maintenance helpers, all read-only
+  doctor.sh                  #   system state: cmdline, kernel, dkms, /etc, chezmoi
   pkg-diff.sh                #   drift: repo lists vs. what is installed here
   validate-packages.sh       #   every declared name still resolves; no conflicts
+  dns-apply.sh               #   apply network-dns.txt to this host's NM profiles
+network-dns.txt              # per-SSID DNS servers (NM profiles cannot be tracked)
 .github/workflows/ci.yml     # bash -n + shellcheck + the two checks above
 shared/                      # applied on EVERY host  (shared/README.md)
   pacman.txt  aur.txt  npm.txt   # package lists
@@ -58,6 +61,10 @@ home/                        # chezmoi source: everything here maps into $HOME
   dot_config/                # -> ~/.config
     hypr/  waybar/  nvim/  wezterm/  mako/  cava/  walker/  tmux/
     fastfetch/  btop/  lsd/  wlogout/  swappy/  nwg-look/  Thunar/
+  dot_local/share/applications/  # -> ~/.local/share/applications
+                             #   Hidden=true stubs that shadow (and so delete)
+                             #   launcher entries shipped by a package that
+                             #   cannot itself be removed — see avahi below
     gtk-3.0/settings.ini  gtk-4.0/settings.ini
     hypr/scripts/executable_*.sh    # marked executable by chezmoi
 ```

@@ -28,10 +28,15 @@ todo.md                 Ali's running todo — plain lines, he edits it himself
 bin/                    maintenance helpers — every one is read-only BY DEFAULT
                         (so Claude can run them); the two that can mutate do
                         nothing without an explicit --apply
+  doctor.sh             system state, NOT packages: kernel cmdline, pending
+                        reboot, dkms per kernel, swap, /boot space, services
+                        enabled AND active, /etc vs repo, chezmoi config+drift.
+                        Deliberately out of CI — every check is host-specific.
   pkg-diff.sh           repo lists vs. what is installed here, both directions
   validate-packages.sh  every declared name resolves; no AUR/official conflicts
   pkg-promote.sh        pacman -D --asexplicit, reading pkg-promote.txt
   pkg-demote.sh         pacman -D --asdeps,     reading pkg-demote.txt
+  dns-apply.sh          reconcile NetworkManager profiles to network-dns.txt
   dotsync.sh            `chezmoi re-add`: pull $HOME hand-edits back into the repo
                         (there is deliberately NO update/cleanup script — those
                         are plain zsh aliases: upgrade, upcheck, orphans,
@@ -44,6 +49,10 @@ pkg-promote.txt         declared by this repo, but pacman calls them deps — th
 pkg-demote.txt          marked explicit but really just dependencies (libpulse)
 .github/workflows/ci.yml  bash -n, shellcheck, validate-packages.sh, template
                         render + `luac -p` on the Lua the templates render to
+network-dns.txt         per-network DNS policy, "<SSID> = <servers>". NM keeps
+                        its profiles (with the PSKs) in /etc, so they can never
+                        be tracked here — only the policy can, and dns-apply.sh
+                        reconciles each host's local profiles to it
 shared/                 applied on EVERY host              (shared/README.md)
   pacman.txt aur.txt npm.txt       package lists, one name per line
   etc/…                 mirrors /  → shared/etc/greetd/config.toml = /etc/greetd/config.toml
@@ -59,6 +68,13 @@ home/                   chezmoi source → $HOME
                         hyprlang — but hypridle/hyprlock/hyprpaper/hyprsunset
                         are separate programs and keep their own .conf files
   dot_zshrc dot_gitconfig dot_config/…
+  dot_local/share/applications/
+                        Hidden=true stubs shadowing /usr/share/applications
+                        entries. $XDG_DATA_HOME wins for the same desktop-file
+                        ID, and the spec makes Hidden=true equivalent to the
+                        file not existing — the only way to drop a launcher
+                        entry whose package is an undeletable dependency
+                        (avahi: hard dep of cups, libcups→gtk3, pipewire-pulse)
 ```
 
 `Pictures/` used to be a top-level directory — outside `.chezmoiroot`, so nothing
@@ -147,10 +163,18 @@ Everything in this list is runnable by Claude — none of it needs sudo:
   against the real `core`/`extra`/`multilib` databases and the AUR RPC, and fails
   on AUR/official conflicts.
 - `./bin/pkg-diff.sh` to see how far this machine has drifted from the lists.
+<<<<<<< HEAD
 - `./bin/hypr-check.sh` after touching anything under `home/dot_config/hypr/` —
   renders the tree per GPU value and runs `Hyprland --verify-config` on each.
   Safe from inside a live session: it starts no compositor and writes only to
   `mktemp` dirs. See the Lua gotcha below for what it can and cannot catch.
+||||||| 59d7c18
+=======
+- `./bin/doctor.sh` for everything install.sh sets up but never checks again,
+  plus the manual `/boot` steps the repo cannot reach. `--quiet` for findings
+  only, `--strict` to make warnings fatal. Read-only and sudo-free, so it is
+  always safe to run; unreadable `/etc` files degrade to a warning.
+>>>>>>> 0f2998756d6bcd279eac22c575e2066cb554619c
 - `./bin/pkg-promote.sh` and `./bin/pkg-demote.sh` with no arguments — they only
   print what they *would* change. `--apply` is the one thing Claude must not
   run: it calls `sudo pacman -D`. Both fix install *reasons* only; nothing is
@@ -240,6 +264,28 @@ so hand him the command (he can run it with a `! ` prefix).
 - makepkg sources `/etc/makepkg.conf.d/*.conf` after `makepkg.conf`, and
   `in_opt_array` scans **backwards**, so a later `OPTIONS+=(!debug)` wins.
 - Launch Hyprland via `start-hyprland`, not the `Hyprland` binary.
+- **yazi shows no image previews inside tmux — this is a tmux 3.7b bug, not a
+  config error, and `tmux.conf`'s `allow-passthrough on` cannot fix it.** tmux
+  natively understands only *sixel*; every other graphics protocol has to be
+  wrapped in the `\ePtmux;…\e\\` passthrough, and 3.7b redraws over whatever
+  passthrough emitted. yazi picks `Iip` (the iTerm2 inline-image protocol) for
+  WezTerm, so previews come out blank. Verified on `giv`: identical yazi renders
+  fine outside tmux, blank inside, blank with a 3-line minimal tmux.conf, blank
+  for a 499-byte 40×40 PNG (so it is the redraw, not a length limit) — while
+  `magick x.png sixel:-`, which needs no passthrough, renders perfectly.
+  Detection is *not* the problem: `yazi --debug` in a real pane correctly
+  reports `Brand: WezTerm` / `Adapter.matches: Iip` / cell size `(11, 23)`.
+  Both sides have already fixed it upstream — yazi 2026-08-01 (sxyazi/yazi#4195,
+  send sixel natively when the multiplexer supports it) and tmux for 3.8 — so
+  the plan is to wait; `yazi 26.5.6` predates the workaround and offers no way
+  to force the adapter (`Adapter::matches` hardcodes `WezTerm => [Iip, Sixel]`
+  and always takes the first). Keep the passthrough lines: they are still
+  required, just not sufficient. Re-test after either package updates.
+  Note `yazi --debug` is **useless without a real tty** — run outside a pane it
+  reports `Unknown` and `Adapter: Wayland`, which looks like a ueberzugpp
+  problem and is not. Spawn a throwaway window instead:
+  `wezterm cli spawn --new-window -- sh -c '…'`, and use `tmux -L <socket>` so
+  the probe cannot disturb the real sessions or trigger continuum restore.
 - **Boot messages printing over the tuigreet login screen is a `/boot` problem,
   not an `/etc` one.** greetd claims VT 1 at ~5.8s while systemd keeps writing
   `[ OK ]` lines to `/dev/console` (= VT 1) until ~7s. The fix is `quiet

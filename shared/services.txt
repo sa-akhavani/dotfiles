@@ -10,3 +10,12 @@ NetworkManager.service
 bluetooth.service
 sshd.service
 fail2ban.service
+
+# Printing. cups.SOCKET rather than cups.service on purpose: socket activation
+# starts cupsd on the first request and lets it idle out again, so a host that
+# never prints never runs the daemon. Enabling cups.service instead would keep
+# it resident on all three.
+cups.socket
+# Printer discovery. CUPS finds driverless IPP printers over DNS-SD by asking
+# avahi-daemon over D-Bus; without this, only USB printers appear.
+avahi-daemon.service

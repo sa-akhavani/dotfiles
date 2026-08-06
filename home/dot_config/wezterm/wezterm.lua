@@ -16,13 +16,19 @@ local config = wezterm.config_builder()
 -- `exec` here: in zsh a failing `exec` kills the shell outright, so writing
 -- `exec tmux attach || ...` would make the fallback unreachable and a wezterm
 -- window would just vanish if tmux ever failed to start, with no way to read
--- the error. Without the leading exec the `||` chain actually runs.
+-- the error. Without the leading exec the rest of the chain actually runs.
+--
+-- The separator before it is `;`, NOT `||`: a clean detach (prefix + d) exits
+-- 0, so with `||` the fallback was skipped, this `zsh -lc` had nothing left to
+-- run, and the whole wezterm window closed — leaving nowhere to type
+-- `tmux new -s <name>`. `;` runs it either way, so detaching drops you at a
+-- plain shell in the same window and a failed tmux still shows its error.
 --
 -- For a deliberately tmux-free window: `wezterm start -- zsh`.
 config.default_prog = {
 	"/usr/bin/zsh",
 	"-lc",
-	"tmux attach || tmux new-session || exec /usr/bin/zsh",
+	"tmux attach || tmux new-session; exec /usr/bin/zsh",
 }
 
 -- This is where you actually apply your config choices

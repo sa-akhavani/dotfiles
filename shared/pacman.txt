@@ -198,9 +198,23 @@ ttf-nerd-fonts-symbols-mono
 xkeyboard-config
 
 # Printing
-# Installed but deliberately NOT in shared/services.txt — cups.socket stays
-# disabled until there is a printer to talk to. Enable it by hand when needed.
+# shared/services.txt enables cups.SOCKET, not cups.service: socket activation
+# starts cupsd on the first connection and lets it stop again when idle, so the
+# daemon is not sitting there on every host that never prints.
 cups
+# How a network printer is FOUND. CUPS does driverless IPP Everywhere discovery
+# over DNS-SD, and it asks avahi-daemon for that over D-Bus — without it, only a
+# directly attached USB printer shows up in the print dialog. Already present on
+# giv as somebody else's dependency; declared here so it is on every host and so
+# pkg-diff stops calling it drift.
+#
+# NOTE: avahi-daemon listens on UDP 5353. That is one more thing exposed on
+# whatever network the machine is attached to (see the firewall discussion).
+#
+# Resolving a literal `foo.local` hostname additionally needs nss-mdns *and* an
+# edit to /etc/nsswitch.conf, which this repo does not track — deliberately left
+# out, because DNS-SD discovery does not need it.
+avahi
 
 # Session / misc
 dconf

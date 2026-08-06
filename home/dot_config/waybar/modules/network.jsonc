@@ -9,5 +9,14 @@
     "format-disabled": "󰌙 Disabled",
     "format-alt": " {bandwidthUpBits} |  {bandwidthDownBits}",
     "tooltip-format": " {ifname} via {gwaddr}",
+    // GUI connection editor, mirroring bluetooth.jsonc's on-click -> blueman.
+    // nm-connection-editor is its own package, pulled in as a dependency of the
+    // declared network-manager-applet rather than declared in its own right.
+    "on-click": "nm-connection-editor",
+    // Waybar runs the on-click command AND toggles format-alt on the same
+    // button press, so without this a left click would open the editor *and*
+    // flip the label to bandwidth. The value is a GDK button NUMBER (1=left,
+    // 2=middle, 3=right), not a name — right click now does the toggle.
+    "format-alt-click": 3,
   },
 }

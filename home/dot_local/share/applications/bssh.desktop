@@ -1,0 +1,13 @@
+# Shadows /usr/share/applications/bssh.desktop — see avahi-discover.desktop in
+# this directory for why the package itself cannot simply be uninstalled.
+#
+# bssh lists hosts advertising _ssh._tcp over mDNS. Nothing on this network
+# advertises that, including sohrab/rostam/giv themselves: Arch's avahi-daemon
+# publishes the host address but not an ssh service record, so the window comes
+# up permanently empty. It also shells out to a terminal for the actual ssh,
+# which needs a $TERMINAL this Hyprland session does not set.
+[Desktop Entry]
+Type=Application
+Name=Avahi SSH Server Browser
+NoDisplay=true
+Hidden=true
