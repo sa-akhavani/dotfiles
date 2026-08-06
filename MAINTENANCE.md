@@ -179,13 +179,18 @@ nothing accumulates.
 
 ### Recommended cleanup, in order
 
+The steps below are aliased in `.zshrc` — `orphans` / `orphanclean` for step 3,
+`cleanup` for 1–2, `pacmerge` for 4. The orphan review is a separate alias from
+the removal on purpose: that is the trap described above, and no alias can tell
+a real orphan from a declared package pacman happens to call a dependency.
+
 ```bash
 paccache -dk3 && paccache -duk0        # 1. see what would go
-sudo paccache -rk3 && sudo paccache -ruk0
+sudo paccache -rk3 && sudo paccache -ruk0    # `cleanup`
 yay -Sc                                # 2. build cache
-pacman -Qdt                            # 3. review orphans, --asexplicit the keepers
-sudo pacman -Rns $(pacman -Qdtq)       #    then remove the rest
-sudo pacdiff                           # 4. merge pending .pacnew files
+pacman -Qdt                            # 3. `orphans` — --asexplicit the keepers
+sudo pacman -Rns $(pacman -Qdtq)       #    `orphanclean` — remove the rest
+sudo DIFFPROG="nvim -d" pacdiff        # 4. `pacmerge` — merge .pacnew files
 sudo systemctl enable --now paccache.timer   # 5. keep it from coming back
 ```
 *(snapshot: ~23 GiB reclaimable, taking the root filesystem from 95% to ~65%.)*

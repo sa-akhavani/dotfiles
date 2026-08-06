@@ -59,3 +59,12 @@ google-chrome
 
 # Audio
 pipemixer
+
+# Fonts
+# The colour emoji font named in home/dot_config/wezterm/wezterm.lua. Large
+# (110 MiB) but it is what the terminal actually renders emoji with.
+ttf-apple-emoji
+
+# Misc tools
+arxiv-latex-cleaner
+htpasswd

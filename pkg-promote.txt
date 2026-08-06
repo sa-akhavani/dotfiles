@@ -1,0 +1,48 @@
+# Packages to re-mark as EXPLICITLY installed, one name per line.
+#
+# Consumed by ./bin/pkg-promote.sh — not by install.sh, which only ever reads
+# pacman.txt / aur.txt / npm.txt / services.txt.
+#
+#   ./bin/pkg-promote.sh            # preview, no sudo
+#   ./bin/pkg-promote.sh --apply
+#
+# Every name here is declared somewhere in shared/ or hosts/, but pacman has it
+# recorded as a dependency. That combination is the dangerous one: the moment
+# whatever pulled the package in goes away, `pacman -Qdtq` reports it as an
+# orphan, and a routine cleanup deletes something this repo says the machine
+# needs. `vlc` reached that state already — it is currently an orphan despite
+# being declared in shared/pacman.txt.
+#
+# Promoting them costs nothing and makes `pacman -Qdtq` safe to act on, which
+# is the whole point of MAINTENANCE.md's orphan section.
+#
+# This list is shared across hosts. pkg-promote.sh skips anything that is not
+# installed locally or is already explicit, so it is safe to run anywhere.
+
+# Declared in shared/pacman.txt, pulled in as dependencies of the desktop stack.
+dconf
+gcc
+gnupg
+libnotify
+lm_sensors
+openssh
+polkit
+psmisc
+python
+ripgrep
+rtkit
+xdg-desktop-portal-gtk
+xkeyboard-config
+
+# Declared in hosts/giv/pacman.txt as an explicit part of the GPU stack, but
+# installed as a dependency of steam.
+vulkan-icd-loader
+
+# Declared in shared/aur.txt. Walker's data-source daemon — every launcher
+# result comes from it, so losing it to an orphan sweep would break the
+# launcher completely while leaving walker itself installed.
+elephant
+
+# Declared in shared/pacman.txt and ALREADY an orphan (`pacman -Qdtq` lists it
+# today). This is the concrete case the whole file exists for.
+vlc

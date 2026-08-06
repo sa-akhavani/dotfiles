@@ -7,6 +7,24 @@ local config = wezterm.config_builder()
 -- Enable this on Windows only
 -- config.default_domain = 'WSL:Ubuntu-18.04'
 
+-- Start inside tmux. `attach` with no target picks the most recently used
+-- session, so opening a terminal lands back where you left off (including
+-- whatever continuum restored after a reboot); `new-session` covers the
+-- first window after a fresh boot.
+--
+-- The trailing `exec zsh` is the escape hatch, and it is deliberately the ONLY
+-- `exec` here: in zsh a failing `exec` kills the shell outright, so writing
+-- `exec tmux attach || ...` would make the fallback unreachable and a wezterm
+-- window would just vanish if tmux ever failed to start, with no way to read
+-- the error. Without the leading exec the `||` chain actually runs.
+--
+-- For a deliberately tmux-free window: `wezterm start -- zsh`.
+config.default_prog = {
+	"/usr/bin/zsh",
+	"-lc",
+	"tmux attach || tmux new-session || exec /usr/bin/zsh",
+}
+
 -- This is where you actually apply your config choices
 local fonts = {
 	"FiraCode Nerd Font",

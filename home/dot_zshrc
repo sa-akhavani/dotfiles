@@ -38,9 +38,36 @@ alias dots='chezmoi'
 # -Syu there would re-sync and redo the repo half pacman just did. See
 # MAINTENANCE.md §1.
 alias upgrade='sudo pacman -Syu && yay -Sua'
-# Preview both halves without changing anything. checkupdates exits 2 when there
-# is nothing to do, so the halves are chained with `;` rather than `&&`.
+# Preview both halves without changing anything. checkupdates uses a throwaway
+# sync db, so unlike `pacman -Sy` it cannot leave the system half-upgraded. It
+# exits 2 when there is nothing to do, so the halves are chained with `;`.
 alias upcheck='checkupdates; yay -Qua'
+
+# ---- cleanup ----
+# List orphans before deleting any: a package declared in this repo but recorded
+# by pacman as a dependency is indistinguishable from a real orphan here (vlc
+# was one cleanup away from being removed). `./bin/pkg-diff.sh` names those.
+alias orphans='pacman -Qdtq'
+# Removing orphans creates new ones, so re-run until `orphans` is empty.
+alias orphanclean='sudo pacman -Rns $(pacman -Qdtq)'
+# Trim the package caches, keeping the 3 newest versions of each package: on a
+# host without btrfs snapshots the pacman cache is the only rollback path, so
+# never `paccache -rk0` or `pacman -Sc`. -ruk0 drops uninstalled packages.
+alias cleanup='sudo paccache -rk3 && sudo paccache -ruk0 && yay -Sc'
+# Merge .pacnew files an upgrade left behind — config drift that otherwise
+# surfaces weeks later.
+alias pacmerge='sudo DIFFPROG="nvim -d" pacdiff'
+
+# ---- dotfiles repo ----
+# Located via chezmoi rather than hardcoded: the checkout is under ~/Desktop on
+# one host and ~/dotfiles per the README on others. Needs sourceDir in
+# ~/.config/chezmoi/chezmoi.toml, which .chezmoi.toml.tmpl now writes.
+export DOTFILES="${DOTFILES:-$(chezmoi source-path 2>/dev/null | xargs -r dirname)}"
+alias dotcd='cd "$DOTFILES"'
+
+# Pull hand-edits from ~/.config back into the repo (wraps `chezmoi re-add`).
+# PREVIEWS by default; needs --apply to touch the repo.
+alias dotsync='"$DOTFILES"/bin/dotsync.sh'
 
 # ---- keychain (ssh-agent) ----
 # keychain 3.x uses verbs (`add`) and dropped `--agents` (the agent type is

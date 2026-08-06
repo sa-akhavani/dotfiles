@@ -25,10 +25,21 @@ install.sh              idempotent post-install script (packages, /etc, services
 README.md               user-facing setup + day-to-day docs
 MAINTENANCE.md          updating/cleaning/rollback reference (pacman, orphans, cache)
 todo.md                 Ali's running todo — plain lines, he edits it himself
-bin/                    read-only maintenance helpers (safe for Claude to run)
+bin/                    maintenance helpers — every one is read-only BY DEFAULT
+                        (so Claude can run them); the two that can mutate do
+                        nothing without an explicit --apply
   pkg-diff.sh           repo lists vs. what is installed here, both directions
   validate-packages.sh  every declared name resolves; no AUR/official conflicts
-.github/workflows/ci.yml  bash -n, shellcheck, the two scripts above, template render
+  pkg-promote.sh        pacman -D --asexplicit, reading pkg-promote.txt
+  pkg-demote.sh         pacman -D --asdeps,     reading pkg-demote.txt
+  dotsync.sh            `chezmoi re-add`: pull $HOME hand-edits back into the repo
+                        (there is deliberately NO update/cleanup script — those
+                        are plain zsh aliases: upgrade, upcheck, orphans,
+                        orphanclean, cleanup, pacmerge)
+pkg-promote.txt         declared by this repo, but pacman calls them deps — the
+                        state that makes an orphan cleanup delete them
+pkg-demote.txt          marked explicit but really just dependencies (libpulse)
+.github/workflows/ci.yml  bash -n, shellcheck, validate-packages.sh, template render
 shared/                 applied on EVERY host              (shared/README.md)
   pacman.txt aur.txt npm.txt       package lists, one name per line
   etc/…                 mirrors /  → shared/etc/greetd/config.toml = /etc/greetd/config.toml
@@ -129,6 +140,10 @@ Everything in this list is runnable by Claude — none of it needs sudo:
   against the real `core`/`extra`/`multilib` databases and the AUR RPC, and fails
   on AUR/official conflicts.
 - `./bin/pkg-diff.sh` to see how far this machine has drifted from the lists.
+- `./bin/pkg-promote.sh` and `./bin/pkg-demote.sh` with no arguments — they only
+  print what they *would* change. `--apply` is the one thing Claude must not
+  run: it calls `sudo pacman -D`. Both fix install *reasons* only; nothing is
+  ever installed or removed, and each is the other's undo.
 - chezmoi, without touching `$HOME` — render every template for every GPU value:
   ```bash
   # .toml suffix is required — chezmoi picks its config parser from the
@@ -192,17 +207,29 @@ so hand him the command (he can run it with a `! ` prefix).
 - makepkg sources `/etc/makepkg.conf.d/*.conf` after `makepkg.conf`, and
   `in_opt_array` scans **backwards**, so a later `OPTIONS+=(!debug)` wins.
 - Launch Hyprland via `start-hyprland`, not the `Hyprland` binary.
+- **Boot messages printing over the tuigreet login screen is a `/boot` problem,
+  not an `/etc` one.** greetd claims VT 1 at ~5.8s while systemd keeps writing
+  `[ OK ]` lines to `/dev/console` (= VT 1) until ~7s. The fix is `quiet
+  loglevel=3` on the kernel command line, which lives in
+  `/boot/loader/entries/*_linux.conf` — outside anything this repo mirrors, and
+  per-machine (each carries its own root `PARTUUID`). It is therefore a
+  documented **manual** setup step (README installation step 4), deliberately
+  not automated. `ShowStatus=no` + `kernel.printk` under `/etc` would work too,
+  but two files to half-solve what one word on the cmdline does was the wrong
+  trade.
 - lazy.nvim's `{ import = "plugins" }` only recurses into subdirectories that
   contain an `init.lua` — which is why `plugins.copilot` needs its own explicit
   import line, and why the old `plugins/discard/` was dead weight, not active
   config.
 - Three hosts, user `ali` on all of them; a hostname that doesn't match a
   `hosts/<host>/` directory means no GPU drivers and no microcode, so the two
-  must stay in sync.
-  - `sohrab` (**this machine**): **Intel NUC**, Intel integrated graphics / i915,
-    **ext4** root (so no btrfs snapshots), systemd-boot. It was called
-    `archlinux` until 2026-08. Everyday workstation — **no gaming**, so no
-    `steam` and no `lib32-*` Vulkan/mesa here.
+  must stay in sync. This repo is worked on from **any** of them — never assume
+  which one you are on, run `hostnamectl --static` and branch on that. Host-
+  specific advice (what to install, what is drift) is wrong until you have.
+  - `sohrab`: **Intel NUC**, Intel integrated graphics / i915, **ext4** root
+    (so no btrfs snapshots), systemd-boot. It was called `archlinux` until
+    2026-08. Everyday workstation — **no gaming**, so no `steam` and no
+    `lib32-*` Vulkan/mesa here.
   - `rostam`: desktop PC, **AMD CPU + NVIDIA RTX 2080 Super**, dual-boots
     Windows. Gaming, video calls, OBS streaming — the full 32-bit stack.
   - `giv`: **Dell laptop**, Intel CPU and onboard Intel graphics. `steam` for

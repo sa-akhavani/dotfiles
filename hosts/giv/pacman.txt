@@ -32,3 +32,10 @@ lib32-vulkan-icd-loader
 
 # Other useful apps
 discord
+
+# ── C++ project libraries ────────────────────────────────────────────────────
+# Header/test libraries for work that currently only happens on this laptop.
+# Nothing in this repo consumes them — move them to shared/pacman.txt if the
+# project follows you to another host.
+catch2
+chrono-date

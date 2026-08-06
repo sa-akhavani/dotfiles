@@ -24,4 +24,5 @@ libva-intel-driver
 # Coding
 
 # Tools
-jq
+# (jq moved to shared/pacman.txt — hyprshot is declared there and needs it, so
+# every host was pulling it in as an undeclared dependency.)

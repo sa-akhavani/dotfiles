@@ -1,0 +1,35 @@
+# Packages to re-mark as dependencies, one name per line.
+#
+# Consumed by ./bin/pkg-demote.sh — not by install.sh, which only ever reads
+# pacman.txt / aur.txt / npm.txt / services.txt.
+#
+#   ./bin/pkg-demote.sh            # preview, no sudo
+#   ./bin/pkg-demote.sh --apply
+#
+# These are all installed with `Install Reason: Explicitly installed` while
+# actually being pure dependencies of something already declared. That makes
+# them show up forever in ./bin/pkg-diff.sh's "explicitly installed but NOT
+# declared" section, where they look like drift that needs a decision. They
+# don't — they need their install reason corrected. Demoting also means pacman
+# will clean them up on its own if whatever pulled them in ever goes away.
+#
+# Nothing is uninstalled and no files are touched — only the install reason
+# recorded in the pacman database changes, and bin/pkg-promote.sh reverses it.
+#
+# This list is shared across hosts. pkg-demote.sh skips anything not installed
+# locally or already correct, and refuses any package that nothing requires
+# (demoting that would orphan it) or that this repo declares.
+
+# Client library for the PulseAudio protocol — NOT the pulseaudio daemon, which
+# is not installed (pipewire-pulse conflicts with it). Apps like firefox, mpv,
+# vlc, signal-desktop and zoom link against libpulse to speak PA; pipewire-pulse
+# answers on the server side and lists libpulse in its own Depends On. Hard
+# dependency of ~20 installed packages, so it cannot be removed, only demoted.
+libpulse
+
+# Pulled in as a makedepend-turned-depend of waybar-cava (AUR).
+glib2-devel
+
+# xdg-open and friends. Required by cursor-bin, flatpak, google-chrome,
+# qt5-base, qt6-base, slack-desktop and visual-studio-code-bin.
+xdg-utils

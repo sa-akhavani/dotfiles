@@ -138,7 +138,54 @@ On first init you'll be asked **once** for this host's GPU vendor
 (`intel` / `amd` / `nvidia`) — see [Multi-host support](#multi-host-support).
 This writes everything under `home/` into `$HOME`.
 
-### 4. Reboot and finish plugin setup
+### 4. Quiet the boot messages — manual, one-time, per machine
+
+Without this, boot output is printed **on top of the tuigreet login screen**.
+`greetd` takes over VT 1 about 5.8s into boot, but systemd is still starting
+services and printing `[ OK ] Started …` to `/dev/console` — which *is* VT 1 —
+for well over a second after tuigreet has drawn its UI there. Neither knows the
+other is on that screen.
+
+This is not automated because `install.sh` only mirrors `/etc`, and the fix lives
+in `/boot`. The entries are also generated per machine by `archinstall` and carry
+that machine's own root `PARTUUID`, so there is nothing here that could safely be
+copied over them.
+
+```bash
+ls /boot/loader/entries/          # e.g. 2025-02-03_21-29-45_linux.conf
+sudo nvim /boot/loader/entries/<timestamp>_linux.conf
+```
+
+Append `quiet loglevel=3` to the existing `options` line — keep everything
+already on it, especially `root=PARTUUID=…`:
+
+```
+options root=PARTUUID=4c5e22a8-… zswap.enabled=0 rw rootfstype=ext4 quiet loglevel=3
+```
+
+`quiet` is what silences systemd (it treats it as `systemd.show_status=false`)
+and handles most of the noise; `loglevel=3` covers the kernel's own messages.
+
+- **Leave the `*_linux-fallback.conf` entry alone.** Verbose output is the entire
+  point of a fallback entry — that is the one you boot when something is broken.
+- Nothing is lost, only hidden: `journalctl -b` still has the full boot.
+- It survives kernel upgrades. These `.conf` files are static; pacman replaces
+  `vmlinuz-linux` and the initramfs but never rewrites them. Confirm a host isn't
+  doing something else first — `bootctl status`, and no `/etc/kernel/cmdline`,
+  means plain systemd-boot entries and a one-time edit.
+- On a host booting **GRUB** instead, this is `GRUB_CMDLINE_LINUX_DEFAULT` in
+  `/etc/default/grub` followed by `sudo grub-mkconfig -o /boot/grub/grub.cfg`.
+
+Check it took effect after rebooting:
+```bash
+cat /proc/cmdline                 # should now end in: quiet loglevel=3
+```
+
+If output *still* lands on the greeter, the bigger hammer is to move the greeter
+off VT 1 entirely: `vt = 1` → `vt = 7` in `shared/etc/greetd/config.toml`. Then
+boot messages and the greeter cannot collide regardless of timing.
+
+### 5. Reboot and finish plugin setup
 Reboot → greetd → pick Hyprland. Inside the session:
 ```bash
 # tmux plugins: open tmux, then press  <prefix>(C-a) + I
@@ -178,6 +225,10 @@ cp hosts/rostam/pacman.txt hosts/<host>/pacman.txt
 ./install.sh                           # reads shared/ + hosts/<host>/
 chezmoi init --apply --source ~/dotfiles
 ```
+
+Then the one step nothing here can do for you: append `quiet loglevel=3` to the
+kernel command line, or boot messages will print over the login screen — see
+[step 4 of the installation](#4-quiet-the-boot-messages--manual-one-time-per-machine).
 
 Create the per-host package list **before** the first `./install.sh`, not after:
 it is the only place the GPU/Vulkan drivers and the CPU microcode are declared.
@@ -267,13 +318,24 @@ Keep host-specific secrets out of the repo: reference them from templates via
 | `chezmoi add ~/.config/foo` | start tracking a new config file |
 | `chezmoi re-add` | pull changes you made directly in `$HOME` back into the source |
 | `chezmoi cd` | drop into the source repo (`home/`) to commit/push |
+| `dotsync` | `chezmoi re-add`, with a check that the repo is not ahead of `$HOME` |
 | `upcheck` | `checkupdates; yay -Qua` — preview both halves of an upgrade, change nothing |
 | `upgrade` | `sudo pacman -Syu && yay -Sua` — upgrade repos first, then the AUR |
+| `orphans` | `pacman -Qdtq` — list packages nothing depends on any more |
+| `orphanclean` | remove them; re-run until `orphans` is empty |
+| `cleanup` | trim the pacman + yay caches, keeping the 3 newest versions |
+| `pacmerge` | `pacdiff` in `nvim -d` — merge `.pacnew` files an upgrade left behind |
 
 The AUR half of `upgrade` is `yay -Sua`, **not** `-Syu`: `-Syu` there re-syncs and
 redoes the repo half pacman just did. Doing them as two steps also makes it
-obvious which half broke. See [MAINTENANCE.md](MAINTENANCE.md) for what actually
-breaks Arch upgrades, orphan/cache cleanup, and how to roll a package back.
+obvious which half broke.
+
+`orphans` is separate from `orphanclean` deliberately: a package this repo
+declares can be recorded by pacman as a *dependency*, and then it is
+indistinguishable from a real orphan in `pacman -Qdtq` (`vlc` was one cleanup
+away from being deleted). Run `./bin/pkg-diff.sh` to see which ones those are.
+See [MAINTENANCE.md](MAINTENANCE.md) for what actually breaks Arch upgrades,
+orphan/cache cleanup, and how to roll a package back.
 
 Typical loop: `chezmoi edit <file>` → `chezmoi apply` → `chezmoi cd && git commit -am ... && git push`.
 

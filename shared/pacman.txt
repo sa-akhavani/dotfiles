@@ -26,9 +26,17 @@ fzf
 tree
 lsd
 ripgrep
+# rga: ripgrep that also searches inside PDFs, e-books, office docs and
+# archives. Arrived once as a kio-extras dependency and vanished with it when
+# dolphin was removed — declared here so that cannot happen again.
+ripgrep-all
 bat
 fd
 axel
+# Used by hyprshot (declared below) to parse `hyprctl -j` output, so this is a
+# hard dependency of the screenshot binds, not just a handy CLI tool.
+jq
+socat
 
 
 # Shell/editor config stack and syntax highlighting
@@ -50,11 +58,21 @@ rustup
 luarocks
 uv
 postgresql
+# Arch's python is externally-managed, so pip only works inside a venv or with
+# --break-system-packages. `uv` above is the day-to-day tool; pip is here for
+# the odd project that hardcodes it.
+python-pip
 
 
 # LSPs / linters / formatters
 ruff
-# maybe add ty? it's a python language server
+# Astral's Python type checker and language server. Paired with ruff above, not
+# a replacement for it: `ruff server` is lint/format only, so ty is what gives
+# Python hover, go-to-definition and completion. Config in
+# home/dot_config/nvim/lsp/ty.lua, enabled in lua/core/lsp.lua.
+# Still 0.0.x/preview — inference is incomplete, so trust a clean run less than
+# you would pyright's. Fine for an editor, not something to gate CI on.
+ty
 typescript-language-server
 lua-language-server
 clang
@@ -75,6 +93,9 @@ hyprshot
 hyprpolkitagent
 xdg-desktop-portal-hyprland
 xdg-desktop-portal-gtk
+# The GStreamer element the portal hands screen-capture frames to. Without it
+# screen sharing in Zoom/Slack/Chrome silently offers no windows to share.
+gst-plugin-pipewire
 qt5-wayland
 qt6-wayland
 polkit
@@ -83,6 +104,28 @@ grim
 slurp
 swappy
 wl-clipboard
+
+# System
+inetutils
+smartmontools
+
+# Kernel, firmware and boot. Declared explicitly so a rebuilt host gets these
+# from this repo instead of inheriting whatever the Arch installer left behind.
+linux
+# Fallback kernel — boot this when a `linux` update breaks the machine.
+linux-lts
+linux-firmware
+# Sound Open Firmware. Modern Intel (and many AMD) machines have NO audio at all
+# without it, and the failure presents as a broken pipewire rather than as a
+# missing firmware blob, so it costs an afternoon to diagnose.
+sof-firmware
+efibootmgr
+# Supplies all of this machine's swap. The package alone does nothing — its
+# config is tracked at shared/etc/systemd/zram-generator.conf.
+zram-generator
+# Read/write NTFS mounts: rostam dual-boots Windows and giv has several NTFS
+# volumes on its internal disk.
+ntfs-3g
 
 # Desktop shell / utilities
 lm_sensors
@@ -98,7 +141,12 @@ yazi
 # home/dot_config/Thunar. gvfs gives it trash, mounting and network browsing.
 thunar
 thunar-archive-plugin
+# The backend thunar-archive-plugin shells out to for right-click "Extract
+# Here". The plugin only lists it as an optdep, so nothing pulls it in.
+file-roller
 gvfs
+# Second GUI file manager, kept alongside thunar for its dual-pane/tree view.
+nemo
 viewnior
 zathura
 zathura-pdf-mupdf
@@ -125,6 +173,9 @@ network-manager-applet
 openssh
 fail2ban
 openvpn
+# For dig/host/nslookup. Arch ships no smaller package for them; the `named`
+# server it also installs is not enabled by shared/services.txt.
+bind
 
 # Virtualisation
 docker
@@ -137,6 +188,8 @@ noto-fonts-cjk
 noto-fonts-emoji
 ttf-fira-code
 ttf-liberation
+# Named in the font stack of home/dot_config/waybar/style.css.
+ttf-opensans
 ttf-firacode-nerd
 # The standalone Nerd Font glyph set (README calls it "Symbols Nerd Font Mono").
 # It is what yazi and the waybar modules fall back to for icons; the patched
@@ -144,14 +197,27 @@ ttf-firacode-nerd
 ttf-nerd-fonts-symbols-mono
 xkeyboard-config
 
+# Printing
+# Installed but deliberately NOT in shared/services.txt — cups.socket stays
+# disabled until there is a printer to talk to. Enable it by hand when needed.
+cups
+
 # Session / misc
 dconf
 flatpak
 gnupg
 mtr
 
+# Toys
+cmatrix
+misfortune
+
 
 # Display manager
+# greetd is the daemon shared/services.txt enables and shared/etc/greetd holds
+# the config for; tuigreet is only its frontend, and depending on it was the
+# sole reason greetd was ever installed here.
+greetd
 greetd-tuigreet
 
 # Apps

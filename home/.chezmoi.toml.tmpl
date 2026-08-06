@@ -3,5 +3,19 @@
 # ~/.config/chezmoi/chezmoi.toml and reused by every `chezmoi apply`.
 {{- $gpu := promptStringOnce . "gpu" "GPU vendor for this host (intel / amd / nvidia)" "intel" }}
 
+# Where this repo is checked out. chezmoi does NOT remember the `--source` you
+# passed to `chezmoi init`, so without this line every later bare `chezmoi
+# apply` / `status` / `re-add` looks in the default ~/.local/share/chezmoi and
+# fails with "no such file or directory" — which is exactly what happened on
+# giv, where the repo lives under ~/Desktop. Baking the path in here fixes the
+# `update` alias and lets the dotsync timer run from anywhere.
+#
+# .chezmoi.workingTree is the git checkout root (the directory holding
+# .chezmoiroot), NOT .chezmoi.sourceDir, which has already been rewritten to
+# the home/ subdirectory and would bypass .chezmoiroot on the next read.
+#
+# If you move the checkout, re-run:  chezmoi init --source <new path>
+sourceDir = {{ .chezmoi.workingTree | quote }}
+
 [data]
     gpu = {{ $gpu | quote }}

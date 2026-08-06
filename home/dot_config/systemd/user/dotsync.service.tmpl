@@ -1,0 +1,23 @@
+# Pull hand-edits from $HOME back into the dotfiles repo. Paired with
+# dotsync.timer; neither is enabled automatically, because shared/services.txt
+# only handles ROOT units:
+#
+#   systemctl --user enable --now dotsync.timer
+#
+# The repo path is baked in at `chezmoi apply` time from .chezmoi.workingTree,
+# so this file is correct on every host without a hardcoded ~/Desktop guess.
+#
+# It runs bin/dotsync.sh --apply, which refuses to act when an apply is pending,
+# and it never commits — the timer's only job is to make sure a config you
+# tweaked at 2am is in `git status` rather than lost to the next apply.
+[Unit]
+Description=Sync $HOME dotfile edits back into the chezmoi repo
+# Pointless (and noisy in the journal) if the checkout is not there.
+ConditionPathIsDirectory={{ .chezmoi.workingTree }}
+
+[Service]
+Type=oneshot
+ExecStart={{ .chezmoi.workingTree }}/bin/dotsync.sh --apply
+# A refused run (exit 1, apply pending) is an expected outcome, not a failure
+# worth a red unit and a desktop notification.
+SuccessExitStatus=0 1

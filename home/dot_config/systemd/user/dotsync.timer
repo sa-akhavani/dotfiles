@@ -1,0 +1,19 @@
+# Enable with:  systemctl --user enable --now dotsync.timer
+# Check with:   systemctl --user list-timers dotsync.timer
+#
+# Hourly rather than a .path unit watching ~/.config: applications rewrite their
+# own configs constantly (GTK, VS Code, walker), so an inotify trigger would
+# fire dozens of times an hour and race with `chezmoi apply`. An hourly sweep
+# captures the same edits and can never interleave with one.
+[Unit]
+Description=Hourly sync of $HOME dotfile edits into the chezmoi repo
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=1h
+# Do not stack up missed runs after a laptop has been suspended for a week.
+Persistent=false
+AccuracySec=5min
+
+[Install]
+WantedBy=timers.target
