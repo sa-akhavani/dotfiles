@@ -60,7 +60,6 @@ home/                        # chezmoi source: everything here maps into $HOME
   dot_config/                # -> ~/.config
     hypr/  waybar/  nvim/  wezterm/  mako/  cava/  walker/  tmux/
     fastfetch/  btop/  lsd/  wlogout/  swappy/  nwg-look/
-    Code/argv.json  Cursor/argv.json  # Electron: use the gnome-keyring backend
   dot_local/share/applications/  # -> ~/.local/share/applications
                              #   Hidden=true stubs that shadow (and so delete)
                              #   launcher entries shipped by a package that
@@ -216,7 +215,34 @@ Check it took effect after rebooting:
 cat /proc/cmdline                 # should now end in: quiet loglevel=3
 ```
 
-### 5. Reboot and finish plugin setup
+### 5. Point Electron at the keyring — manual, one-time, per machine
+
+Cursor and VS Code otherwise print "An OS keyring couldn't be identified…" on
+every launch and fall back to storing credentials in plaintext. Why that happens
+is under [Keyring](#keyring--an-os-keyring-couldnt-be-identified); this is the
+fix. Launch each app once first so it creates the file, then add one key:
+
+```bash
+# ~/.cursor and ~/.vscode — NOT ~/.config/Cursor and ~/.config/Code, which
+# neither app ever opens. The directory is product.json's dataFolderName.
+$EDITOR ~/.cursor/argv.json     # add:  "password-store": "gnome-libsecret"
+$EDITOR ~/.vscode/argv.json     # same
+```
+
+Then quit the app completely — not just the window — and relaunch. Verify:
+
+```bash
+grep password-store ~/.cursor/argv.json ~/.vscode/argv.json
+```
+
+Deliberately **not** managed by chezmoi, like the boot cmdline above. Both apps
+write to these files themselves: a per-machine `crash-reporter-id` on first
+launch, and the in-app "Preferences: Configure Runtime Arguments" command. A
+tracked copy would revert those edits on every `chezmoi apply` and pin one
+crash-reporter-id across all three hosts. `home/.chezmoiremove` does still delete
+the two dead `~/.config` copies the repo used to deploy.
+
+### 6. Reboot and finish plugin setup
 
 Reboot → greetd → pick Hyprland. Inside the session:
 
@@ -403,8 +429,20 @@ things have to be true, and missing either produces that same message:
 2. **Electron is told to use it.** Chromium selects its credential backend from
    `XDG_CURRENT_DESKTOP`, and `Hyprland` is not a desktop it recognises, so it
    falls back to the plaintext `basic` store _even with a keyring running_.
-   `home/dot_config/{Code,Cursor}/argv.json` set `"password-store":
-"gnome-libsecret"` to override that. Restart the app fully after a change.
+   `"password-store": "gnome-libsecret"` in each app's `argv.json` overrides
+   that. This is a **manual per-host step** — installation step 5 below.
+   Restart the app fully after a change.
+
+   **The path is the trap.** `argv.json` is not read from the Electron
+   user-data directory. Both apps resolve it as
+   `$HOME/<product.json dataFolderName>/argv.json` — `~/.cursor/argv.json` and
+   `~/.vscode/argv.json`, never `~/.config/Cursor` or `~/.config/Code`. The repo
+   deployed them to the latter until 2026-08, where nothing opened them, while
+   every other symptom (keyring installed, daemon running, name owned on the bus)
+   checked out. Confirm with
+   `grep password-store ~/.cursor/argv.json ~/.vscode/argv.json`, and read the
+   right directory back out of the app itself rather than guessing:
+   `python3 -c "import json;print(json.load(open('/usr/share/cursor/resources/app/product.json'))['dataFolderName'])"`.
 
 Unlocking is handled by the two `pam_gnome_keyring` lines in
 `shared/etc/pam.d/greetd`, so the login keyring opens with the password already
@@ -518,13 +556,6 @@ you which agent is waiting on you. What it does *not* do is bring back shells,
 servers or tests after a reboot — "the original pane processes are gone" — which
 tmux-resurrect does. So neither is a superset.
 
-**Never nest them.** herdr is mouse-native and tmux has `mouse on`, so they fight
-over mouse events; you lose a row to a second status bar; resurrect would try to
-restore `herdr` itself as a pane command and double up the restore; and stacking
-another rendering layer on top of the tmux passthrough bug that already breaks
-yazi previews makes that worse. `$mainMod+SHIFT+RETURN` runs
-`wezterm start -- herdr`, which bypasses `default_prog` and so never enters tmux.
-
 Note `experimental.pane_history = true` in `herdr/config.toml` writes pane
 *contents* to `session-history.json` in plaintext. It is what makes scrollback
 survive a reboot, and it is off by default upstream for that reason.
@@ -550,50 +581,11 @@ branch weekly on its own.
 ### Fonts
 
 Plain FiraCode (`ttf-fira-code`), Noto, Liberation, OpenSans, and Vazirmatn for
-Persian (`vazirmatn-fonts` — the old `ttf-vazir` was deleted from the AUR when
-upstream renamed the project).
+Persian.
 
 **No patched Nerd Font is installed, deliberately.** A patched build is just the
 same family with the icon glyphs baked in, so it duplicates a font you already
-have, and running several of them side by side is what makes the same icon come
-out a different width in different apps. Instead there is one standalone glyph
-family, `Symbols Nerd Font Mono` (`ttf-nerd-fonts-symbols-mono`), and three
-things point at it:
-
-- **WezTerm** needs nothing — it does its own per-glyph fontconfig fallback, and
-  draws the powerline range itself (`custom_block_glyphs`). `wezterm ls-fonts
-  --text ''` shows the glyph resolving to `SymbolsNerdFontMono-Regular.ttf`
-  while letters stay on `FiraCode-Regular.ttf`.
-- **Waybar** names the family directly in the font stack in `waybar/style.css`;
-  so does `wlogout/style.css`.
-- **Everything else** (mako, GTK apps, anything asking for plain `monospace`) is
-  covered by `~/.config/fontconfig/conf.d/10-nerd-symbols.conf`, which appends
-  `Symbols Nerd Font Mono` to the `monospace` and `Fira Code` patterns with a
-  weak binding — a fallback after the real font, not a replacement for it.
-
-That last file exists because the one upstream ships is unusable here:
-`ttf-nerd-fonts-symbols-common` drops it in `/usr/share/fontconfig/conf.avail/`,
-which Arch never symlinks into `/etc/fonts/conf.d`, and it aliases to `Symbols
-Nerd Font` — the proportional package, which is not installed. It also uses
-`<prefer>`, putting a font with no Latin glyphs at the front of the `monospace`
-list.
-
-Check the result with `fc-match -s monospace | head -4`: the real monospace font
-must come first and `Symbols Nerd Font Mono` shortly after. If it is first,
-something re-enabled the upstream `<prefer>` rule.
-
-`yazi` depends on nerd glyphs, but on the **virtual** `ttf-font-nerd`, which all
-~100 patched nerd-font packages provide — and so does
-`ttf-nerd-fonts-symbols-mono`. Declaring the symbols package satisfies yazi
-without any patched font. Leave it out and `pacman --noconfirm` picks whichever
-provider sorts first; that is how `otf-atkinsonhyperlegiblemono-nerd` ended up
-installed here.
-
-A theme named by a config has to be installed too, or it silently falls back.
-Nothing names one at the moment: `fuzzel.ini` set `icon-theme=Papirus-Dark` and
-is gone (walker takes its icons from the GTK icon theme instead), and the
-`Bibata-Modern-Classic` line in `gtk-3.0/settings.ini` is commented out.
-`papirus-icon-theme` is still declared; `bibata-cursor-theme` is not.
+have. There is one standalone glyph family, `Symbols Nerd Font Mono` (`ttf-nerd-fonts-symbols-mono`).
 
 ### Wrong temperature in Waybar
 

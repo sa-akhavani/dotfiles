@@ -23,3 +23,19 @@
 # module, which links libcava in-process. Left in $HOME it is an executable that
 # looks load-bearing and is not.
 .config/waybar/scripts/cava.sh
+
+# argv.json in the Electron user-data directory. Both apps read argv.json from
+# $HOME/<product.json dataFolderName>/argv.json instead — ~/.cursor/argv.json and
+# ~/.vscode/argv.json — so these two copies were opened by nothing and the
+# "password-store": "gnome-libsecret" line in them never took effect.
+#
+# The real files are deliberately NOT tracked: the apps write to them themselves
+# (crash-reporter-id, and the in-app "Configure Runtime Arguments" command), so
+# managing them here would fight the application and pin one crash-reporter-id
+# across all three hosts. Setting password-store is a manual per-host step —
+# README installation step 5. Do not add ~/.cursor or ~/.vscode below; that would
+# delete the working files.
+#
+# Only the two dead files go: both directories still hold live application state.
+.config/Cursor/argv.json
+.config/Code/argv.json

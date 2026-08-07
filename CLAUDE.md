@@ -328,6 +328,26 @@ so hand him the command (he can run it with a `! ` prefix).
   falls back to the plaintext `basic` store — so VS Code/Cursor need
   `"password-store": "gnome-libsecret"` in `argv.json` *as well as* a running
   provider. Both failures print the same "an OS keyring couldn't be identified".
+  - **`argv.json` is not in the Electron user-data directory.** Both apps
+    resolve it as `$HOME/<product.json dataFolderName>/argv.json` — the shipped
+    `out/main.js` has
+    `_e(this.userHome, this.productService.dataFolderName, "argv.json")` — so it
+    is `~/.cursor/argv.json` and `~/.vscode/argv.json`, **not**
+    `~/.config/Cursor` / `~/.config/Code`. The repo deployed them to the latter,
+    where nothing opened them, so the keyring line was inert while every other
+    symptom (package installed, `gnome-keyring-daemon` running and owning
+    `org.freedesktop.secrets` on the session bus) checked out. Read
+    `dataFolderName` out of `/usr/share/{cursor,code}/resources/app/product.json`
+    rather than assuming it.
+  - **Those two files are deliberately unmanaged** — a documented manual step
+    (README installation step 5), same call as the boot cmdline. The apps write
+    to them themselves: `crash-reporter-id` on first launch (only when the file
+    is absent, so a tracked copy would pin one id across all three hosts) and the
+    in-app "Preferences: Configure Runtime Arguments" command, which a tracked
+    copy would revert on the next apply. `.chezmoiremove` still retires the two
+    dead `~/.config` paths, and must never list `~/.cursor` or `~/.vscode` —
+    that would delete the working files. Don't "fix" this by adding them back to
+    the source directory.
 - **`hyprctl dispatch` takes a Lua expression now, and the old hyprlang form
   fails silently.** Since the 0.55 Lua migration it evaluates
   `return hl.dispatch(<arg>)`, so `hyprctl dispatch dpms off` is a *Lua syntax
