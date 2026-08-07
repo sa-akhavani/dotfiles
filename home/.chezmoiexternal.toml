@@ -1,0 +1,23 @@
+# Third-party trees chezmoi clones into $HOME instead of tracking file-by-file.
+# Paths are relative to the destination directory, not to this source root.
+#
+# split-monitor-workspaces gives every monitor its own workspaces 1..N, so
+# SUPER+1 means "the first workspace of the screen I am looking at" rather than
+# a fixed global workspace. Since Hyprland 0.55 it is a plain Lua library, not a
+# compiled plugin — no hyprpm, no ABI lock to a Hyprland commit, and nothing to
+# rebuild on a normal pacman upgrade. See dot_config/hypr/workspaces.lua for the
+# setup call and the binds.
+#
+# The branch is pinned to Hyprland's release series on purpose: the library
+# tracks the compositor's Lua API, and `main` follows Hyprland git. Bump this
+# to release/0.57.x when Hyprland 0.57 lands (tags exist too, e.g. v0.56.2, if a
+# hard pin is ever wanted). refreshPeriod keeps it from hitting the network on
+# every single `chezmoi apply`.
+[".config/hypr/plugins/split-monitor-workspaces"]
+type = "git-repo"
+url = "https://github.com/zjeffer/split-monitor-workspaces.git"
+refreshPeriod = "168h"
+[".config/hypr/plugins/split-monitor-workspaces".clone]
+args = ["--branch", "release/0.56.x", "--depth", "1"]
+[".config/hypr/plugins/split-monitor-workspaces".pull]
+args = ["--ff-only"]

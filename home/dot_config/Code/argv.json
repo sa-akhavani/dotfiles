@@ -1,0 +1,5 @@
+// VS Code's Electron runtime arguments — same file, same reason, as
+// home/dot_config/Cursor/argv.json. See the comment there.
+{
+	"password-store": "gnome-libsecret"
+}

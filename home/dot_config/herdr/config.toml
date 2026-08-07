@@ -1,0 +1,29 @@
+# herdr — agent multiplexer. https://herdr.dev/docs/
+#
+# Deliberately minimal: this is an override on top of herdr's built-in defaults,
+# not a full config. `herdr --default-config` prints the complete default set if
+# you ever want to diff against it or pin something else.
+#
+# Do NOT run herdr inside tmux. It is a multiplexer in its own right — server
+# plus attached clients, same as tmux — so nesting them gives you two prefix
+# keys, two status bars, and both grabbing mouse events. $mainMod+SHIFT+RETURN
+# (hypr/bindings.lua) opens it via `wezterm start -- herdr`, which bypasses
+# wezterm's default_prog and so skips tmux entirely.
+
+[experimental]
+# Persist pane screen history to session-history.json.
+#
+# Needed because of how little survives a reboot. Detaching a client keeps
+# everything alive (the server never stopped), but on a full server stop "the
+# original pane processes are gone" — herdr then restores the session *shape*
+# and re-invokes supported agents with a saved reference (`claude --resume <id>`,
+# which is the exact-conversation restore that tmux-resurrect's `--continue`
+# cannot do per pane). Without this, the scrollback in those panes comes back
+# empty.
+#
+# Trade-off, and it is the reason this is off by default upstream: it writes pane
+# *contents* to disk. Anything that appeared on screen — tokens pasted into a
+# prompt, .env dumps, agent output quoting a secret — lands in
+# session-history.json in plaintext. Set it back to false if that is not a
+# trade you want on a given machine.
+pane_history = true

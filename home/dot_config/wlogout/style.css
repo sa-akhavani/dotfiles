@@ -8,7 +8,8 @@
 @define-color button-bg rgba(52, 59, 88, 1);
 
 * {
-	font-family: FiraCode Nerd Font;
+	/* Plain FiraCode + the standalone glyph set, not a patched Nerd Font. */
+	font-family: Fira Code, Symbols Nerd Font Mono;
     font-weight: bold;
     font-size: 20px;
 }

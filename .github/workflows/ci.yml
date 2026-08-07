@@ -98,7 +98,12 @@ jobs:
                 echo "::error file=${f#"$dest"/}::renders to invalid Lua (gpu=$gpu)"
                 exit 1
               }
-            done < <(find "$dest/.config/hypr" "$dest/.config/nvim" -name '*.lua' -print0)
+            # -path .../hypr/plugins is the chezmoiexternal clone of
+            # split-monitor-workspaces: third-party Lua, checked by its own CI,
+            # and a failure there would read as ours. Spelled out with `hypr/`
+            # because .config/nvim/lua/plugins IS ours and must stay checked.
+            done < <(find "$dest/.config/hypr" "$dest/.config/nvim" \
+                       -path '*/hypr/plugins/*' -prune -o -name '*.lua' -print0)
           done
 
       # `.chezmoiignore`/`.chezmoiremove` do not strip trailing `#` comments — a

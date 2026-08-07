@@ -100,7 +100,14 @@ for gpu in "${GPUS[@]}"; do
 
   # Unpiped and inside `if`, so the real status survives and `set -e` does not
   # abort the run before the errors can be printed.
-  if out=$(Hyprland --verify-config -c "$entry" 2>&1); then
+  #
+  # HOME points at the rendered tree, not the real one. workspaces.lua finds
+  # split-monitor-workspaces through $HOME (Hyprland resolves require() against
+  # the config directory only, so the library has to be on package.path by
+  # absolute path), and chezmoi has just cloned that external into $dest. Left
+  # alone, this would either check the copy in the real $HOME — the wrong one —
+  # or fail outright on a host where it has not been applied yet.
+  if out=$(HOME="$dest" Hyprland --verify-config -c "$entry" 2>&1); then
     ok "$gpu"
   else
     bad "$gpu"

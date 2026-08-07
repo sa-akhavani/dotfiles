@@ -1,0 +1,13 @@
+// Cursor's Electron runtime arguments (JSON with comments — the app's own
+// "Preferences: Configure Runtime Arguments" edits this same file).
+//
+// Chromium picks its credential backend from XDG_CURRENT_DESKTOP, and
+// "Hyprland" is not one of the desktops it recognises, so it silently falls
+// back to the plaintext `basic` store and reports "An OS keyring couldn't be
+// identified for storing the encryption related data in your current desktop
+// environment" on every launch. Naming the backend here points it at
+// gnome-keyring over libsecret instead. Both halves are required: the package
+// (shared/pacman.txt) and this line.
+{
+	"password-store": "gnome-libsecret"
+}

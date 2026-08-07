@@ -18,7 +18,28 @@
 
 # Manual sensitivity in %. If autosens is enabled, this will only be the initial value.
 # 200 means double height. Accepts only non-negative values.
-; sensitivity = 100
+#
+# THIS is the sensitivity knob for the waybar module — see
+# ~/.config/waybar/modules/cava.jsonc. waybar overrides `autosens` and most of
+# the rest from its own config, but it must not set `sensitivity`, because it
+# assigns that one after libcava has already divided by 100. Here the /100 does
+# happen, so 100 = unity gain and the number means what it says.
+#
+# Lower it to pull the whole module down. With autosens on (the waybar default)
+# it is pure headroom, and it also caps the top: cavacore normalises the loudest
+# bar to exactly 1.0, so 70 means the tallest bar is 0.7 * 8 icons ≈ ▅ and █ is
+# never reached at all. Values under 1 are rejected outright ("Sensitivity needs
+# to be at least 1%").
+sensitivity = 100
+
+# If the bars should track how loud the music actually is — quiet passages short,
+# loud ones clipping at █ — set `autosens = 0` in the waybar module (not here,
+# it wins) and tune `sensitivity` above by ear from there. autosens exists
+# precisely to erase that dynamic range: it drops gain 2%/frame on an overshoot
+# but only raises it 0.1%/frame otherwise, a 20:1 asymmetry that deliberately
+# parks the loudest bar at full height about one frame in twenty. That is why
+# "all bars maxed" is the expected look with autosens on and heavy smoothing,
+# and why the fix was mono + noise_reduction rather than this line.
 
 # The number of bars (0-512). 0 sets it to auto (fill up console).
 # Bars' width and space between bars in number of characters.

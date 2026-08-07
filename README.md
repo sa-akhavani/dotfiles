@@ -5,25 +5,25 @@ Fast, minimal, feature-packed.
 Packages and system services are installed with **pacman/AUR** (`install.sh`).
 Dotfiles are managed with **[chezmoi](https://www.chezmoi.io/)**.
 
-
 ## Overview
 
-| Tool / Environment | Choice |
-| --- | --- |
-| OS | [Arch Linux](https://archlinux.org/) |
-| Window Manager | [Hyprland](https://github.com/hyprwm/Hyprland) (Wayland) |
-| Display Manager | [greetd](https://sr.ht/~kennylevinsen/greetd/) + [tuigreet](https://github.com/apognu/tuigreet) |
-| Terminal | [WezTerm](https://github.com/wez/wezterm) |
-| Multiplexer | [tmux](https://github.com/tmux/tmux) |
-| Editor | [Neovim](https://github.com/neovim/neovim) (lazy.nvim) |
-| Shell | [zsh](https://github.com/ohmyzsh/ohmyzsh) + oh-my-zsh |
-| Status Bar | [Waybar](https://github.com/Alexays/Waybar) |
-| Notifications | [mako](https://github.com/emersion/mako) |
-| Launcher | [walker](https://github.com/abenz1267/walker) + [elephant](https://github.com/abenz1267/elephant) (`$mainMod+R`; clipboard history on `$mainMod+V`) |
-| Lock / Idle | [hyprlock](https://github.com/hyprwm/hyprlock) + [hypridle](https://github.com/hyprwm/hypridle) |
-| File Manager | [yazi](https://github.com/sxyazi/yazi) (TUI) / [Thunar](https://docs.xfce.org/xfce/thunar/start) (`$mainMod+E`) |
-| Audio | PipeWire + WirePlumber |
-| Dotfile manager | [chezmoi](https://www.chezmoi.io/) |
+| Tool / Environment | Choice                                                                                                                                              |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| OS                 | [Arch Linux](https://archlinux.org/)                                                                                                                |
+| Window Manager     | [Hyprland](https://github.com/hyprwm/Hyprland) (Wayland)                                                                                            |
+| Display Manager    | [greetd](https://sr.ht/~kennylevinsen/greetd/) + [tuigreet](https://github.com/apognu/tuigreet)                                                     |
+| Terminal           | [WezTerm](https://github.com/wez/wezterm)                                                                                                           |
+| Multiplexer        | [tmux](https://github.com/tmux/tmux)                                                                                                                |
+| Editor             | [Neovim](https://github.com/neovim/neovim) (lazy.nvim)                                                                                              |
+| Shell              | [zsh](https://github.com/ohmyzsh/ohmyzsh) + oh-my-zsh                                                                                               |
+| Status Bar         | [Waybar](https://github.com/Alexays/Waybar)                                                                                                         |
+| Notifications      | [mako](https://github.com/emersion/mako)                                                                                                            |
+| Launcher           | [walker](https://github.com/abenz1267/walker) + [elephant](https://github.com/abenz1267/elephant) (`$mainMod+R`; clipboard history on `$mainMod+V`) |
+| Lock / Idle        | [hyprlock](https://github.com/hyprwm/hyprlock) + [hypridle](https://github.com/hyprwm/hypridle)                                                     |
+| File Manager       | [yazi](https://github.com/sxyazi/yazi) (TUI) / [Nemo](https://github.com/linuxmint/nemo) (`$mainMod+E`)                                             |
+| Keyring            | [gnome-keyring](https://wiki.archlinux.org/title/GNOME/Keyring) (unlocked at login by PAM)                                                          |
+| Audio              | PipeWire + WirePlumber                                                                                                                              |
+| Dotfile manager    | [chezmoi](https://www.chezmoi.io/)                                                                                                                  |
 
 ## Repository layout
 
@@ -51,12 +51,16 @@ hosts/<hostname>/            # applied on ONE host, additive  (hosts/README.md)
 home/                        # chezmoi source: everything here maps into $HOME
   .chezmoiignore
   .chezmoi.toml.tmpl         # -> per-host prompts (currently: gpu)
+  .chezmoiexternal.toml      # third-party trees chezmoi clones, not tracks
+                             #   (split-monitor-workspaces, pinned to a
+                             #   Hyprland release branch)
   dot_zshrc                  # -> ~/.zshrc
   dot_gitconfig              # -> ~/.gitconfig
   Pictures/                  # -> ~/Pictures  (wallpapers + lockscreen images)
   dot_config/                # -> ~/.config
     hypr/  waybar/  nvim/  wezterm/  mako/  cava/  walker/  tmux/
-    fastfetch/  btop/  lsd/  wlogout/  swappy/  nwg-look/  Thunar/
+    fastfetch/  btop/  lsd/  wlogout/  swappy/  nwg-look/
+    Code/argv.json  Cursor/argv.json  # Electron: use the gnome-keyring backend
   dot_local/share/applications/  # -> ~/.local/share/applications
                              #   Hidden=true stubs that shadow (and so delete)
                              #   launcher entries shipped by a package that
@@ -80,16 +84,16 @@ guide](https://wiki.archlinux.org/title/Installation_guide) and gets partitionin
 `fstab`, the bootloader, the initramfs and CPU microcode right on its own. The
 answers that matter for this repo:
 
-| archinstall screen | Answer |
-| --- | --- |
-| Bootloader | **systemd-boot** |
+| archinstall screen              | Answer                                                      |
+| ------------------------------- | ----------------------------------------------------------- |
+| Bootloader                      | **systemd-boot**                                            |
 | Disk configuration → filesystem | **ext4** (btrfs if you want snapshots — see MAINTENANCE.md) |
-| Profile | **Minimal** — no desktop |
-| Audio | **Pipewire** |
-| Network configuration | **NetworkManager** |
-| Kernels | `linux` (`install.sh` adds `linux-lts` as a fallback) |
-| Additional packages | `git` — enough to clone this repo |
-| User account | `ali`, **in the `wheel` group** (sudo) |
+| Profile                         | **Minimal** — no desktop                                    |
+| Audio                           | **Pipewire**                                                |
+| Network configuration           | **NetworkManager**                                          |
+| Kernels                         | `linux` (`install.sh` adds `linux-lts` as a fallback)       |
+| Additional packages             | `git` — enough to clone this repo                           |
+| User account                    | `ali`, **in the `wheel` group** (sudo)                      |
 
 Pick the **Minimal** profile, not a desktop one: a desktop profile installs its
 own greeter and compositor, which then fight greetd + Hyprland. Everything
@@ -106,26 +110,30 @@ installed the CPU microcode for you; the shared package list declares
 list declares the microcode, so a re-run of `./install.sh` fills those gaps.
 
 ### 2. Clone and run the installer
+
 ```bash
 git clone https://github.com/sa-akhavani/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ./install.sh --dry-run        # optional: print every change, apply nothing
-./install.sh                  # installs pacman + AUR packages, enables [multilib] if needed, 
+./install.sh                  # installs pacman + AUR packages, enables [multilib] if needed,
                               # /etc configs (shared/etc), services, etc.
 ```
 
-| Flag | Effect |
-| --- | --- |
-| *(none)* | everything: packages, `/etc`, services, oh-my-zsh, TPM |
-| `--no-aur` | official repo packages + services only; skips `yay` and the AUR |
-| `--dry-run` | prints every command it *would* run and changes nothing (needs no sudo password) |
-| `--help` | usage |
+| Flag        | Effect                                                                           |
+| ----------- | -------------------------------------------------------------------------------- |
+| _(none)_    | everything: packages, `/etc`, services, oh-my-zsh, TPM                           |
+| `--no-aur`  | official repo packages + services only; skips `yay` and the AUR                  |
+| `--dry-run` | prints every command it _would_ run and changes nothing (needs no sudo password) |
+| `--help`    | usage                                                                            |
 
 ### 3. Apply the dotfiles with chezmoi
+
 `chezmoi` is installed by `install.sh`. Point it at this repo and apply:
+
 ```bash
 chezmoi init --apply --source ~/dotfiles
 ```
+
 On first init you'll be asked **once** for this host's GPU vendor
 (`intel` / `amd` / `nvidia`) — see [Multi-host support](#multi-host-support).
 This writes everything under `home/` into `$HOME`.
@@ -136,7 +144,7 @@ Without this, boot output is printed **on top of the tuigreet login screen**.
 
 **Where you edit it depends on how the host boots.** Both shapes below are
 systemd-boot; the difference is whether the kernel command line sits in a loader
-entry or is baked *inside* a unified kernel image (UKI):
+entry or is baked _inside_ a unified kernel image (UKI):
 
 ```bash
 bootctl status | grep 'Current Entry'
@@ -203,13 +211,15 @@ root=PARTUUID=43f5dd7c-… zswap.enabled=0 rw rootfstype=ext4 quiet loglevel=3
 - Nothing is lost, only hidden: `journalctl -b` still has the full boot.
 
 Check it took effect after rebooting:
+
 ```bash
 cat /proc/cmdline                 # should now end in: quiet loglevel=3
 ```
 
-
 ### 5. Reboot and finish plugin setup
+
 Reboot → greetd → pick Hyprland. Inside the session:
+
 ```bash
 # tmux plugins: open tmux, then press  <prefix>(C-a) + I
 ```
@@ -221,13 +231,12 @@ only overrides what actually differs. There are four independent layers, all
 keyed off the hostname (`hostnamectl --static`) or off machine-local chezmoi
 data:
 
-| Layer | Mechanism | Where |
-| --- | --- | --- |
-| Packages | `pacman.txt`, `aur.txt`, `npm.txt` appended to the shared lists | `hosts/<hostname>/` |
-| `/etc` + services | `etc/…`, `services.txt` applied after the shared ones | `hosts/<hostname>/` |
-| Dotfile *contents* | `*.tmpl` templates branching on host data | `home/` |
-| Whole dotfiles on/off | `.chezmoiignore` (itself a template) | `home/` |
-
+| Layer                 | Mechanism                                                       | Where               |
+| --------------------- | --------------------------------------------------------------- | ------------------- |
+| Packages              | `pacman.txt`, `aur.txt`, `npm.txt` appended to the shared lists | `hosts/<hostname>/` |
+| `/etc` + services     | `etc/…`, `services.txt` applied after the shared ones           | `hosts/<hostname>/` |
+| Dotfile _contents_    | `*.tmpl` templates branching on host data                       | `home/`             |
+| Whole dotfiles on/off | `.chezmoiignore` (itself a template)                            | `home/`             |
 
 ### 1. Machine-local data (the prompts)
 
@@ -302,27 +311,27 @@ Keep host-specific secrets out of the repo: reference them from templates via
 
 ## Day-to-day (chezmoi workflow)
 
-| Command / alias | Action |
-| --- | --- |
-| `update` | `chezmoi apply` — re-apply the source to `$HOME` |
-| `chezmoi edit ~/.zshrc` | edit a file through chezmoi (edits the source under `home/`) |
-| `chezmoi add ~/.config/foo` | start tracking a new config file |
-| `chezmoi re-add` | pull changes you made directly in `$HOME` back into the source |
-| `chezmoi cd` | drop into the source repo (`home/`) to commit/push |
-| `dotsync` | `chezmoi re-add`, with a check that the repo is not ahead of `$HOME` |
-| `upcheck` | `checkupdates; yay -Qua` — preview both halves of an upgrade, change nothing |
-| `upgrade` | `sudo pacman -Syu && yay -Sua` — upgrade repos first, then the AUR |
-| `orphans` | `pacman -Qdtq` — list packages nothing depends on any more |
-| `orphanclean` | remove them; re-run until `orphans` is empty |
-| `cleanup` | trim the pacman + yay caches, keeping the 3 newest versions |
-| `pacmerge` | `pacdiff` in `nvim -d` — merge `.pacnew` files an upgrade left behind |
+| Command / alias             | Action                                                                       |
+| --------------------------- | ---------------------------------------------------------------------------- |
+| `update`                    | `chezmoi apply` — re-apply the source to `$HOME`                             |
+| `chezmoi edit ~/.zshrc`     | edit a file through chezmoi (edits the source under `home/`)                 |
+| `chezmoi add ~/.config/foo` | start tracking a new config file                                             |
+| `chezmoi re-add`            | pull changes you made directly in `$HOME` back into the source               |
+| `chezmoi cd`                | drop into the source repo (`home/`) to commit/push                           |
+| `dotsync`                   | `chezmoi re-add`, with a check that the repo is not ahead of `$HOME`         |
+| `upcheck`                   | `checkupdates; yay -Qua` — preview both halves of an upgrade, change nothing |
+| `upgrade`                   | `sudo pacman -Syu && yay -Sua` — upgrade repos first, then the AUR           |
+| `orphans`                   | `pacman -Qdtq` — list packages nothing depends on any more                   |
+| `orphanclean`               | remove them; re-run until `orphans` is empty                                 |
+| `cleanup`                   | trim the pacman + yay caches, keeping the 3 newest versions                  |
+| `pacmerge`                  | `pacdiff` in `nvim -d` — merge `.pacnew` files an upgrade left behind        |
 
 The AUR half of `upgrade` is `yay -Sua`, **not** `-Syu`: `-Syu` there re-syncs and
 redoes the repo half pacman just did. Doing them as two steps also makes it
 obvious which half broke.
 
 `orphans` is separate from `orphanclean` deliberately: a package this repo
-declares can be recorded by pacman as a *dependency*, and then it is
+declares can be recorded by pacman as a _dependency_, and then it is
 indistinguishable from a real orphan in `pacman -Qdtq` (`vlc` was one cleanup
 away from being deleted). Run `./bin/pkg-diff.sh` to see which ones those are.
 See [MAINTENANCE.md](MAINTENANCE.md) for what actually breaks Arch upgrades,
@@ -348,11 +357,11 @@ past unnoticed. Both directions are reported by:
 ./bin/pkg-diff.sh          # read-only; exits 1 when there is drift
 ```
 
-| It reports | What to do |
-| --- | --- |
-| Declared but not installed | re-run `./install.sh`, or `yay -S <name>` without `--noconfirm` to see the real error |
-| Explicitly installed but not declared | add it to `shared/` (or `hosts/<hostname>/`), or `sudo pacman -Rns <name>` |
-| Declared but installed as a *dependency* | `sudo pacman -D --asexplicit <names>` — otherwise `pacman -Qdt` lists them as orphans and a routine cleanup deletes packages this repo says you need |
+| It reports                               | What to do                                                                                                                                           |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Declared but not installed               | re-run `./install.sh`, or `yay -S <name>` without `--noconfirm` to see the real error                                                                |
+| Explicitly installed but not declared    | add it to `shared/` (or `hosts/<hostname>/`), or `sudo pacman -Rns <name>`                                                                           |
+| Declared but installed as a _dependency_ | `sudo pacman -D --asexplicit <names>` — otherwise `pacman -Qdt` lists them as orphans and a routine cleanup deletes packages this repo says you need |
 
 ### Verifying a change
 
@@ -373,13 +382,47 @@ found to have moved from the AUR into `[extra]`).
 ## Notes and troubleshooting
 
 ### OpenVPN
+
 On Arch, drop your `.conf` in `~/openvpn/basic.conf` and run
 `sudo openvpn --config ~/openvpn/basic.conf`, or use
 `systemctl enable --now openvpn-client@basic` with the conf in
 `/etc/openvpn/client/basic.conf`.
 
+### Keyring — "an OS keyring couldn't be identified"
+
+Cursor, VS Code, Chrome and Slack store credentials through libsecret, which
+needs something owning the D-Bus name `org.freedesktop.secrets`. Two separate
+things have to be true, and missing either produces that same message:
+
+1. **A provider is installed.** `gnome-keyring` (in `shared/pacman.txt`) ships
+   `/usr/share/dbus-1/services/org.freedesktop.secrets.service`, so it starts on
+   demand. KWallet's `ksecretd` implements the same API but only registers
+   `org.kde.secretservicecompat`, so it never answers an activation request —
+   which is why a machine with KWallet installed (as a Dolphin dependency)
+   still fails.
+2. **Electron is told to use it.** Chromium selects its credential backend from
+   `XDG_CURRENT_DESKTOP`, and `Hyprland` is not a desktop it recognises, so it
+   falls back to the plaintext `basic` store _even with a keyring running_.
+   `home/dot_config/{Code,Cursor}/argv.json` set `"password-store":
+"gnome-libsecret"` to override that. Restart the app fully after a change.
+
+Unlocking is handled by the two `pam_gnome_keyring` lines in
+`shared/etc/pam.d/greetd`, so the login keyring opens with the password already
+typed at tuigreet, with no second prompt. That file is a fork of the stock one
+from the `greetd` package — a `greetd` update will leave a
+`/etc/pam.d/greetd.pacnew` to reconcile with `pacmerge`.
+
+Check it:
+
+```bash
+busctl --user list | grep secrets          # should show org.freedesktop.secrets
+secret-tool store --label=test a b         # should not prompt after login
+```
+
 ### SSH known hosts
+
 The `nuc-alpha` host lives in `~/.ssh/config`:
+
 ```
 Host nuc-alpha
     Hostname 192.168.1.162
@@ -388,10 +431,11 @@ Host nuc-alpha
 ```
 
 ### Launcher: walker + elephant
+
 `$mainMod+R` opens walker; `$mainMod+V` opens the clipboard history.
 
 **Walker is only a frontend.** Everything it lists comes from the `elephant`
-daemon, and every data source is a *separate* package that drops a plugin into
+daemon, and every data source is a _separate_ package that drops a plugin into
 `/usr/lib/elephant`. Installing `elephant` on its own gives a launcher that
 finds nothing at all. Check with:
 
@@ -402,19 +446,19 @@ pgrep -a elephant          # nothing = the daemon is not running
 
 Elephant is started from the `hyprland.start` autostart block in
 `hypr/hyprland.lua`, so it comes up with the session. (`elephant service enable`
-would instead install a systemd *user* unit; `shared/services.txt` only handles
+would instead install a systemd _user_ unit; `shared/services.txt` only handles
 root units, which is why this repo autostarts it from the compositor.)
 
 Type a prefix to restrict the search to one provider:
 
-| Prefix | Provider | Package |
-| --- | --- | --- |
-| *(none)* | applications, calculator, web search | `elephant-desktopapplications`, `elephant-calc`, `elephant-websearch` |
-| `>` | run any command in `$PATH` | `elephant-runner` |
-| `:` | clipboard history | `elephant-clipboard` |
-| `=` | calculator | `elephant-calc` |
-| `@` | web search | `elephant-websearch` |
-| `;` | list the available providers | `elephant-providerlist` |
+| Prefix   | Provider                             | Package                                                               |
+| -------- | ------------------------------------ | --------------------------------------------------------------------- |
+| _(none)_ | applications, calculator, web search | `elephant-desktopapplications`, `elephant-calc`, `elephant-websearch` |
+| `>`      | run any command in `$PATH`           | `elephant-runner`                                                     |
+| `:`      | clipboard history                    | `elephant-clipboard`                                                  |
+| `=`      | calculator                           | `elephant-calc`                                                       |
+| `@`      | web search                           | `elephant-websearch`                                                  |
+| `;`      | list the available providers         | `elephant-providerlist`                                               |
 
 `runner` is deliberately kept off the no-prefix search: it matches every
 executable in `$PATH` and would bury the application results. Move it into
@@ -423,23 +467,127 @@ executable in `$PATH` and would bury the application results. Move it into
 Config is a **partial** override merged over walker's built-in default (the
 packaged copy is at `/etc/xdg/walker/config.toml` if you want to see everything
 that is settable). The gruvbox theme is the exception: a theme's `style.css`
-*replaces* the default stylesheet rather than extending it, so
+_replaces_ the default stylesheet rather than extending it, so
 `walker/themes/gruvbox/style.css` is a full copy of the default with only the
 `@define-color` lines changed. Re-diff it against
 `/etc/xdg/walker/themes/default/style.css` after a walker update.
 
 ### Waybar + Cava
-The official `waybar` package ships without the cava module, so this repo uses
-the AUR `waybar-cava` build (+ `libcava`) instead.
 
+The official `waybar` package ships without the cava module, so this repo uses
+the AUR `waybar-cava` build (+ `libcava`) instead. The standalone `cava` binary
+is *not* installed — waybar links libcava in-process.
+
+`~/.config/cava/config` is not decoration: waybar hands the path to libcava's
+`load_config()` and then overwrites individual fields from
+`waybar/modules/cava.jsonc`. So the jsonc wins wherever the two overlap, and the
+cava config supplies the rest. Two traps live in the seam:
+
+- **`sensitivity` must go in `cava/config`, never in the jsonc.** waybar assigns
+  it after libcava has already divided the percentage by 100, so `50` there means
+  50× gain, not 50%; it is also read as an int, so a fraction is dropped
+  silently.
+- **`noise_reduction` is 0–1 in the jsonc and 0–100 in `cava/config`** — same
+  setting, two scales.
+
+If the bars sit welded to the top: that is what `autosens` does by design. It
+cuts gain 2%/frame when a bar overshoots but only raises it 0.1%/frame
+otherwise, and that 20:1 asymmetry parks the loudest bar at full height roughly
+one frame in twenty. `noise_reduction` and `stereo` are the knobs that actually
+change the picture — mono doubles the frequency resolution for the same width,
+because `stereo` mirrors the channels and so draws half as many distinct bands
+twice.
+
+### tmux vs herdr — one multiplexer per window
+
+Both are multiplexers (background server + attached clients), so they are not
+layered, they are chosen:
+
+| | tmux | herdr |
+| --- | --- | --- |
+| Launch | `$mainMod+RETURN` (wezterm's `default_prog`) | `$mainMod+SHIFT+RETURN` |
+| For | ordinary dev, one agent at a time | several agents at once |
+| Survives detach | everything | everything |
+| Survives reboot | layout, cwd, whitelisted programs | layout; agents re-invoked |
+| Claude restore | `--continue`, per *directory* | `--resume <id>`, per *pane* |
+| Agent state | no concept of it | `blocked`/`working`/`done`/`idle` |
+
+herdr's one clear advantage is the last two rows: it restores the exact
+conversation per pane rather than "the most recent one in this cwd", and it tells
+you which agent is waiting on you. What it does *not* do is bring back shells,
+servers or tests after a reboot — "the original pane processes are gone" — which
+tmux-resurrect does. So neither is a superset.
+
+**Never nest them.** herdr is mouse-native and tmux has `mouse on`, so they fight
+over mouse events; you lose a row to a second status bar; resurrect would try to
+restore `herdr` itself as a pane command and double up the restore; and stacking
+another rendering layer on top of the tmux passthrough bug that already breaks
+yazi previews makes that worse. `$mainMod+SHIFT+RETURN` runs
+`wezterm start -- herdr`, which bypasses `default_prog` and so never enters tmux.
+
+Note `experimental.pane_history = true` in `herdr/config.toml` writes pane
+*contents* to `session-history.json` in plaintext. It is what makes scrollback
+survive a reboot, and it is off by default upstream for that reason.
+
+### Per-monitor workspaces
+
+`hypr/workspaces.lua` gives each monitor its own workspaces 1-5 via
+[split-monitor-workspaces](https://github.com/zjeffer/split-monitor-workspaces),
+so `SUPER+2` means "the second workspace of the screen I am looking at" and
+never drags focus to the other monitor. Since Hyprland 0.55 it is a plain Lua
+library — no hyprpm, no compiled plugin, nothing to rebuild on a pacman upgrade.
+
+Nothing about it is host-specific: it maps whatever monitors Hyprland reports
+and re-maps on hotplug, so `giv` gets 1-5 on its single screen and `sohrab` and
+`rostam` get 1-5 per screen, from the same config.
+
+It does track the compositor's Lua API, though, so `.chezmoiexternal.toml` pins
+it to a release branch. **On a Hyprland *major* update (0.56 → 0.57), bump
+`release/0.56.x` there**, then `chezmoi apply` and `./bin/hypr-check.sh`. Within
+a series (0.56.1 → 0.56.2) there is nothing to do; `refreshPeriod` pulls the
+branch weekly on its own.
 
 ### Fonts
-Uses FiraCode (`ttf-fira-code`) with its patched Nerd Font build
-(`ttf-firacode-nerd`), the standalone glyph set `Symbols Nerd Font Mono`
-(`ttf-nerd-fonts-symbols-mono`, what yazi and the Waybar modules fall back to),
-Noto, Liberation, and Vazirmatn for Persian (`vazirmatn-fonts` — the old
-`ttf-vazir` was deleted from the AUR when upstream renamed the project). Avoid
-mixing multiple patched Nerd Font variants.
+
+Plain FiraCode (`ttf-fira-code`), Noto, Liberation, OpenSans, and Vazirmatn for
+Persian (`vazirmatn-fonts` — the old `ttf-vazir` was deleted from the AUR when
+upstream renamed the project).
+
+**No patched Nerd Font is installed, deliberately.** A patched build is just the
+same family with the icon glyphs baked in, so it duplicates a font you already
+have, and running several of them side by side is what makes the same icon come
+out a different width in different apps. Instead there is one standalone glyph
+family, `Symbols Nerd Font Mono` (`ttf-nerd-fonts-symbols-mono`), and three
+things point at it:
+
+- **WezTerm** needs nothing — it does its own per-glyph fontconfig fallback, and
+  draws the powerline range itself (`custom_block_glyphs`). `wezterm ls-fonts
+  --text ''` shows the glyph resolving to `SymbolsNerdFontMono-Regular.ttf`
+  while letters stay on `FiraCode-Regular.ttf`.
+- **Waybar** names the family directly in the font stack in `waybar/style.css`;
+  so does `wlogout/style.css`.
+- **Everything else** (mako, GTK apps, anything asking for plain `monospace`) is
+  covered by `~/.config/fontconfig/conf.d/10-nerd-symbols.conf`, which appends
+  `Symbols Nerd Font Mono` to the `monospace` and `Fira Code` patterns with a
+  weak binding — a fallback after the real font, not a replacement for it.
+
+That last file exists because the one upstream ships is unusable here:
+`ttf-nerd-fonts-symbols-common` drops it in `/usr/share/fontconfig/conf.avail/`,
+which Arch never symlinks into `/etc/fonts/conf.d`, and it aliases to `Symbols
+Nerd Font` — the proportional package, which is not installed. It also uses
+`<prefer>`, putting a font with no Latin glyphs at the front of the `monospace`
+list.
+
+Check the result with `fc-match -s monospace | head -4`: the real monospace font
+must come first and `Symbols Nerd Font Mono` shortly after. If it is first,
+something re-enabled the upstream `<prefer>` rule.
+
+`yazi` depends on nerd glyphs, but on the **virtual** `ttf-font-nerd`, which all
+~100 patched nerd-font packages provide — and so does
+`ttf-nerd-fonts-symbols-mono`. Declaring the symbols package satisfies yazi
+without any patched font. Leave it out and `pacman --noconfirm` picks whichever
+provider sorts first; that is how `otf-atkinsonhyperlegiblemono-nerd` ended up
+installed here.
 
 A theme named by a config has to be installed too, or it silently falls back.
 Nothing names one at the moment: `fuzzel.ini` set `icon-theme=Papirus-Dark` and
@@ -448,36 +596,31 @@ is gone (walker takes its icons from the GTK icon theme instead), and the
 `papirus-icon-theme` is still declared; `bibata-cursor-theme` is not.
 
 ### Wrong temperature in Waybar
+
 ```bash
 paste <(cat /sys/class/thermal/thermal_zone*/type) <(cat /sys/class/thermal/thermal_zone*/temp) \
   | column -s $'\t' -t | sed 's/\(.\)..$/.\1°C/'
 ```
+
 Point the waybar temperature module at the correct `hwmon`/thermal zone.
 
 ### Spotify
+
 Hyprland windows have no menu bar; toggle offline mode with `Ctrl-Shift-o`.
 See the [Arch wiki](https://wiki.archlinux.org/title/Spotify).
 
 ### Three-finger drag gesture
+
 Install `ydotool` + `fusuma`, configure via `~/.config/fusuma/`. Do **not** give
 ydotool sudo. Enable with `systemctl --user enable --now ydotool.service`.
 
 ### Steam / 32-bit packages
-`steam` lives in the official **`multilib`** repo (not the AUR). `install.sh`
-enables `multilib` for you — it uncomments the `[multilib]` section of
-`/etc/pacman.conf` (backing the file up to `/etc/pacman.conf.dotfiles-bak` the
-first time) and leaves `multilib-testing` off. To do it by hand instead:
 
-```bash
-sudo sed -i '/^#\[multilib\]$/,/^#Include/ s/^#//' /etc/pacman.conf
-sudo pacman -Sy
-```
-
-Your GPU's 32-bit drivers are host-specific and live in
-`hosts/<hostname>/pacman.txt` — see [`hosts/README.md`](hosts/README.md).
-Getting this wrong is the usual cause of Steam launching to a black window.
+`steam` lives in the official **`multilib`** repo. `install.sh`
+enables `multilib`.
 
 ### Rootless Docker
+
 `install.sh` sets up rootless docker. A re-login is required for the user socket
 to come up. Verify with `docker info` (should show `rootless`).
 
@@ -494,7 +637,6 @@ Two things are easy to get wrong here, both handled by the installer now:
   sub-uid/sub-gid range for your user and the setup tool's own preflight check
   fails without one, so `install.sh` adds `100000-165535` via
   `usermod --add-subuids/--add-subgids` first.
-
 
 ### Decisions and Notes
 

@@ -43,6 +43,16 @@ docker-rootless-extras
 
 # Editors / IDEs / agents
 claude-code
+# Agent multiplexer, for running several coding agents side by side. Launched
+# with $mainMod+SHIFT+RETURN (see hypr/bindings.lua), which opens it in a
+# tmux-free wezterm window — it is a multiplexer itself and must not be nested
+# inside tmux.
+#
+# `herdr-bin` NOT `herdr`: the two are a replacement pair (herdr-bin declares
+# conflicts=herdr provides=herdr), and declaring both aborts the AUR half of a
+# --noconfirm run. -bin is prebuilt; the source package would drag in cargo and
+# zig0.15 to build it.
+herdr-bin
 visual-studio-code-bin
 cursor-bin
 

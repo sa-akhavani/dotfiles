@@ -63,10 +63,16 @@ hosts/<host>/           applied on ONE host, ADDITIVE       (hosts/README.md)
 home/                   chezmoi source → $HOME
   .chezmoi.toml.tmpl    per-host prompts (currently: gpu)
   .chezmoiignore        what NOT to manage (is itself a template)
+  .chezmoiexternal.toml third-party trees chezmoi CLONES rather than tracks.
+                        Only entry is split-monitor-workspaces, pinned to a
+                        Hyprland release branch — bump it on a major update
   Pictures/             → ~/Pictures; wallpapers + lockscreen images
   dot_config/hypr/      hyprland.lua + the files it require()s. Lua, not
                         hyprlang — but hypridle/hyprlock/hyprpaper/hyprsunset
                         are separate programs and keep their own .conf files
+    workspaces.lua      per-monitor workspaces (split-monitor-workspaces) and
+                        every workspace bind. bindings.lua owns the rest
+    plugins/            NOT in the source dir — the .chezmoiexternal.toml clone
   dot_zshrc dot_gitconfig dot_config/…
   dot_local/share/applications/
                         Hidden=true stubs shadowing /usr/share/applications
@@ -205,8 +211,18 @@ so hand him the command (he can run it with a `! ` prefix).
 - **Never declare both halves of a replacement pair.** `waybar-cava` (AUR)
   declares `conflicts=waybar provides=waybar`; pacman won't remove a conflicting
   installed package under `--noconfirm`, so declaring `waybar` too aborts the AUR
-  half mid-run. Same shape for `wezterm-git`/`wezterm` and `walker-bin`/`walker`.
-  `validate-packages.sh` enforces this.
+  half mid-run. Same shape for `wezterm-git`/`wezterm`, `walker-bin`/`walker`
+  and `herdr-bin`/`herdr`. `validate-packages.sh` enforces this.
+- **herdr must not run inside tmux.** It is a multiplexer in its own right
+  (server + attached clients), so nesting gives two prefix keys, two status bars
+  and both grabbing mouse events, and tmux-resurrect would try to restore
+  `herdr` itself as a pane command. wezterm's `default_prog` drops every new
+  window into tmux, so the launch bind is `wezterm start -- herdr`
+  ($mainMod+SHIFT+RETURN) — `start -- <prog>` is the documented bypass. Across a
+  reboot herdr re-invokes agents with `claude --resume <id>` (exact conversation,
+  per pane) where tmux-resurrect can only manage `--continue` (most recent, per
+  directory) — but herdr does *not* bring back shells or servers, so neither
+  tool is a superset of the other.
 - Packages migrate **out of the AUR into `[extra]`** and are then deleted from the
   AUR (`hyprsunset`, `hyprshot`, `hyprpolkitagent`, `stylua`, `ttf-firacode-nerd`
   all did; `ttf-vazir` vanished entirely, renamed upstream to `vazirmatn-fonts`).
@@ -296,6 +312,97 @@ so hand him the command (he can run it with a `! ` prefix).
   contain an `init.lua` — which is why `plugins.copilot` needs its own explicit
   import line, and why the old `plugins/discard/` was dead weight, not active
   config.
+- **Declaring a package in `pacman.txt` does not protect it from `pacman -Rs`** —
+  pacman only looks at the install *reason*. `ripgrep-all` was declared in
+  `shared/pacman.txt` precisely because it had once vanished with `kio-extras`,
+  and it was still listed for removal by `pacman -Rs dolphin` the next time,
+  because its reason was still "dependency". `pkg-promote.txt` +
+  `./bin/pkg-promote.sh --apply` is the half that actually fixes it; run it
+  *before* any large removal, and check `pacman -Rs --print` first.
+- **Only `ksecretd` and `gnome-keyring` implement `org.freedesktop.secrets`
+  here, and only gnome-keyring can be activated.** kwallet's D-Bus service file
+  registers `org.kde.secretservicecompat` and nothing else, so libsecret's
+  activation of `org.freedesktop.secrets` fails with "The name is not
+  activatable" even with kwallet installed. Separately, Chromium/Electron picks
+  its backend from `XDG_CURRENT_DESKTOP`, does not recognise `Hyprland`, and
+  falls back to the plaintext `basic` store — so VS Code/Cursor need
+  `"password-store": "gnome-libsecret"` in `argv.json` *as well as* a running
+  provider. Both failures print the same "an OS keyring couldn't be identified".
+- **`hyprctl dispatch` takes a Lua expression now, and the old hyprlang form
+  fails silently.** Since the 0.55 Lua migration it evaluates
+  `return hl.dispatch(<arg>)`, so `hyprctl dispatch dpms off` is a *Lua syntax
+  error* (`')' expected near 'off'`, exit 7) — every time, on every host. Nothing
+  in the config is checked by `Hyprland --verify-config`, because these strings
+  live in hypridle.conf, waybar jsonc, wlogout json and shell scripts, not in
+  the Lua config. The correct form is the dispatcher itself, single-quoted so the
+  shell keeps out:
+  ```
+  hyprctl dispatch 'hl.dsp.dpms({ action = "off" })'
+  hyprctl dispatch 'hl.dsp.focus({ workspace = "m+1" })'
+  hyprctl dispatch 'hl.dsp.window.set_prop({ prop = "noborder", value = "1", window = "address:0x…" })'
+  hyprctl dispatch 'hl.dsp.exit()'
+  ```
+  Note the namespace: `hl.dsp.window.set_prop` works, `hl.window.set_prop` is
+  nil. `hyprctl dispatch 'hl.dsp.no_op()'` is the zero-side-effect probe for
+  checking any of this. hyprlang keeps a value verbatim to end-of-line, so the
+  braces and inner `=` are safe in hypridle.conf (verified with
+  `hypridle -c <file> --verbose`, which prints the parsed rule).
+  - This is what caused **two waybars after idle**. The old
+    `hyprctl dispatch dpms on && pkill waybar; waybar &` grouped as
+    `(hyprctl … && pkill waybar) ; (waybar &)` — `&&` binds tighter than `;` —
+    so with the hyprctl half always failing, `pkill` never ran and `waybar &`
+    always did. Use `;` and `reload_waybar.sh` (which *waits* for the old
+    process to die; bare `pkill` only sends SIGTERM and returns).
+  - **`scripts/dynamic-borders.sh` is still broken this way** — 12
+    `hyprctl dispatch setprop address:…` call sites, all no-ops, so the smart
+    borders have silently done nothing since the migration.
+- **waybar's cava module reads `~/.config/cava/config` and then overrides it.**
+  It passes the path to libcava's `load_config()` (libcava expands the `$HOME`
+  component itself, and an unreadable path makes waybar `exit(EXIT_FAILURE)`, so
+  a running bar proves the file loaded), then assigns each key from
+  `modules/cava.jsonc` over the result. The seam has two traps:
+  `noise_reduction` is 0–1 in the jsonc but 0–100 in the cava config; and
+  **`sensitivity` must never be set in the jsonc**, because waybar assigns it
+  *after* `validate_config()` already did `sens /= 100`, so `50` means 50× gain
+  and every bar welds to the ceiling. It is read with `isInt()` too, so a
+  fraction is silently dropped and there is no way to express one — the cava
+  config file is the only place it works.
+  - "All bars maxed" is `autosens` working as designed, not a misconfiguration:
+    cavacore cuts gain 2%/frame on an overshoot but raises it only 0.1%/frame
+    otherwise, and that 20:1 asymmetry parks the loudest bar at full height
+    about one frame in twenty. The knobs that change the picture are
+    `noise_reduction` (the integral is `out = mem*nr + out`, i.e. a
+    steady-state gain of 1/(1-nr) — 4.3× at the old 0.77) and `stereo`, which
+    mirrors the channels and so draws half as many distinct bands twice.
+  - `waybar/scripts/cava.sh` is dead: it shells out to a `cava` binary that is
+    not installed, and no module references it.
+- **split-monitor-workspaces is a Lua library now, not a compiled plugin.** As
+  of Hyprland 0.55 it is required straight from `hyprland.lua`'s Lua — no
+  hyprpm, no ABI lock to a compositor commit, nothing to rebuild on a pacman
+  upgrade (the C++ plugin still in that repo is deprecated at 0.57). It is also
+  not in the AUR, and the upstream moved from `Duckonaut` to **`zjeffer`**.
+  chezmoi clones it via `.chezmoiexternal.toml`, pinned to `release/0.56.x`
+  because the library tracks Hyprland's Lua API — bump that on a *major*
+  Hyprland update, not a patch one.
+  - Hyprland resolves `require()` against the config directory only, so the
+    library has to be added to `package.path` by absolute path via
+    `os.getenv("HOME")`. That is also why `hypr-check.sh` runs
+    `HOME="$dest" Hyprland --verify-config`: without it the check would read
+    the real `$HOME`'s copy instead of the one chezmoi just rendered.
+  - It registers **no hyprctl dispatcher** — `split-cycleworkspaces` in its
+    README belongs to the old C++ plugin. Waybar therefore scrolls with
+    `hyprctl dispatch workspace m+1` (monitor-relative, stays on this screen);
+    `e+1` walks the global list and jumps to the other monitor.
+  - Underneath, monitor 2's workspaces really are 6-10, which is what `hyprctl
+    workspaces` and waybar report — hence `all-outputs: false`.
+- tmux-resurrect restores `claude` only via
+  `@resurrect-processes '"~/bin/claude->claude --continue"'`. The `~` is
+  mandatory: resurrect saves the pane's command from `ps`, which is the absolute
+  path (`/opt/claude-code/bin/claude`), and non-tilde patterns must match from
+  the *start* of that string. `->` is what makes it resume rather than open an
+  empty session; `--continue` keys off the pane's cwd, which resurrect restores
+  first — so two panes in the same repo both land on that repo's most recent
+  conversation.
 - Three hosts, user `ali` on all of them; a hostname that doesn't match a
   `hosts/<host>/` directory means no GPU drivers and no microcode, so the two
   must stay in sync. This repo is worked on from **any** of them — never assume

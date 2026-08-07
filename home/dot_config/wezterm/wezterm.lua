@@ -24,7 +24,10 @@ local config = wezterm.config_builder()
 -- `tmux new -s <name>`. `;` runs it either way, so detaching drops you at a
 -- plain shell in the same window and a failed tmux still shows its error.
 --
--- For a deliberately tmux-free window: `wezterm start -- zsh`.
+-- For a deliberately tmux-free window: `wezterm start -- zsh`. That escape hatch
+-- is also how herdr is launched ($mainMod+SHIFT+RETURN runs
+-- `wezterm start -- herdr`): herdr is a multiplexer too, and this default_prog
+-- would otherwise nest it inside tmux.
 config.default_prog = {
 	"/usr/bin/zsh",
 	"-lc",
@@ -33,7 +36,10 @@ config.default_prog = {
 
 -- This is where you actually apply your config choices
 local fonts = {
-	"FiraCode Nerd Font",
+	-- Plain FiraCode, not the patched "FiraCode Nerd Font": WezTerm resolves
+	-- icon glyphs from Symbols Nerd Font Mono via fontconfig on its own, and
+	-- draws the powerline range itself (custom_block_glyphs).
+	"Fira Code",
 	"Vazirmatn",
 	-- "Mono",
 }

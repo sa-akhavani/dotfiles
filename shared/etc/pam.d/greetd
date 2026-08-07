@@ -1,0 +1,22 @@
+#%PAM-1.0
+#
+# greetd's PAM stack. This is Arch's stock /etc/pam.d/greetd (from the `greetd`
+# package) plus the two pam_gnome_keyring lines — greetd uses this one service
+# for the greeter AND the session it launches, so it is the only place that can
+# unlock the login keyring with the password already typed at tuigreet.
+#
+# Because this is a fork of a packaged file, a `greetd` update that changes the
+# stock version will land as /etc/pam.d/greetd.pacnew rather than overwriting
+# us. `pacmerge` (zsh alias) is how that gets reconciled.
+#
+# The auth line must come AFTER system-local-login: pam_gnome_keyring's auth
+# module only caches a password that an earlier module already collected.
+# `auto_start` on the session line is what actually spawns gnome-keyring-daemon.
+
+auth       required     pam_securetty.so
+auth       requisite    pam_nologin.so
+auth       include      system-local-login
+auth       optional     pam_gnome_keyring.so
+account    include      system-local-login
+session    include      system-local-login
+session    optional     pam_gnome_keyring.so auto_start

@@ -12,7 +12,10 @@ on-touch=dismiss
 # on-notify=exec mpv /usr/share/sounds/freedesktop/stereo/message.oga
 
 # STYLE OPTIONS
-font=FiraCode, Vazirmatn 11
+# "Fira Code", not "FiraCode": fontconfig resolves the squashed name by fuzzy
+# matching, but conf.d/10-nerd-symbols.conf tests the family exactly, so the
+# Symbols Nerd Font Mono fallback only gets appended for the real family name.
+font=Fira Code, Vazirmatn 11
 width=350
 height=100
 margin=10

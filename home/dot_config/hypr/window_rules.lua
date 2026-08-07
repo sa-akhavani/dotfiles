@@ -18,8 +18,8 @@
 -- })
 
 -- hl.window_rule({
---     name  = "thunar-opacity",
---     match = { class = "^([Tt]hunar)$" },
+--     name  = "nemo-opacity",
+--     match = { class = "^([Nn]emo)$" },
 --     opacity = "0.92 0.9", -- active + inactive; two values need the string form
 -- })
 

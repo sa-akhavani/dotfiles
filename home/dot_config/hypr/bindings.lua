@@ -32,8 +32,14 @@ hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("walker -m clipboard"))
 hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 -- hl.bind(mainMod .. " + C", hl.dsp.window.close())
 hl.bind(mainMod .. " + RETURN", hl.dsp.exec_cmd("wezterm"))
+-- herdr, in a deliberately tmux-FREE window. `wezterm start -- <prog>` bypasses
+-- default_prog, which otherwise drops every new window into tmux — and herdr is
+-- a multiplexer itself, so running it inside tmux means two prefix keys, two
+-- status bars and both of them fighting over mouse events. Plain `wezterm`
+-- above is still the tmux one; these two stay separate on purpose.
+hl.bind(mainMod .. " + SHIFT + RETURN", hl.dsp.exec_cmd("wezterm start -- herdr"))
 hl.bind(mainMod .. " + M", hl.dsp.exit())
-hl.bind(mainMod .. " + E", hl.dsp.exec_cmd("thunar"))
+hl.bind(mainMod .. " + E", hl.dsp.exec_cmd("nemo"))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd("walker"))
 hl.bind(mainMod .. " + U", hl.dsp.exec_cmd("hyprpicker -a")) -- -z to disable zoom
 
@@ -54,19 +60,15 @@ hl.bind(mainMod .. " + G", hl.dsp.group.toggle())
 hl.bind(mainMod .. " + tab", hl.dsp.group.next())
 hl.bind(mainMod .. " + SHIFT + tab", hl.dsp.group.prev())
 
--- For workspaces
-hl.bind("ALT + tab", hl.dsp.focus({ workspace = "m+1" }))
-hl.bind("ALT + SHIFT + tab", hl.dsp.focus({ workspace = "m-1" }))
+-- Workspace binds (SUPER+1..5, ALT+tab, SUPER+scroll) live in workspaces.lua
+-- now — they go through split-monitor-workspaces so they act on the focused
+-- monitor rather than on Hyprland's one global workspace list.
 
 -- Move focus with mainMod + arrow keys
 hl.bind(mainMod .. " + left", hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }))
 hl.bind(mainMod .. " + up", hl.dsp.focus({ direction = "up" }))
 hl.bind(mainMod .. " + down", hl.dsp.focus({ direction = "down" }))
-
--- Scroll through existing workspaces with mainMod + scroll
-hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
-hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }))
 
 -- Move windows only with keyboard
 hl.bind(mainMod .. " + CTRL + H", hl.dsp.window.move({ direction = "left" }))
@@ -77,6 +79,24 @@ hl.bind(mainMod .. " + CTRL + left", hl.dsp.window.move({ direction = "left" }))
 hl.bind(mainMod .. " + CTRL + right", hl.dsp.window.move({ direction = "right" }))
 hl.bind(mainMod .. " + CTRL + up", hl.dsp.window.move({ direction = "up" }))
 hl.bind(mainMod .. " + CTRL + down", hl.dsp.window.move({ direction = "down" }))
+
+-- Throw the focused window at the other monitor, following it over.
+--
+-- "+1" is the next monitor and it wraps, so one key covers both directions on a
+-- two-monitor host and is a harmless no-op on giv, where it wraps to the monitor
+-- the window is already on. No host branching needed, and nothing to update when
+-- an output is renamed — unlike naming DP-4 here.
+--
+-- The window lands on the target monitor's *active* workspace, which is what
+-- keeps this compatible with the per-monitor workspaces in workspaces.lua: the
+-- window ends up inside that monitor's own range rather than dragging a
+-- workspace across. `hl.dsp.workspace.swap_monitors` would exchange the two
+-- monitors' entire active workspaces instead — a different thing, and it leaves
+-- workspaces sitting outside the range split-monitor-workspaces mapped for them
+-- (SUPER+SHIFT+G to reclaim the windows if you try it).
+--
+-- Add `follow = false` to send it without moving focus.
+hl.bind(mainMod .. " + D", hl.dsp.window.move({ monitor = "+1" }))
 
 -- Move/resize windows with mainMod + LMB/RMB and dragging
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
@@ -136,25 +156,16 @@ hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = tru
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
 hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true })
 
--- Workspace switching — native Hyprland dispatchers.
--- (Previously handled by the hyprsplit plugin; converted to built-in workspaces
---  since hyprsplit is not installed. Re-add a plugins require if you enable it
---  again.)
+-- Workspace switching moved to workspaces.lua, which routes it through
+-- split-monitor-workspaces so each monitor has its own 1-5. The plain global
+-- version this replaced, if the library ever needs backing out — dropping the
+-- `require("workspaces")` from hyprland.lua and uncommenting this is the whole
+-- rollback:
 --
--- Five workspaces, three actions each: switch to it, send the active window
--- there without following (the old `movetoworkspacesilent`, now follow = false),
--- or send it and follow.
-for i = 1, 5 do
-    hl.bind(mainMod .. " + " .. i, hl.dsp.focus({ workspace = i }))
-    hl.bind(mainMod .. " + SHIFT + " .. i, hl.dsp.window.move({ workspace = i, follow = false }))
-    hl.bind(mainMod .. " + CONTROL + " .. i, hl.dsp.window.move({ workspace = i }))
-end
-
--- Ten workspaces instead of five — same loop, `i % 10` so 10 lands on the 0 key.
--- for i = 1, 10 do
---     local key = i % 10
---     hl.bind(mainMod .. " + " .. key, hl.dsp.focus({ workspace = i }))
---     hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
+-- for i = 1, 5 do
+--     hl.bind(mainMod .. " + " .. i, hl.dsp.focus({ workspace = i }))
+--     hl.bind(mainMod .. " + SHIFT + " .. i, hl.dsp.window.move({ workspace = i, follow = false }))
+--     hl.bind(mainMod .. " + CONTROL + " .. i, hl.dsp.window.move({ workspace = i }))
 -- end
 
 -- Minimize windows using special workspaces

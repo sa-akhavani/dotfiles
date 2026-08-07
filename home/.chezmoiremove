@@ -9,3 +9,17 @@
 # would still be merged onto the runtimepath and shadow the plugin's versions
 # with a stale copy.
 .config/nvim/lsp
+
+# Old hand-written fontconfig: CJK embolden rules for fonts none of these hosts
+# have (Song/Sun/Kai/Ming) plus a <dir>~/.fonts</dir> that no longer exists. It
+# was dropped from the source directory in 4a97d61 but stayed behind in $HOME on
+# every host. Font policy now lives in .config/fontconfig/conf.d/ instead, and
+# leaving this file in place would keep it loaded alongside.
+.config/fontconfig/fonts.conf
+
+# Dead cava launcher. It piped the standalone `cava` binary through sed into a
+# custom/ module, but that binary is not installed on any host and no waybar
+# module ever referenced the script: the bar uses waybar-cava's built-in `cava`
+# module, which links libcava in-process. Left in $HOME it is an executable that
+# looks load-bearing and is not.
+.config/waybar/scripts/cava.sh

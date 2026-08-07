@@ -1,24 +1,52 @@
+// waybar's built-in cava module (waybar-cava links libcava in-process — the
+// standalone `cava` binary is NOT installed, and scripts/cava.sh is dead).
+//
+// `cava_config` is really loaded: waybar calls libcava's load_config() on this
+// path first, then overwrites individual fields with the keys below. libcava
+// expands the `$HOME` component itself, and an unreadable path is fatal
+// (waybar exits), so a running bar proves the file was read. Everything set
+// here therefore WINS over ~/.config/cava/config; anything left out falls
+// through to that file. `sensitivity` is the one knob that has to live there —
+// see the note at the bottom.
 {
   "cava": {
     "cava_config": "$HOME/.config/cava/config",
     "framerate": 60,
     "autosens": 1,
-    // "sensitivity": 50,
-    // "bars": 14,
-    "bars": 12,
+    // 14 bars, mono. Mono is the reason this reads as a spectrum instead of a
+    // solid block: `stereo` mirrors the two channels around the centre, so 14
+    // stereo bars are only 7 distinct frequency bands drawn twice, each one
+    // ~1.4kHz wide and therefore never empty. Mono spreads all 14 bars across
+    // 50Hz–10kHz for the same width on the bar.
+    "bars": 14,
+    "stereo": false,
     "lower_cutoff_freq": 50,
     "higher_cutoff_freq": 10000,
     "method": "pipewire",
     "source": "auto",
     // "source": "54",
-    "stereo": true,
     "bar_delimiter": 0,
     // "waves": false,
-    "noise_reduction": 0.77,
+    // Integral smoothing. In THIS file it is a double 0–1; in
+    // ~/.config/cava/config the same setting is an int 0–100 that libcava
+    // divides by 100 (so 0.4 here == 40 there — don't write 40 here).
+    //
+    // It is not just cosmetic: cavacore's integral is `out = mem*nr + out`, a
+    // steady-state gain of 1/(1-nr). At the old 0.77 that was 4.3x, which piled
+    // sustained energy into every bar and dropped it slowly — with autosens
+    // pinning the loudest bar at full height anyway, the result was the whole
+    // module sitting at █. 0.4 is 1.7x and falls off fast.
+    "noise_reduction": 0.4,
     "input_delay": 1,
     "format-icons": ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"],
     "actions": {
       "on-click-right": "mode"
     }
+    // NOTE: never set "sensitivity" here. waybar assigns it to libcava's
+    // `sens` *after* load_config() has already done the percent-to-multiplier
+    // divide, so it is not a percentage in this file — "sensitivity": 50 means
+    // 50x gain, i.e. every bar welded to the ceiling. It is also read with
+    // isInt(), so a fraction is silently ignored and there is no way to express
+    // one. Set it in ~/.config/cava/config instead, where the /100 happens.
   }
 }

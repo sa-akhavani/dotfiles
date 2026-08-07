@@ -17,7 +17,8 @@ require("env_nvidia") -- chezmoi-rendered; comments only on non-nvidia hosts
 require("monitor")
 require("graphics")
 require("input") -- input devices + gestures
-require("bindings") -- keybinds, including the workspace binds
+require("bindings") -- keybinds
+require("workspaces") -- per-monitor workspaces + the workspace binds
 require("window_rules")
 
 -- Scripts. Spelled out via $HOME rather than "~" because these strings are not

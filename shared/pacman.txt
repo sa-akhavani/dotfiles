@@ -110,6 +110,16 @@ gst-plugin-pipewire
 qt5-wayland
 qt6-wayland
 polkit
+# Secret Service provider — the D-Bus API (org.freedesktop.secrets) that
+# libsecret-based apps store credentials in: Cursor, VS Code, Chrome, Slack,
+# git's libsecret credential helper. Nothing else here provides it. kwallet's
+# ksecretd implements the same API, but its only D-Bus service file registers
+# org.kde.secretservicecompat, so activation of org.freedesktop.secrets fails
+# and Electron reports "an OS keyring couldn't be identified"; gnome-keyring
+# ships an org.freedesktop.secrets.service file and starts on demand.
+# The login keyring is unlocked with the login password by the
+# pam_gnome_keyring lines in shared/etc/pam.d/greetd.
+gnome-keyring
 brightnessctl
 grim
 slurp
@@ -148,16 +158,19 @@ qt6ct
 
 # File manager / PDF / Photo viewer
 yazi
-# GUI file manager bound to SUPER+E in hypr/bindings.lua; its config lives in
-# home/dot_config/Thunar. gvfs gives it trash, mounting and network browsing.
-thunar
-thunar-archive-plugin
-# The backend thunar-archive-plugin shells out to for right-click "Extract
-# Here". The plugin only lists it as an optdep, so nothing pulls it in.
+# The one GUI file manager, bound to SUPER+E in hypr/bindings.lua. Thunar and
+# dolphin were both dropped in favour of it — don't re-add either, and note
+# that dolphin drags the whole kf6/kio stack (and kwallet) back in with it.
+# gvfs is what gives nemo trash, mounting and network browsing.
+nemo
+# Right-click "Extract Here" / "Compress", which nemo has no support for on its
+# own. This is the replacement for thunar-archive-plugin.
+nemo-fileroller
+# The archiver both the extension above and "Open With" use. It is a hard
+# dependency of nemo-fileroller, declared anyway so dropping the extension
+# never silently takes the standalone GUI with it.
 file-roller
 gvfs
-# Second GUI file manager, kept alongside thunar for its dual-pane/tree view.
-nemo
 viewnior
 zathura
 zathura-pdf-mupdf
@@ -201,10 +214,21 @@ ttf-fira-code
 ttf-liberation
 # Named in the font stack of home/dot_config/waybar/style.css.
 ttf-opensans
-ttf-firacode-nerd
-# The standalone Nerd Font glyph set (README calls it "Symbols Nerd Font Mono").
-# It is what yazi and the waybar modules fall back to for icons; the patched
-# ttf-firacode-nerd in aur.txt only covers the FiraCode family.
+# The standalone Nerd Font glyph set — the ONLY source of icon glyphs here.
+# Deliberately no patched Nerd Font (ttf-firacode-nerd and friends): a patched
+# build is the same family with the glyphs baked in, so it only ever duplicates
+# what this package already provides, and mixing several of them is what makes
+# icon widths inconsistent between apps. Plain ttf-fira-code above plus this
+# covers everything — WezTerm falls back to it per-glyph on its own, waybar
+# names it in its font stack, and ~/.config/fontconfig/conf.d/10-nerd-symbols.conf
+# aliases monospace to it for every app that does neither.
+#
+# It also has to STAY declared, because it is load-bearing for yazi: yazi depends
+# on the virtual `ttf-font-nerd`, which every one of the ~100 patched nerd-font
+# packages provides. Drop this line and `pacman --noconfirm` satisfies yazi with
+# whichever provider it sorts to first (that is how otf-atkinsonhyperlegiblemono-nerd
+# arrived here) — a patched font pulled in behind your back. Declaring it puts the
+# provider in the same transaction, so nothing else is chosen.
 ttf-nerd-fonts-symbols-mono
 xkeyboard-config
 

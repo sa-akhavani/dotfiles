@@ -30,6 +30,12 @@ polkit
 psmisc
 python
 ripgrep
+# Same trap as `vlc`, and the second time for this package: it first arrived as
+# a kio-extras dependency and vanished when dolphin was removed. Declaring it in
+# shared/pacman.txt did NOT stop that — the install *reason* is what pacman
+# looks at, and it is still "dependency" here. `pacman -Rs dolphin` lists
+# ripgrep-all among what it would take. Promote it before removing anything KDE.
+ripgrep-all
 rtkit
 xdg-desktop-portal-gtk
 xkeyboard-config

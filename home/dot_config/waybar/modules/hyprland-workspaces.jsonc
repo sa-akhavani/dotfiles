@@ -1,33 +1,50 @@
+// Workspaces are per-monitor now (split-monitor-workspaces — see
+// ~/.config/hypr/workspaces.lua), so `all-outputs` has to be false: each bar
+// shows only its own screen's five. With it true, both bars listed all ten and
+// the second monitor's were labelled 6-10, since 6-10 is what those workspaces
+// really are underneath.
+//
+// Scrolling selects `m+1` rather than `e+1` for the same reason. `m` is
+// monitor-relative, so it stays inside this screen's range; `e` walks the global
+// list of existing workspaces and would jump to the other monitor. (The
+// library's own cycle function is not reachable from here — it registers no
+// hyprctl dispatcher. `split-cycleworkspaces` in its README belongs to the
+// deprecated C++ plugin, not the Lua one.)
+//
+// The argument to `hyprctl dispatch` is LUA, not hyprlang: since 0.55 it
+// evaluates `return hl.dispatch(<arg>)`, so the shorter `hyprctl dispatch
+// workspace m+1` is a Lua syntax error that fails silently with exit 7. Single
+// quotes keep the shell out of it; the inner `"` are escaped for JSON.
 {
   "hyprland/workspaces": {
-    "all-outputs": true,
+    "all-outputs": false,
     "on-click": "activate",
-    "on-scroll-up": "hyprctl dispatch workspace e+1",
-    "on-scroll-down": "hyprctl dispatch workspace e-1",
+    "on-scroll-up": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"m+1\" })'",
+    "on-scroll-down": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"m-1\" })'",
     // "format": "{icon}",
     // "format-icons": {
-    //   "1": "",
-    //   "2": "",
-    //   "3": "",
-    //   "4": "",
-    //   "5": "",
-    //   "9": "",
-    //   "10": "",
+    //   "1": "",
+    //   "2": "",
+    //   "3": "",
+    //   "4": "",
+    //   "5": "",
+    //   "9": "",
+    //   "10": "",
     // },
   },
   // "format-icons": {
-  // 	"1": "",
-  // 	"2": "",
-  // 	"3": "",
-  // 	"4": "",
+  // 	"1": "",
+  // 	"2": "",
+  // 	"3": "",
+  // 	"4": "",
   // 	"5": "ﭮ",
-  //    "6": "",
-  //    "7": "",
-  //    "8": "",
-  //    "9": "",
+  //    "6": "",
+  //    "7": "",
+  //    "8": "",
+  //    "9": "",
   //    "10": "﮼",
-  // 	"focused": "",
-  // 	"default": ""
+  // 	"focused": "",
+  // 	"default": ""
   // }
   //  },
 }
