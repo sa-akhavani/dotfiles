@@ -91,11 +91,9 @@
       "showPrefixLen": false,
       "keyColor": "green",
     },
-    {
-      "type": "publicip",
-      "key": "   WAN IP",
-      "keyColor": "green",
-    },
+    // no publicip module: it has no timeout by default (0 = block forever), so a
+    // dropped SYN to ipinfo.io:80 halts the whole fetch here for the ~130s of
+    // kernel SYN retries — and this runs on every new shell
     {
       "type": "custom",
       "format": "└───────────────────────────────────────────────────┘",

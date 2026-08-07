@@ -58,7 +58,6 @@
         "poweradapter",
         "player",
         "media",
-        "publicip",
         {
             "type": "localip",
             "showIpv6": true,
