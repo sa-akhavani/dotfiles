@@ -64,6 +64,37 @@ version is the right answer; if you take the `.pacnew` by mistake, the next
 ffmpeg…), AUR packages linked against the old one stay broken until rebuilt.
 Doing repos and AUR as two steps makes it obvious which half failed.
 
+Worse, the stale build can *block the upgrade entirely*:
+
+```
+:: installing jsoncpp (1.9.8-1) breaks dependency 'libjsoncpp.so=26-64' required by waybar-cava
+```
+
+That is a chicken-and-egg — the rebuild needs the new library, and the new
+library won't install while the old dep stands. `--assume-installed` breaks it
+by making pacman resolve as if the old soname were still provided:
+
+```bash
+sudo pacman -Syu --assume-installed 'libjsoncpp.so=26-64'   # unblock, upgrade
+yay -S --rebuild waybar-cava                                # repair the dep
+yay -Sua                                                    # rest of the AUR
+```
+
+Order matters: step 2 needs the new headers from step 1. In between, the package
+is genuinely broken — a *running* process survives (it holds the deleted
+library's inode) but would not start again, so restart it after the rebuild
+(`~/.config/hypr/scripts/reload_waybar.sh` for waybar).
+
+`--rebuild` is required because the soname pin is makepkg's, not the PKGBUILD's:
+the AUR depends line says plain `libjsoncpp.so`, and `=26-64` was captured at
+build time. The AUR version therefore never changes, so `yay -Sua` sees nothing
+to do. Check the blast radius first — `pacman -Qm` lists every locally built
+package, and this finds the ones a given library actually reaches:
+
+```bash
+pacman -Qq | while read p; do pacman -Qi "$p" | grep -q libjsoncpp && echo "$p"; done
+```
+
 **Kernel upgrade without a reboot.** Module loading fails until you reboot
 (USB devices, filesystems, DKMS drivers). Reboot after any `linux*` upgrade.
 Installing **`linux-lts`** as a second kernel gives you a working boot entry when

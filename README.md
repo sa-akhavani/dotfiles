@@ -12,18 +12,13 @@ Dotfiles are managed with **[chezmoi](https://www.chezmoi.io/)**.
 | OS                 | [Arch Linux](https://archlinux.org/)                                                                                                                |
 | Window Manager     | [Hyprland](https://github.com/hyprwm/Hyprland) (Wayland)                                                                                            |
 | Display Manager    | [greetd](https://sr.ht/~kennylevinsen/greetd/) + [tuigreet](https://github.com/apognu/tuigreet)                                                     |
-| Terminal           | [WezTerm](https://github.com/wez/wezterm)                                                                                                           |
-| Multiplexer        | [tmux](https://github.com/tmux/tmux)                                                                                                                |
-| Editor             | [Neovim](https://github.com/neovim/neovim) (lazy.nvim)                                                                                              |
-| Shell              | [zsh](https://github.com/ohmyzsh/ohmyzsh) + oh-my-zsh                                                                                               |
+| Lock / Idle        | [hyprlock](https://github.com/hyprwm/hyprlock) + [hypridle](https://github.com/hyprwm/hypridle)                                                     |
 | Status Bar         | [Waybar](https://github.com/Alexays/Waybar)                                                                                                         |
 | Notifications      | [mako](https://github.com/emersion/mako)                                                                                                            |
 | Launcher           | [walker](https://github.com/abenz1267/walker) + [elephant](https://github.com/abenz1267/elephant) (`$mainMod+R`; clipboard history on `$mainMod+V`) |
-| Lock / Idle        | [hyprlock](https://github.com/hyprwm/hyprlock) + [hypridle](https://github.com/hyprwm/hypridle)                                                     |
-| File Manager       | [yazi](https://github.com/sxyazi/yazi) (TUI) / [Nemo](https://github.com/linuxmint/nemo) (`$mainMod+E`)                                             |
-| Keyring            | [gnome-keyring](https://wiki.archlinux.org/title/GNOME/Keyring) (unlocked at login by PAM)                                                          |
-| Audio              | PipeWire + WirePlumber                                                                                                                              |
-| Dotfile manager    | [chezmoi](https://www.chezmoi.io/)                                                                                                                  |
+| Terminal           | [WezTerm](https://github.com/wez/wezterm)                                                                                                           |
+| Editor             | [Neovim](https://github.com/neovim/neovim) (lazy.nvim)                                                                                              |
+| Shell              | [zsh](https://github.com/ohmyzsh/ohmyzsh) + oh-my-zsh                                                                                               |
 
 ## Repository layout
 
@@ -38,8 +33,6 @@ bin/                         # repo maintenance helpers, all read-only
   doctor.sh                  #   system state: cmdline, kernel, dkms, /etc, chezmoi
   pkg-diff.sh                #   drift: repo lists vs. what is installed here
   validate-packages.sh       #   every declared name still resolves; no conflicts
-  dns-apply.sh               #   apply network-dns.txt to this host's NM profiles
-network-dns.txt              # per-SSID DNS servers (NM profiles cannot be tracked)
 .github/workflows/ci.yml     # bash -n + shellcheck + the two checks above
 shared/                      # applied on EVERY host  (shared/README.md)
   pacman.txt  aur.txt  npm.txt   # package lists
@@ -70,7 +63,7 @@ home/                        # chezmoi source: everything here maps into $HOME
 
 ## Installation (fresh machine)
 
-### 1. Base Arch install — use `archinstall`
+### 1. Base Arch install
 
 Boot the official ISO and run the guided installer that ships with it:
 
@@ -97,11 +90,6 @@ answers that matter for this repo:
 Pick the **Minimal** profile, not a desktop one: a desktop profile installs its
 own greeter and compositor, which then fight greetd + Hyprland. Everything
 graphical in this setup comes from `install.sh`.
-
-> **The hostname is load-bearing.** All four per-host layers key off
-> `hostnamectl --static`. If you pick a name, make sure that there is a dedicated entry in the hosts in thir repo.
-> `install.sh` prints a loud warning when no per-host list
-> matches, because a host without one silently gets no GPU drivers.
 
 If you install by hand instead, note that `archinstall` would otherwise have
 installed the CPU microcode for you; the shared package list declares
@@ -235,13 +223,6 @@ Then quit the app completely — not just the window — and relaunch. Verify:
 grep password-store ~/.cursor/argv.json ~/.vscode/argv.json
 ```
 
-Deliberately **not** managed by chezmoi, like the boot cmdline above. Both apps
-write to these files themselves: a per-machine `crash-reporter-id` on first
-launch, and the in-app "Preferences: Configure Runtime Arguments" command. A
-tracked copy would revert those edits on every `chezmoi apply` and pin one
-crash-reporter-id across all three hosts. `home/.chezmoiremove` does still delete
-the two dead `~/.config` copies the repo used to deploy.
-
 ### 6. Reboot and finish plugin setup
 
 Reboot → greetd → pick Hyprland. Inside the session:
@@ -250,7 +231,7 @@ Reboot → greetd → pick Hyprland. Inside the session:
 # tmux plugins: open tmux, then press  <prefix>(C-a) + I
 ```
 
-## Multi-host support
+## Multi-host support using chezmoi
 
 One repo, one branch, many machines. Nothing is duplicated per host; each host
 only overrides what actually differs. There are four independent layers, all
@@ -401,10 +382,6 @@ shellcheck --severity=warning install.sh bin/*.sh
 chezmoi diff                       # what an apply would change in $HOME
 ```
 
-`.github/workflows/ci.yml` runs the same checks on every push (and weekly, since
-package names rot on their own — that is how five packages in this repo were
-found to have moved from the AUR into `[extra]`).
-
 ## Notes and troubleshooting
 
 ### OpenVPN
@@ -413,49 +390,6 @@ On Arch, drop your `.conf` in `~/openvpn/basic.conf` and run
 `sudo openvpn --config ~/openvpn/basic.conf`, or use
 `systemctl enable --now openvpn-client@basic` with the conf in
 `/etc/openvpn/client/basic.conf`.
-
-### Keyring — "an OS keyring couldn't be identified"
-
-Cursor, VS Code, Chrome and Slack store credentials through libsecret, which
-needs something owning the D-Bus name `org.freedesktop.secrets`. Two separate
-things have to be true, and missing either produces that same message:
-
-1. **A provider is installed.** `gnome-keyring` (in `shared/pacman.txt`) ships
-   `/usr/share/dbus-1/services/org.freedesktop.secrets.service`, so it starts on
-   demand. KWallet's `ksecretd` implements the same API but only registers
-   `org.kde.secretservicecompat`, so it never answers an activation request —
-   which is why a machine with KWallet installed (as a Dolphin dependency)
-   still fails.
-2. **Electron is told to use it.** Chromium selects its credential backend from
-   `XDG_CURRENT_DESKTOP`, and `Hyprland` is not a desktop it recognises, so it
-   falls back to the plaintext `basic` store _even with a keyring running_.
-   `"password-store": "gnome-libsecret"` in each app's `argv.json` overrides
-   that. This is a **manual per-host step** — installation step 5 below.
-   Restart the app fully after a change.
-
-   **The path is the trap.** `argv.json` is not read from the Electron
-   user-data directory. Both apps resolve it as
-   `$HOME/<product.json dataFolderName>/argv.json` — `~/.cursor/argv.json` and
-   `~/.vscode/argv.json`, never `~/.config/Cursor` or `~/.config/Code`. The repo
-   deployed them to the latter until 2026-08, where nothing opened them, while
-   every other symptom (keyring installed, daemon running, name owned on the bus)
-   checked out. Confirm with
-   `grep password-store ~/.cursor/argv.json ~/.vscode/argv.json`, and read the
-   right directory back out of the app itself rather than guessing:
-   `python3 -c "import json;print(json.load(open('/usr/share/cursor/resources/app/product.json'))['dataFolderName'])"`.
-
-Unlocking is handled by the two `pam_gnome_keyring` lines in
-`shared/etc/pam.d/greetd`, so the login keyring opens with the password already
-typed at tuigreet, with no second prompt. That file is a fork of the stock one
-from the `greetd` package — a `greetd` update will leave a
-`/etc/pam.d/greetd.pacnew` to reconcile with `pacmerge`.
-
-Check it:
-
-```bash
-busctl --user list | grep secrets          # should show org.freedesktop.secrets
-secret-tool store --label=test a b         # should not prompt after login
-```
 
 ### SSH known hosts
 
@@ -514,7 +448,7 @@ _replaces_ the default stylesheet rather than extending it, so
 
 The official `waybar` package ships without the cava module, so this repo uses
 the AUR `waybar-cava` build (+ `libcava`) instead. The standalone `cava` binary
-is *not* installed — waybar links libcava in-process.
+is _not_ installed — waybar links libcava in-process.
 
 `~/.config/cava/config` is not decoration: waybar hands the path to libcava's
 `load_config()` and then overwrites individual fields from
@@ -536,29 +470,9 @@ change the picture — mono doubles the frequency resolution for the same width,
 because `stereo` mirrors the channels and so draws half as many distinct bands
 twice.
 
-### tmux vs herdr — one multiplexer per window
+### herdr
 
-Both are multiplexers (background server + attached clients), so they are not
-layered, they are chosen:
-
-| | tmux | herdr |
-| --- | --- | --- |
-| Launch | `$mainMod+RETURN` (wezterm's `default_prog`) | `$mainMod+SHIFT+RETURN` |
-| For | ordinary dev, one agent at a time | several agents at once |
-| Survives detach | everything | everything |
-| Survives reboot | layout, cwd, whitelisted programs | layout; agents re-invoked |
-| Claude restore | `--continue`, per *directory* | `--resume <id>`, per *pane* |
-| Agent state | no concept of it | `blocked`/`working`/`done`/`idle` |
-
-herdr's one clear advantage is the last two rows: it restores the exact
-conversation per pane rather than "the most recent one in this cwd", and it tells
-you which agent is waiting on you. What it does *not* do is bring back shells,
-servers or tests after a reboot — "the original pane processes are gone" — which
-tmux-resurrect does. So neither is a superset.
-
-Note `experimental.pane_history = true` in `herdr/config.toml` writes pane
-*contents* to `session-history.json` in plaintext. It is what makes scrollback
-survive a reboot, and it is off by default upstream for that reason.
+`$mainMod+SHIFT+RETURN`
 
 ### Per-monitor workspaces
 
@@ -569,11 +483,10 @@ never drags focus to the other monitor. Since Hyprland 0.55 it is a plain Lua
 library — no hyprpm, no compiled plugin, nothing to rebuild on a pacman upgrade.
 
 Nothing about it is host-specific: it maps whatever monitors Hyprland reports
-and re-maps on hotplug, so `giv` gets 1-5 on its single screen and `sohrab` and
-`rostam` get 1-5 per screen, from the same config.
+and re-maps on hotplug.
 
 It does track the compositor's Lua API, though, so `.chezmoiexternal.toml` pins
-it to a release branch. **On a Hyprland *major* update (0.56 → 0.57), bump
+it to a release branch. **On a Hyprland _major_ update (0.56 → 0.57), bump
 `release/0.56.x` there**, then `chezmoi apply` and `./bin/hypr-check.sh`. Within
 a series (0.56.1 → 0.56.2) there is nothing to do; `refreshPeriod` pulls the
 branch weekly on its own.
@@ -606,29 +519,10 @@ See the [Arch wiki](https://wiki.archlinux.org/title/Spotify).
 Install `ydotool` + `fusuma`, configure via `~/.config/fusuma/`. Do **not** give
 ydotool sudo. Enable with `systemctl --user enable --now ydotool.service`.
 
-### Steam / 32-bit packages
-
-`steam` lives in the official **`multilib`** repo. `install.sh`
-enables `multilib`.
-
 ### Rootless Docker
 
 `install.sh` sets up rootless docker. A re-login is required for the user socket
 to come up. Verify with `docker info` (should show `rootless`).
-
-Two things are easy to get wrong here, both handled by the installer now:
-
-- **`dockerd-rootless-setuptool.sh` is not part of Arch's `docker` package.** It
-  ships only in `docker-rootless-extras` (AUR), which is why that package is in
-  `shared/aur.txt`. Without it there is nothing to set up, and an installer
-  that disables `docker.service` on the assumption that rootless will replace it
-  leaves the host with no working Docker at all. `install.sh` now only disables
-  the root daemon once the rootless tooling is actually present, and enables the
-  root `docker.service` otherwise (including on `--no-aur` runs).
-- **Arch ships no `/etc/subuid` / `/etc/subgid`.** Rootless Docker needs a
-  sub-uid/sub-gid range for your user and the setup tool's own preflight check
-  fails without one, so `install.sh` adds `100000-165535` via
-  `usermod --add-subuids/--add-subgids` first.
 
 ### Decisions and Notes
 
